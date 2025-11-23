@@ -1,4 +1,4 @@
-import { GOOGLE_MAPS_API_KEY, somaliRegions } from './config.js';
+import { getGoogleMapsApiKey, somaliRegions } from './config.js';
 import * as Utils from './utils.js';
 import * as MapCore from './map-core.js';
 
@@ -41,8 +41,13 @@ import * as MapCore from './map-core.js';
 
     async function init() {
         try {
+            const apiKey = await getGoogleMapsApiKey();
+            if (!apiKey) {
+                throw new Error("Missing Google Maps API key");
+            }
+
             const [_, somaliaData, districtsData] = await Promise.all([
-                Utils.loadGoogleMapsAPI(GOOGLE_MAPS_API_KEY, ['geometry']),
+                Utils.loadGoogleMapsAPI(apiKey, ['geometry']),
                 fetch('data/somalia.geojson').then(res => res.json()),
                 fetch('data/somalia_districts.geojson').then(res => res.json())
             ]);

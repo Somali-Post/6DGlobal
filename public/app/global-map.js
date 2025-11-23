@@ -1,7 +1,7 @@
 // /public/app/global-map.js
 
-// 1. Import the API key
-import { GOOGLE_MAPS_API_KEY } from './config.js';
+// 1. Import the API key helper
+import { getGoogleMapsApiKey } from './config.js';
 
 // --- Global Variables ---
 let map;
@@ -261,13 +261,11 @@ function loadGoogleMapsAPI(apiKey) {
 }
 
 async function startApp() {
-    // For local development, we use the key from config.js
-    // For production, Netlify will replace the placeholder in this file.
-    const apiKey = typeof GOOGLE_MAPS_API_KEY !== 'undefined' ? GOOGLE_MAPS_API_KEY : 'YOUR_API_KEY_HERE';
-    
-    if (apiKey === 'YOUR_API_KEY_HERE') {
-        console.error("API Key is a placeholder. Please update config.js for local development.");
-        document.body.innerHTML = '<h1>Error: API Key is missing.</h1>';
+    const apiKey = await getGoogleMapsApiKey();
+
+    if (!apiKey) {
+        console.error("API Key is missing. Check Cloudflare Pages variables or LOCAL_DEV_KEY.");
+        document.body.innerHTML = "<h1>Error: Google Maps API key is missing.</h1>";
         return;
     }
 
@@ -276,7 +274,7 @@ async function startApp() {
         await loadGoogleMapsAPI(apiKey);
     } catch (error) {
         console.error(error);
-        document.body.innerHTML = '<h1>Error: Could not load Google Maps.</h1>';
+        document.body.innerHTML = "<h1>Error: Could not load Google Maps.</h1>";
     }
 }
 

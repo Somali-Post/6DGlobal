@@ -1,6 +1,53 @@
 // /public/app/config.js
 
-// IMPORTANT: Replace with your actual key for local development.
-// This key will NOT be pushed to GitHub if you set up a .gitignore rule for this file later.
-// Netlify's environment variable will be used in production.
-export const GOOGLE_MAPS_API_KEY = "AIzaSyBjcJeA1AZLx2w_08x6iG0DCd2nLJOsbfM";
+// If you need to test locally without Cloudflare Pages functions, place a temporary
+// Google Maps key here. Leave it blank for production so the runtime fetch is used.
+const LOCAL_DEV_KEY = "";
+
+async function requestKeyFromServer() {
+    try {
+        const response = await fetch("/api/maps-key", { cache: "no-store" });
+        if (!response.ok) {
+            throw new Error(`Request failed with status ${response.status}`);
+        }
+        const data = await response.json();
+        if (!data.key) {
+            throw new Error("Response did not include an API key");
+        }
+        return data.key;
+    } catch (error) {
+        console.error("[config] Unable to retrieve Google Maps API key:", error);
+        return null;
+    }
+}
+
+export async function getGoogleMapsApiKey() {
+    if (LOCAL_DEV_KEY) {
+        return LOCAL_DEV_KEY;
+    }
+    if (typeof window !== "undefined" && window.__LOCAL_GOOGLE_MAPS_API_KEY__) {
+        return window.__LOCAL_GOOGLE_MAPS_API_KEY__;
+    }
+    return await requestKeyFromServer();
+}
+
+// Authoritative list of Somali regions and districts used by the Somalia registration map.
+export const somaliRegions = {
+    "Awdal": ["Baki", "Borama", "Lughaya", "Zeila"],
+    "Bakool": ["El Barde", "Hudur", "Tiyeglow", "Wajid", "Rabdhure"],
+    "Banaadir": ["Abdiaziz", "Bondhere", "Daynile", "Dharkenley", "Hamar-Jajab", "Hamar-Weyne", "Hawl-Wadag", "Hodan", "Karan", "Shibis", "Shangani", "Waberi", "Wadajir", "Yaqshid"],
+    "Bari": ["Alula", "Bandarbeyla", "Bosaso", "Iskushuban", "Qandala", "Ufeyn", "Qardho"],
+    "Bay": ["Baidoa", "Burhakaba", "Dinsor", "Qasahdhere"],
+    "Galguduud": ["Abudwak", "Adado", "Dhusa Mareb", "El Buur", "El Dher"],
+    "Gedo": ["Bardhere", "Beled Hawo", "Doolow", "El Wak", "Garbaharey", "Luuq"],
+    "Hiiraan": ["Beledweyne", "Buloburde", "Jalalaqsi", "Mataban", "Mahas"],
+    "Lower Juba": ["Afmadow", "Badhadhe", "Jamame", "Kismayo"],
+    "Lower Shabelle": ["Afgooye", "Barawa", "Kurtunwarey", "Merca", "Qoryoley", "Wanlaweyn"],
+    "Middle Juba": ["Bu'ale", "Jilib", "Sakow"],
+    "Middle Shabelle": ["Adan Yabal", "Balad", "Jowhar", "Mahaday"],
+    "Mudug": ["Galkayo", "Goldogob", "Harardhere", "Hobyo", "Jariban"],
+    "Nugaal": ["Burtinle", "Eyl", "Garowe"],
+    "Sanaag": ["Badhan", "El Afweyn", "Erigavo", "Dhahar"],
+    "Sool": ["Aynabo", "Las Anod", "Taleh", "Hudun"],
+    "Togdheer": ["Buhoodle", "Burao", "Oodweyne", "Sheikh"]
+};
