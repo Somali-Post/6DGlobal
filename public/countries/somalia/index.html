@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6D Address - Soomaaliya</title>
+    <link rel="stylesheet" href="style.css"> 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- MODIFIED: The navbar structure is now updated -->
+    <nav class="site-nav">
+        <div class="nav-container container">
+            <div class="nav-left">
+                <a href="/somalia/" class="nav-brand">
+                    <!-- Correct path to the Somalia-specific logo -->
+                    <img src="assets/logo-somalia.png" alt="6D Address Somalia Logo"> 
+                    <span id="nav-brand-text"></span>
+                </a>
+                <div class="lang-switcher">
+                    <button id="lang-so">So</button>
+                    <button id="lang-en">En</button>
+                </div>
+            </div>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Global Map</a>
+                <a href="/somalia/" class="nav-link active">Register in Somalia</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-content container">
+            <h1 id="hero-title" class="hero-title"></h1>
+            <p id="hero-subtitle" class="hero-subtitle"></p>
+            <a id="cta-btn" href="map.html" class="cta-button"></a>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <div class="container">
+            <div class="floating-panel reveal">
+                <h2 id="benefits-title" class="section-title"></h2>
+                <div class="benefits-grid">
+                    <div class="benefit-card">
+                        <div class="icon icon-blue"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z"/></svg></div>
+                        <h3 id="benefit1-title"></h3><p id="benefit1-text"></p>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="icon icon-green"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.502.502 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103zM10 1.91l-4-1v12.1l4 1V1.91zm5 .155L11 3.455v12.1l4-1V2.065zM5 14.09l-4 1V2.065l4-1v12.1z"/></svg></div>
+                        <h3 id="benefit2-title"></h3><p id="benefit2-text"></p>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="icon icon-purple"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg></div>
+                        <h3 id="benefit3-title"></h3><p id="benefit3-text"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <div class="container reveal">
+            <h2 id="steps-title" class="section-title"></h2>
+            <div class="timeline">
+                <div class="timeline-item reveal" data-step="1"><div class="timeline-content"><h3 id="step1-text"></h3></div></div>
+                <div class="timeline-item reveal" data-step="2"><div class="timeline-content"><h3 id="step2-text"></h3></div></div>
+                <div class="timeline-item reveal" data-step="3"><div class="timeline-content"><h3 id="step3-text"></h3></div></div>
+                <div class="timeline-item reveal" data-step="4"><div class="timeline-content"><h3 id="step4-text"></h3></div></div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="container">
+            &copy; 2025 6D Address. All Rights Reserved.
+        </div>
+    </footer>
+
+    <script>
+        const translations = {
+            navBrandText: { so: "6D Soomaaliya", en: "6D Somalia" },
+            heroTitle: { so: "Ciwaankaaga Dijitaalka ah ee Soomaaliya", en: "Your Digital Address for Somalia" },
+            heroSubtitle: { so: "Fudud, la isku halleyn karo, oo diyaar u ah mustaqbalka. Hel ciwaankaaga rasmiga ah ee 6D maanta.", en: "Simple, reliable, and ready for the future. Get your official 6D Address today." },
+            ctaButton: { so: "Diiwaan Geli Ciwaankaaga", en: "Register Your Address" },
+            benefitsTitle: { so: "Ciwaan Fudud, Faa'iidooyin Weyn", en: "Simple Address, Powerful Benefits" },
+            benefit1Title: { so: "Boostada & Xirmooyinka la Isku Halleyn Karo", en: "Reliable Mail & Packages" },
+            benefit1Text: { so: "Hubi in alaabtaadu ay si sax ah kuugu soo gaarto mar walba.", en: "Ensure deliveries reach your doorstep accurately, every time." },
+            benefit2Title: { so: "Adeegyo Hufan", en: "Efficient Services" },
+            benefit2Text: { so: "Taksi, cunto geyn, gurmad degdeg ah, iyo hagidda oo dhakhso ah.", en: "Faster taxi, food delivery, emergency response, and navigation." },
+            benefit3Title: { so: "Fudud in la Isticmaalo & la Wadaago", en: "Easy to Use & Share" },
+            benefit3Text: { so: "Koodhkaaga gaarka ah ee 6-god ah waa mid fudud in la xasuusto lana wadaago.", en: "Your unique 6-digit code is simple to remember and communicate." },
+            stepsTitle: { so: "Koodhkaaga Ku Hel Daqiiqado Gudahood", en: "Get Your Code in Seconds" },
+            step1Text: { so: "Tag Diiwaangelinta", en: "Go to Register" },
+            step2Text: { so: "Calaamadee Goobtaada", en: "Pinpoint Location" },
+            step3Text: { so: "Hel Koodhka 6D", en: "Get 6D Code" },
+            step4Text: { so: "Kudar Mobilka & Gudbi", en: "Add Mobile & Submit" }
+        };
+
+        const elements = {
+            navBrandText: document.getElementById('nav-brand-text'),
+            heroTitle: document.getElementById('hero-title'),
+            heroSubtitle: document.getElementById('hero-subtitle'),
+            ctaBtn: document.getElementById('cta-btn'),
+            benefitsTitle: document.getElementById('benefits-title'),
+            benefit1Title: document.getElementById('benefit1-title'),
+            benefit1Text: document.getElementById('benefit1-text'),
+            benefit2Title: document.getElementById('benefit2-title'),
+            benefit2Text: document.getElementById('benefit2-text'),
+            benefit3Title: document.getElementById('benefit3-title'),
+            benefit3Text: document.getElementById('benefit3-text'),
+            stepsTitle: document.getElementById('steps-title'),
+            step1Text: document.getElementById('step1-text'),
+            step2Text: document.getElementById('step2-text'),
+            step3Text: document.getElementById('step3-text'),
+            step4Text: document.getElementById('step4-text'),
+            langSoBtn: document.getElementById('lang-so'),
+            langEnBtn: document.getElementById('lang-en'),
+            htmlEl: document.documentElement
+        };
+
+        function updateLanguage(lang) {
+            elements.htmlEl.lang = lang;
+            for (const key in elements) {
+                if (elements[key] && translations[key] && translations[key][lang]) {
+                    elements[key].textContent = translations[key][lang];
+                }
+            }
+            if (lang === 'so') {
+                elements.langSoBtn.classList.add('active');
+                elements.langEnBtn.classList.remove('active');
+            } else {
+                elements.langEnBtn.classList.add('active');
+                elements.langSoBtn.classList.remove('active');
+            }
+        }
+
+        elements.langSoBtn.addEventListener('click', () => updateLanguage('so'));
+        elements.langEnBtn.addEventListener('click', () => updateLanguage('en'));
+        window.addEventListener('load', () => updateLanguage('so'));
+
+        const revealElements = document.querySelectorAll('.reveal');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+        revealElements.forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>

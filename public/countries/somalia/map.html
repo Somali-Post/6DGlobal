@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Your 6D Address - Somalia</title>
+    <link rel="stylesheet" href="../../app/somalia-map.css">
+</head>
+<body>
+    
+    <div id="map-container">
+        <div id="map"></div>
+    </div>
+
+    <aside id="registration-sidebar" class="visible">
+        <div class="sidebar-header">
+            <div class="sidebar-logo"></div>
+        </div>
+        <div class="sidebar-content">
+            <form id="registration-form">
+    <div class="form-group">
+        <label for="reg-region">Step 1: Select Your Region</label>
+        <select id="reg-region" name="region" required>
+            <option value="" disabled selected>-- Select a Region --</option>
+        </select>
+    </div>
+
+    <div class="form-group disabled" id="district-group">
+        <label for="reg-district">Step 2: Select Your District</label>
+        <select id="reg-district" name="district" required disabled>
+            <option value="" disabled selected>-- Select a Region First --</option>
+        </select>
+    </div>
+
+    <div id="final-details" class="hidden">
+        <div class="form-group">
+            <label for="reg-code">Step 3: Your 6D Code</label>
+            <div id="reg-code" class="static-field">Click on the map</div>
+        </div>
+        <div class="form-group">
+            <label for="reg-name">Name</label>
+            <input type="text" id="reg-name" name="name" placeholder="Enter your full name" required>
+        </div>
+        <div class="form-group">
+            <label for="reg-phone">Phone Number</label>
+            <div class="phone-input-wrapper">
+                <span>+252</span>
+                <input type="tel" id="reg-phone" name="phone" placeholder="61XXXXXXX" required>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODIFIED: The button is now here, at the end of the form -->
+    <div class="form-actions">
+        <button type="submit" id="register-btn">
+            <span>Register Your 6D Address</span>
+        </button>
+    </div>
+</form>
+        </div>
+    </aside>
+
+    <div id="confirmation-modal" class="hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <p>Are you sure this is your Address?</p>
+            <div class="modal-actions">
+                <button id="modal-cancel-btn">Cancel</button>
+                <button id="modal-confirm-btn">Yes, I'm Sure</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script type="module" src="../../app/somalia-map.js"></script>
+</body>
+</html>

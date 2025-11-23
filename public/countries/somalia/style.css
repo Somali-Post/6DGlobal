@@ -1,0 +1,108 @@
+/* --- 6D Address - Somalia Landing Page Styles --- */
+
+:root {
+    --background-color: #0d1a2e;
+    --panel-color: #1a2a45;
+    --text-primary: #ffffff;
+    --text-secondary: #adb5bd;
+    --accent-color: #0099ff;
+    --border-color: rgba(255, 255, 255, 0.1);
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    line-height: 1.7;
+}
+
+.container {
+    max-width: 1200px; /* Wider container for the navbar */
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+/* --- MODIFIED NAVIGATION BAR STYLES --- */
+.site-nav {
+    background-color: var(--panel-color);
+    padding: 0.75rem 0; /* Reduced padding */
+    border-bottom: 1px solid var(--border-color);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    box-sizing: border-box;
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* NEW: Container for the left side elements */
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem; /* Space between logo and language switcher */
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.nav-brand img {
+    height: 40px;
+    background-color: white;
+    border-radius: 6px;
+    padding: 4px;
+}
+
+.lang-switcher { display: flex; gap: 0.5rem; }
+.lang-switcher button { background: none; border: 1px solid rgba(255, 255, 255, 0.5); color: rgba(255, 255, 255, 0.7); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 500; transition: all 0.2s; }
+.lang-switcher button:hover { background-color: rgba(255, 255, 255, 0.1); }
+.lang-switcher button.active { background-color: #ffffff; color: var(--background-color); }
+
+.nav-links { display: flex; gap: 2rem; }
+.nav-link { color: var(--text-secondary); text-decoration: none; font-weight: 500; transition: color 0.2s; }
+.nav-link:hover { color: var(--text-primary); }
+.nav-link.active { color: var(--accent-color); font-weight: 700; }
+
+/* --- HERO SECTION (Unchanged) --- */
+.hero { position: relative; height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; background-image: url('assets/hero-somalia.png'); background-size: cover; background-position: center center; }
+.hero::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(13, 26, 46, 0.7); z-index: 1; }
+.hero-content { position: relative; z-index: 2; }
+.hero-title { font-size: 4rem; font-weight: 800; line-height: 1.2; }
+.hero-subtitle { font-size: 1.25rem; color: #e9ecef; margin-top: 1rem; margin-bottom: 2.5rem; max-width: 600px; margin-left: auto; margin-right: auto; }
+.cta-button { display: inline-block; padding: 1rem 2.5rem; background-color: var(--accent-color); color: white; font-size: 1.1rem; font-weight: 700; text-decoration: none; border-radius: 8px; transition: all 0.3s ease; }
+.cta-button:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0, 153, 255, 0.2); }
+
+/* --- CONTENT SECTIONS (Unchanged) --- */
+.content-section { padding: 8rem 0; }
+.section-title { text-align: center; font-size: 2.5rem; font-weight: 800; margin-bottom: 4rem; }
+.floating-panel { background-color: var(--panel-color); border: 1px solid var(--border-color); border-radius: 16px; padding: 4rem; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+.benefits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 3rem; }
+.benefit-card { text-align: center; }
+.benefit-card .icon { display: inline-flex; align-items: center; justify-content: center; width: 60px; height: 60px; border-radius: 50%; margin-bottom: 1.5rem; }
+.benefit-card h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary); }
+.benefit-card p { color: var(--text-secondary); font-size: 1rem; }
+.icon-blue { background-color: rgba(0, 153, 255, 0.1); color: var(--accent-color); }
+.icon-green { background-color: rgba(25, 135, 84, 0.1); color: #35a273; }
+.icon-purple { background-color: rgba(111, 66, 193, 0.1); color: #8d62dc; }
+.timeline { position: relative; max-width: 400px; margin: 0 auto; }
+.timeline::after { content: ''; position: absolute; width: 3px; background-color: var(--border-color); top: 0; bottom: 0; left: 24px; z-index: 1; }
+.timeline-item { position: relative; padding-left: 80px; margin-bottom: 50px; }
+.timeline-item:last-child { margin-bottom: 0; }
+.timeline-item::before { content: attr(data-step); position: absolute; left: 0; width: 50px; height: 50px; background-color: var(--accent-color); color: white; border-radius: 50%; z-index: 2; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; }
+.timeline-content h3 { font-size: 1.2rem; color: var(--text-primary); margin: 0; padding-top: 12px; }
+.reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1); }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.site-footer { padding: 3rem 0; text-align: center; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.9rem; }

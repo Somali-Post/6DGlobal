@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6D Address - Global Demonstrator</title>
+    <link rel="stylesheet" href="global-map.css">
+</head>
+<body>
+    <div id="map"></div>
+
+    <div id="logo">
+        <img src="public/assets/logo.png" alt="6D Address Logo">
+    </div>
+
+    <button id="geolocate-btn" title="Find My Location">
+        <img src="public/assets/geolocate.svg" alt="Find My Location">
+    </button>
+
+    <div id="info-panel">
+        <div id="code-display"></div>
+        <div id="address-display">
+            <div id="line1-display">Click on the map to generate</div>
+            <div id="line2-display">a 6D Address</div>
+            <div id="line3-display"></div>
+        </div>
+    </div>
+
+    
+     <script type="module" src="public/app/global-map.js"></script>
+</body>
+</html>

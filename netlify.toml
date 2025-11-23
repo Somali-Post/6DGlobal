@@ -1,0 +1,5 @@
+[build]
+  # We have no build command, so this is empty.
+  command = ""
+  # The publish directory is the root of our repository.
+  publish = "/"
