@@ -26,7 +26,7 @@ async function handleMapClick(rawLatLng) {
     drawGridBoxes(rawLatLng);
     const snappedLatLng = snapToGridCenter(rawLatLng);
     const { formattedCode, localitySuffix } = getFormatted6DCode(snappedLatLng);
-    const loadingAddress = { line1: 'Locating...', line2: '', line3: '' };
+    const loadingAddress = { postalTown: 'Locating...', line1: 'Locating...', line2: '', line3: '' };
     updateInfoPanel(formattedCode, loadingAddress, '');
     const [geocodeResult, placeResult] = await Promise.all([
         getReverseGeocode(snappedLatLng),
@@ -75,6 +75,13 @@ function parseAddressComponents(geocodeComponents, placeResult) {
         const component = geocodeComponents.find(c => c.types.includes(type));
         return component ? component.long_name : null;
     };
+    const postalTown =
+        getComponent('postal_town') ||
+        getComponent('locality') ||
+        getComponent('administrative_area_level_2') ||
+        getComponent('administrative_area_level_1') ||
+        getComponent('country') ||
+        null;
     if (placeResult && placeResult.name) {
         foundNames.push(placeResult.name);
     }
@@ -89,7 +96,12 @@ function parseAddressComponents(geocodeComponents, placeResult) {
     if (foundNames.length === 0) {
         foundNames.push(getComponent('country') || 'Unknown Location');
     }
-    return { line1: foundNames[0] || '', line2: foundNames[1] || '', line3: foundNames[2] || '' };
+    return {
+        postalTown: postalTown || foundNames[0] || 'Unknown Location',
+        line1: foundNames[0] || '',
+        line2: foundNames[1] || '',
+        line3: foundNames[2] || ''
+    };
 }
 
 function updateInfoPanel(code, address, suffix) {
@@ -98,10 +110,11 @@ function updateInfoPanel(code, address, suffix) {
     const line2Display = document.getElementById('line2-display');
     const line3Display = document.getElementById('line3-display');
     codeDisplay.innerHTML = `<span class="code-2d">${code.c2d}</span>-<span class="code-4d">${code.c4d}</span>-<span class="code-6d">${code.c6d}</span>`;
-    line1Display.textContent = address.line1;
-    line2Display.textContent = address.line2;
-    const finalLine = `${address.line3} ${suffix}`.trim();
-    line3Display.textContent = finalLine;
+    const postalTown = address.postalTown || address.line1 || address.line2 || address.line3 || '';
+    const combined = [postalTown, suffix].filter(Boolean).join(' ').trim();
+    line1Display.textContent = combined || 'Unknown Location';
+    line2Display.textContent = '';
+    line3Display.textContent = '';
 }
 
 function updateDynamicGrid() {
