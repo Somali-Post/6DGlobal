@@ -1,8 +1,36 @@
 // /public/app/config.js
 
-// If you need to test locally without Cloudflare Pages functions, place a temporary
-// Google Maps key here. Leave it blank for production so the runtime fetch is used.
-const LOCAL_DEV_KEY = "";
+// Production builds never embed the Google Maps API key. For local development you can
+// optionally create a /public/local-dev-key.js file (ignored by git) that sets
+// window.__LOCAL_GOOGLE_MAPS_API_KEY__ = "YOUR_DEV_KEY";
+
+let localDevKeyPromise = null;
+let remoteKeyPromise = null;
+
+async function loadLocalDevKey() {
+    if (localDevKeyPromise) {
+        return localDevKeyPromise;
+    }
+
+    localDevKeyPromise = (async () => {
+        if (typeof window === "undefined") {
+            return null;
+        }
+
+        if (window.__LOCAL_GOOGLE_MAPS_API_KEY__) {
+            return window.__LOCAL_GOOGLE_MAPS_API_KEY__;
+        }
+
+        try {
+            await import("../local-dev-key.js");
+            return window.__LOCAL_GOOGLE_MAPS_API_KEY__ || null;
+        } catch (error) {
+            return null;
+        }
+    })();
+
+    return localDevKeyPromise;
+}
 
 async function requestKeyFromServer() {
     try {
@@ -22,13 +50,16 @@ async function requestKeyFromServer() {
 }
 
 export async function getGoogleMapsApiKey() {
-    if (LOCAL_DEV_KEY) {
-        return LOCAL_DEV_KEY;
+    const localKey = await loadLocalDevKey();
+    if (localKey) {
+        return localKey;
     }
-    if (typeof window !== "undefined" && window.__LOCAL_GOOGLE_MAPS_API_KEY__) {
-        return window.__LOCAL_GOOGLE_MAPS_API_KEY__;
+
+    if (!remoteKeyPromise) {
+        remoteKeyPromise = requestKeyFromServer();
     }
-    return await requestKeyFromServer();
+
+    return await remoteKeyPromise;
 }
 
 // Authoritative list of Somali regions and districts used by the Somalia registration map.
