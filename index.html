@@ -33,7 +33,7 @@
                     </p>
                 </section>
                 <section class="overlay-section overlay-animated" style="--offset:1">
-                    <h3>What is 6D Address? <span class="section-tag">(Value)</span></h3>
+                    <h3>What is 6D Address?</h3>
                     <p>A permanent, precise 6-digit address generated from latitude/longitude. It never changes, works anywhere, and gives every home, farm, and business a verified digital identity—instantly.</p>
                     <ul>
                         <li>Accurate to the doorstep</li>
@@ -43,7 +43,7 @@
                     </ul>
                 </section>
                 <section class="overlay-section overlay-animated" style="--offset:2">
-                    <h3>How it works <span class="section-tag">(Logic &amp; Technology)</span></h3>
+                    <h3>How it works</h3>
                     <p>6D Address converts every GPS coordinate into a 6-digit code with district-level validation. Residents simply tap their location on the live map → verify → receive an official 6D code tied to your national address database.</p>
                     <ul>
                         <li>One-tap registration</li>
@@ -53,7 +53,7 @@
                     </ul>
                 </section>
                 <section class="overlay-section overlay-animated highlight" style="--offset:3">
-                    <h3>Why governments license it <span class="section-tag">(Outcomes)</span></h3>
+                    <h3>Why governments license it</h3>
                     <p>6D Address creates an instant national addressing system without building physical infrastructure.</p>
                     <ul>
                         <li>Digitize informal settlements</li>
@@ -70,9 +70,15 @@
                     <p class="cta-label">Inquiry / Contact</p>
                     <p class="cta-subtext">Want to explore 6D Address for your country? Our team will walk you through licensing, integration, APIs, national rollout, and pilots.</p>
                 </div>
-                <button id="open-contact">Speak with our team</button>
+                <div class="cta-actions">
+                    <a class="cta-email" href="mailto:abdiazizga'al@moct.gov.so,graemelee@mac.com?subject=6D%20Address%20Inquiry">Email us</a>
+                    <button id="open-contact">Speak with our team</button>
+                </div>
             </section>
         </div>
+        <button class="scroll-indicator" id="overlay-scroll-indicator" type="button" aria-label="Scroll for more information">
+            <span aria-hidden="true">⌄</span>
+        </button>
     </div>
 
     <div id="contact-panel" aria-hidden="true">
@@ -115,7 +121,7 @@
 
     <div class="floating-contact">
         <button id="open-contact-floating" class="floating-cta">Contact Us</button>
-        <a class="whatsapp-link" href="https://wa.me/15551234567?text=Hi%206D%20Address%20Team" target="_blank" rel="noopener" aria-label="Chat with 6D Address on WhatsApp">
+        <a class="whatsapp-link" href="https://wa.me/252611696989?text=Hi%206D%20Address%20Team" target="_blank" rel="noopener" aria-label="Chat with 6D Address on WhatsApp">
             <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
                 <path d="M16.04 3.5c-6.8 0-12.34 5.33-12.34 11.9 0 2.1.6 4.15 1.72 5.94L3 29l7.04-2.31c1.89 1.03 4.03 1.57 6.24 1.57 6.8 0 12.34-5.33 12.34-11.9s-5.54-11.9-12.34-11.9Zm0 2.4c5.5 0 9.94 4.2 9.94 9.5 0 5.3-4.44 9.5-9.94 9.5-2 0-3.94-.58-5.58-1.66l-.4-.26-3.83 1.26 1.2-3.54-.23-.36c-1-1.57-1.54-3.38-1.54-4.94 0-5.3 4.44-9.5 9.94-9.5Zm-5.4 4.2c-.13 0-.34.05-.52.2-.18.15-.7.68-.7 1.65 0 .97.72 1.9.82 2.03.1.13 1.42 2.18 3.48 3.05 2.06.87 2.06.58 2.43.55.37-.03 1.2-.48 1.37-.95.17-.47.17-.87.12-.95-.06-.08-.18-.13-.38-.23-.2-.1-1.2-.57-1.38-.64-.18-.07-.3-.1-.43.1-.13.2-.5.64-.62.77-.12.13-.23.15-.43.05-.2-.1-.84-.31-1.6-1-.59-.52-.98-1.17-1.09-1.37-.12-.2-.01-.3.09-.4.1-.1.2-.23.3-.35.1-.12.12-.2.18-.33.06-.13.03-.25-.02-.35-.05-.1-.43-1.05-.6-1.44-.16-.38-.32-.4-.47-.41Z"/>
             </svg>
@@ -135,6 +141,7 @@
             const overlayToggleIcon = overlayToggle?.querySelector('.toggle-icon');
             const overlayCard = document.getElementById('experience-overlay-card');
             const floatingContactBtn = document.getElementById('open-contact-floating');
+            const scrollIndicator = document.getElementById('overlay-scroll-indicator');
 
             function togglePanel(show) {
                 contactPanel.setAttribute('aria-hidden', String(!show));
@@ -160,9 +167,11 @@
                 }
                 if (collapsed) {
                     overlayCard?.classList.remove('ready');
+                    scrollIndicator?.classList.add('hidden');
                 } else if (options.animate !== false) {
                     triggerOverlayAnimation();
                 }
+                updateScrollIndicator();
             }
 
             function triggerOverlayAnimation() {
@@ -170,12 +179,27 @@
                 overlayCard.classList.remove('ready');
                 void overlayCard.offsetWidth;
                 overlayCard.classList.add('ready');
+                setTimeout(updateScrollIndicator, 350);
+            }
+
+            function updateScrollIndicator() {
+                if (!overlayCard || !scrollIndicator) return;
+                const extra = overlayCard.scrollHeight - overlayCard.clientHeight;
+                if (extra <= 8) {
+                    scrollIndicator.classList.add('hidden');
+                    return;
+                }
+                const atBottom = overlayCard.scrollTop + overlayCard.clientHeight >= overlayCard.scrollHeight - 4;
+                scrollIndicator.classList.toggle('hidden', atBottom);
             }
 
             overlayToggle?.addEventListener('click', () => {
                 const nextState = !(overlay?.classList.contains('collapsed'));
                 setOverlayState(nextState);
             });
+
+            overlayCard?.addEventListener('scroll', updateScrollIndicator);
+            window.addEventListener('resize', () => updateScrollIndicator());
 
             floatingContactBtn?.addEventListener('click', () => togglePanel(true));
 
