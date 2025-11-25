@@ -17,6 +17,93 @@
         <img src="public/assets/geolocate.svg" alt="Find My Location">
     </button>
 
+    <div class="experience-overlay" id="experience-overlay">
+        <button class="overlay-toggle" id="overlay-toggle" aria-expanded="true" aria-controls="experience-overlay-card">
+            <span class="toggle-icon">⤢</span>
+            <span class="toggle-text">Close</span>
+        </button>
+        <div class="overlay-card" id="experience-overlay-card">
+            <div class="overlay-sections">
+                <section class="overlay-section hero overlay-animated" style="--offset:0">
+                    <p class="eyebrow">National Digital Addressing</p>
+                    <h1>Launch 6D Address in your country</h1>
+                    <p class="lede">
+                        A memorable six-digit code that pins every home, farm, and business with meter-level accuracy.
+                        Built with Google Maps, ready for logistics, emergency response, and digital government.
+                    </p>
+                </section>
+                <section class="overlay-section overlay-animated" style="--offset:1">
+                    <h3>What is 6D Address? <span class="section-tag">(Value)</span></h3>
+                    <p>A permanent, precise 6-digit address generated from latitude/longitude. It never changes, works anywhere, and gives every home, farm, and business a verified digital identity—instantly.</p>
+                    <ul>
+                        <li>Accurate to the doorstep</li>
+                        <li>Works in informal &amp; unmapped areas</li>
+                        <li>Universal and future-proof</li>
+                        <li>Designed for logistics, emergencies, and digital services</li>
+                    </ul>
+                </section>
+                <section class="overlay-section overlay-animated" style="--offset:2">
+                    <h3>How it works <span class="section-tag">(Logic &amp; Technology)</span></h3>
+                    <p>6D Address converts every GPS coordinate into a 6-digit code with district-level validation. Residents simply tap their location on the live map → verify → receive an official 6D code tied to your national address database.</p>
+                    <ul>
+                        <li>One-tap registration</li>
+                        <li>District validation using official boundaries</li>
+                        <li>Works offline and on low-connectivity devices</li>
+                        <li>API-ready for government, utilities, banking, and delivery companies</li>
+                    </ul>
+                </section>
+                <section class="overlay-section overlay-animated highlight" style="--offset:3">
+                    <h3>Why governments license it <span class="section-tag">(Outcomes)</span></h3>
+                    <p>6D Address creates an instant national addressing system without building physical infrastructure.</p>
+                    <ul>
+                        <li>Digitize informal settlements</li>
+                        <li>Improve tax collection &amp; land administration</li>
+                        <li>Enable reliable mail &amp; parcel delivery</li>
+                        <li>Support EMS, police, ambulance, and disaster response</li>
+                        <li>Unlock e-commerce &amp; last-mile logistics</li>
+                        <li>Increase financial inclusion (KYC, mobile money, banking)</li>
+                    </ul>
+                </section>
+            </div>
+            <section class="overlay-section overlay-cta-block overlay-animated" style="--offset:4">
+                <div>
+                    <p class="cta-label">Inquiry / Contact</p>
+                    <p class="cta-subtext">Want to explore 6D Address for your country? Our team will walk you through licensing, integration, APIs, national rollout, and pilots.</p>
+                </div>
+                <button id="open-contact">Speak with our team</button>
+            </section>
+        </div>
+    </div>
+
+    <div id="contact-panel" aria-hidden="true">
+        <div class="contact-card">
+            <button id="close-contact" aria-label="Close contact form">&times;</button>
+            <p class="eyebrow">Partner with us</p>
+            <h2>Schedule a private demo</h2>
+            <p class="lede">Tell us about your program and we will share licensing models, APIs, and pilot timelines.</p>
+            <form id="contact-form">
+                <div class="form-row">
+                    <label for="contact-name">Full name</label>
+                    <input type="text" id="contact-name" name="name" placeholder="Asha Mohamed" required>
+                </div>
+                <div class="form-row">
+                    <label for="contact-organization">Organization</label>
+                    <input type="text" id="contact-organization" name="organization" placeholder="Ministry of Digital Economy" required>
+                </div>
+                <div class="form-row">
+                    <label for="contact-email">Work email</label>
+                    <input type="email" id="contact-email" name="email" placeholder="asha@example.gov" required>
+                </div>
+                <div class="form-row">
+                    <label for="contact-message">Program vision</label>
+                    <textarea id="contact-message" name="message" rows="3" placeholder="Coverage goals, pilot cities, etc." required></textarea>
+                </div>
+                <button type="submit" class="primary">Send request</button>
+                <p class="form-note" id="contact-feedback" role="status"></p>
+            </form>
+        </div>
+    </div>
+
     <div id="info-panel">
         <div id="code-display"></div>
         <div id="address-display">
@@ -26,7 +113,82 @@
         </div>
     </div>
 
-    
-     <script type="module" src="public/app/global-map.js"></script>
+    <div class="floating-contact">
+        <button id="open-contact-floating" class="floating-cta">Contact Us</button>
+        <a class="whatsapp-link" href="https://wa.me/15551234567?text=Hi%206D%20Address%20Team" target="_blank" rel="noopener" aria-label="Chat with 6D Address on WhatsApp">
+            <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+                <path d="M16.04 3.5c-6.8 0-12.34 5.33-12.34 11.9 0 2.1.6 4.15 1.72 5.94L3 29l7.04-2.31c1.89 1.03 4.03 1.57 6.24 1.57 6.8 0 12.34-5.33 12.34-11.9s-5.54-11.9-12.34-11.9Zm0 2.4c5.5 0 9.94 4.2 9.94 9.5 0 5.3-4.44 9.5-9.94 9.5-2 0-3.94-.58-5.58-1.66l-.4-.26-3.83 1.26 1.2-3.54-.23-.36c-1-1.57-1.54-3.38-1.54-4.94 0-5.3 4.44-9.5 9.94-9.5Zm-5.4 4.2c-.13 0-.34.05-.52.2-.18.15-.7.68-.7 1.65 0 .97.72 1.9.82 2.03.1.13 1.42 2.18 3.48 3.05 2.06.87 2.06.58 2.43.55.37-.03 1.2-.48 1.37-.95.17-.47.17-.87.12-.95-.06-.08-.18-.13-.38-.23-.2-.1-1.2-.57-1.38-.64-.18-.07-.3-.1-.43.1-.13.2-.5.64-.62.77-.12.13-.23.15-.43.05-.2-.1-.84-.31-1.6-1-.59-.52-.98-1.17-1.09-1.37-.12-.2-.01-.3.09-.4.1-.1.2-.23.3-.35.1-.12.12-.2.18-.33.06-.13.03-.25-.02-.35-.05-.1-.43-1.05-.6-1.44-.16-.38-.32-.4-.47-.41Z"/>
+            </svg>
+        </a>
+    </div>
+
+    <script type="module">
+        window.addEventListener('DOMContentLoaded', () => {
+            const contactPanel = document.getElementById('contact-panel');
+            const openBtn = document.getElementById('open-contact');
+            const closeBtn = document.getElementById('close-contact');
+            const form = document.getElementById('contact-form');
+            const feedback = document.getElementById('contact-feedback');
+            const overlay = document.getElementById('experience-overlay');
+            const overlayToggle = document.getElementById('overlay-toggle');
+            const overlayToggleText = overlayToggle?.querySelector('.toggle-text');
+            const overlayToggleIcon = overlayToggle?.querySelector('.toggle-icon');
+            const overlayCard = document.getElementById('experience-overlay-card');
+            const floatingContactBtn = document.getElementById('open-contact-floating');
+
+            function togglePanel(show) {
+                contactPanel.setAttribute('aria-hidden', String(!show));
+                document.body.classList.toggle('panel-open', show);
+            }
+
+            openBtn?.addEventListener('click', () => togglePanel(true));
+            closeBtn?.addEventListener('click', () => togglePanel(false));
+            contactPanel?.addEventListener('click', (event) => {
+                if (event.target === contactPanel) {
+                    togglePanel(false);
+                }
+            });
+
+            function setOverlayState(collapsed, options = { animate: true }) {
+                overlay?.classList.toggle('collapsed', collapsed);
+                overlayToggle?.setAttribute('aria-expanded', String(!collapsed));
+                if (overlayToggleText) {
+                    overlayToggleText.textContent = collapsed ? "What's 6D Address?" : 'Close';
+                }
+                if (overlayToggleIcon) {
+                    overlayToggleIcon.textContent = collapsed ? '＋' : '⤢';
+                }
+                if (collapsed) {
+                    overlayCard?.classList.remove('ready');
+                } else if (options.animate !== false) {
+                    triggerOverlayAnimation();
+                }
+            }
+
+            function triggerOverlayAnimation() {
+                if (!overlayCard) return;
+                overlayCard.classList.remove('ready');
+                void overlayCard.offsetWidth;
+                overlayCard.classList.add('ready');
+            }
+
+            overlayToggle?.addEventListener('click', () => {
+                const nextState = !(overlay?.classList.contains('collapsed'));
+                setOverlayState(nextState);
+            });
+
+            floatingContactBtn?.addEventListener('click', () => togglePanel(true));
+
+            form?.addEventListener('submit', (event) => {
+                event.preventDefault();
+                feedback.textContent = 'Thanks! We will respond within one business day.';
+                form.reset();
+            });
+
+            setOverlayState(false, { animate: false });
+            setTimeout(triggerOverlayAnimation, 220);
+        });
+    </script>
+    <script type="module" src="public/app/global-map.js"></script>
 </body>
 </html>
