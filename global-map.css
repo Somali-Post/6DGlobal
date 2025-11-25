@@ -284,20 +284,6 @@ html, body {
     flex-wrap: wrap;
 }
 
-.cta-email {
-    padding: 10px 16px;
-    border-radius: 999px;
-    border: 1px solid rgba(11, 61, 145, 0.25);
-    color: #0b3d91;
-    text-decoration: none;
-    font-weight: 600;
-    background: rgba(255, 255, 255, 0.85);
-}
-
-.cta-email:hover {
-    background: rgba(11, 61, 145, 0.07);
-}
-
 .overlay-animated {
     opacity: 0;
     transform: translateY(24px);
@@ -558,13 +544,23 @@ body.panel-open {
 }
 
 @media (max-width: 768px) {
+    #logo {
+        top: 12px;
+        left: 16px;
+    }
+
     .experience-overlay {
-        top: 20px;
+        top: 110px;
         right: 16px;
         left: 16px;
         transform: none;
         width: auto;
         max-width: none;
+        align-items: stretch;
+    }
+
+    .overlay-card {
+        max-height: calc(100vh - 240px);
     }
 
     .overlay-section {
@@ -586,7 +582,8 @@ body.panel-open {
     }
 
     .overlay-toggle {
-        margin: 0 auto 12px;
+        margin: 0 auto 10px;
+        align-self: center;
     }
 
     #logo img {
@@ -594,16 +591,18 @@ body.panel-open {
     }
 
     #info-panel {
-        width: calc(100% - 40px);
-        left: 20px;
+        width: calc(100% - 32px);
+        left: 16px;
+        bottom: 120px;
         transform: none;
     }
 
     .floating-contact {
-        left: 16px;
-        right: 16px;
-        bottom: 16px;
-        width: auto;
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        bottom: 20px;
+        width: calc(100% - 32px);
         flex-direction: column;
         align-items: stretch;
         gap: 10px;
@@ -612,5 +611,9 @@ body.panel-open {
     .floating-cta {
         width: 100%;
         text-align: center;
+    }
+
+    .whatsapp-link {
+        align-self: center;
     }
 }
