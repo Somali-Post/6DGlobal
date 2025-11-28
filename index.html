@@ -25,10 +25,9 @@
         <div class="overlay-card" id="experience-overlay-card">
             <div class="overlay-sections">
                 <section class="overlay-section hero overlay-animated" style="--offset:0">
-                    <p class="eyebrow">National Digital Addressing</p>
                     <h1>6D Address</h1>
                     <p class="lede">
-                        A memorable six-digit code generated from latitude and longitude coordinates. It works with existing locality information to deliver address accuracy within 10 metres.
+                        A memorable six-digit code generated from latitude and longitude coordinates. Working with existing address information it provides accuracy within 10 metres.
                     </p>
                 </section>
                 <section class="overlay-section overlay-animated" style="--offset:1">
@@ -38,13 +37,13 @@
                         <li>Built on millennia-old latitude and longitude knowledge</li>
                         <li>Works in informal &amp; unmapped areas</li>
                         <li>Global and future-proof</li>
-                        <li>Applicable across multiple sectors</li>
-                        <li>Built with Google Maps</li>
+                        <li>Multi-sector applicability</li>
+                        <li>Speed and cost of implementation</li>
                     </ul>
                 </section>
                 <section class="overlay-section overlay-animated" style="--offset:2">
-                    <h3>How 6D Address Works</h3>
-                    <p>6D Address Global is licensing partners to implement 6D Address worldwide. There are three license types:</p>
+                    <h3>6D Address Licensing</h3>
+                    <p>6D Address is licensing partners to implement 6D Address worldwide. There are three license types:</p>
                     <ul>
                         <li>National exclusive license for commercial ownership within a country</li>
                         <li>National non-commercial license for domestic use</li>
@@ -53,7 +52,7 @@
                 </section>
                 <section class="overlay-section overlay-animated highlight" style="--offset:3">
                     <h3>Why become a 6D Address Licensee?</h3>
-                    <p>Becoming a 6D licensee offers multiple opportunities to monetise the system. Examples include:</p>
+                    <p>Becoming a 6D licensee offers multiple commercial opportunities:</p>
                     <ul>
                         <li>Create a 6D Address Register for onward licensing</li>
                         <li>Address informal settlements</li>
@@ -62,19 +61,8 @@
                         <li>Accelerate financial inclusion through trusted location identity</li>
                     </ul>
                 </section>
-                <section class="overlay-section overlay-animated" style="--offset:4">
-                    <h3>What is the 6D Address Register?</h3>
-                    <p>The 6D Address Register allows users to register their address:</p>
-                    <ul>
-                        <li>Customer signs up using their mobile phone</li>
-                        <li>Customer receives a verification code</li>
-                        <li>Customer confirms their location on the 6D Address map</li>
-                        <li>Customer confirms existing address information such as locality, district, city, and region</li>
-                        <li>Customer provides additional information as required nationally</li>
-                    </ul>
-                </section>
             </div>
-            <section class="overlay-section overlay-cta-block overlay-animated" style="--offset:5">
+            <section class="overlay-section overlay-cta-block overlay-animated" style="--offset:4">
                 <div>
                     <p class="cta-label">Contact</p>
                     <p class="cta-subtext">Want to explore 6D Address for your country? Our team will answer any queries you have about national applications, commercial opportunities, licensing, and demonstrations.</p>
@@ -127,15 +115,6 @@
         </div>
     </div>
 
-    <div class="floating-contact">
-        <button id="open-contact-floating" class="floating-cta">Contact Us</button>
-        <a class="whatsapp-link" href="https://wa.me/252611696989?text=Hi%206D%20Address%20Team" target="_blank" rel="noopener" aria-label="Chat with 6D Address on WhatsApp">
-            <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
-                <path d="M16.04 3.5c-6.8 0-12.34 5.33-12.34 11.9 0 2.1.6 4.15 1.72 5.94L3 29l7.04-2.31c1.89 1.03 4.03 1.57 6.24 1.57 6.8 0 12.34-5.33 12.34-11.9s-5.54-11.9-12.34-11.9Zm0 2.4c5.5 0 9.94 4.2 9.94 9.5 0 5.3-4.44 9.5-9.94 9.5-2 0-3.94-.58-5.58-1.66l-.4-.26-3.83 1.26 1.2-3.54-.23-.36c-1-1.57-1.54-3.38-1.54-4.94 0-5.3 4.44-9.5 9.94-9.5Zm-5.4 4.2c-.13 0-.34.05-.52.2-.18.15-.7.68-.7 1.65 0 .97.72 1.9.82 2.03.1.13 1.42 2.18 3.48 3.05 2.06.87 2.06.58 2.43.55.37-.03 1.2-.48 1.37-.95.17-.47.17-.87.12-.95-.06-.08-.18-.13-.38-.23-.2-.1-1.2-.57-1.38-.64-.18-.07-.3-.1-.43.1-.13.2-.5.64-.62.77-.12.13-.23.15-.43.05-.2-.1-.84-.31-1.6-1-.59-.52-.98-1.17-1.09-1.37-.12-.2-.01-.3.09-.4.1-.1.2-.23.3-.35.1-.12.12-.2.18-.33.06-.13.03-.25-.02-.35-.05-.1-.43-1.05-.6-1.44-.16-.38-.32-.4-.47-.41Z"/>
-            </svg>
-        </a>
-    </div>
-
     <script type="module">
         window.addEventListener('DOMContentLoaded', () => {
             const contactPanel = document.getElementById('contact-panel');
@@ -148,7 +127,6 @@
             const overlayToggleText = overlayToggle?.querySelector('.toggle-text');
             const overlayToggleIcon = overlayToggle?.querySelector('.toggle-icon');
             const overlayCard = document.getElementById('experience-overlay-card');
-            const floatingContactBtn = document.getElementById('open-contact-floating');
             const scrollIndicator = document.getElementById('overlay-scroll-indicator');
 
             function togglePanel(show) {
@@ -208,8 +186,6 @@
 
             overlayCard?.addEventListener('scroll', updateScrollIndicator);
             window.addEventListener('resize', () => updateScrollIndicator());
-
-            floatingContactBtn?.addEventListener('click', () => togglePanel(true));
 
             form?.addEventListener('submit', (event) => {
                 event.preventDefault();
