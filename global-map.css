@@ -38,9 +38,10 @@ html, body {
 
 #geolocate-btn {
     position: absolute;
-    top: 20px;
-    right: 20px;
-    z-index: 10;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 12;
     background-color: white;
     border: none;
     border-radius: 50%;
@@ -210,12 +211,13 @@ html, body {
     box-shadow: 0 12px 28px rgba(99, 164, 255, 0.55);
 }
 
-.cta-label {
-    font-size: 0.82rem;
-    letter-spacing: 0.1em;
+.cta-heading {
+    font-size: 1rem;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: rgba(17, 21, 38, 0.55);
+    color: #0c4aa6;
     margin-bottom: 4px;
+    font-weight: 700;
 }
 
 .cta-subtext {
@@ -253,6 +255,9 @@ html, body {
 }
 
 .overlay-toggle {
+    position: absolute;
+    top: 24px;
+    right: 32px;
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -261,11 +266,12 @@ html, body {
     color: #0b3d91;
     padding: 10px 18px;
     border-radius: 999px;
-    margin: 0 0 12px auto;
+    margin: 0;
     cursor: pointer;
     font-weight: 600;
     box-shadow: 8px 8px 20px rgba(12, 18, 34, 0.15), -6px -6px 16px rgba(255, 255, 255, 0.9);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    z-index: 18;
 }
 
 .overlay-toggle .toggle-icon {
@@ -283,7 +289,7 @@ html, body {
     display: none;
 }
 
-.experience-overlay.collapsed .overlay-toggle {
+.overlay-toggle[aria-expanded="false"] {
     box-shadow: 6px 6px 14px rgba(12, 18, 34, 0.18), -5px -5px 14px rgba(255, 255, 255, 0.9);
 }
 
@@ -482,7 +488,8 @@ body.panel-open {
     }
 
     .overlay-toggle {
-        margin: 0 auto 12px;
+        top: 24px;
+        right: 20px;
     }
 
     .overlay-card {
@@ -527,10 +534,9 @@ body.panel-open {
         width: 100%;
         text-align: center;
     }
-
     .overlay-toggle {
-        margin: 0 auto 10px;
-        align-self: center;
+        top: 16px;
+        right: 16px;
     }
 
     #logo img {

@@ -13,15 +13,15 @@
         <img src="public/assets/logo.png" alt="6D Address Logo">
     </div>
 
+    <button class="overlay-toggle" id="overlay-toggle" aria-expanded="true" aria-controls="experience-overlay-card">
+        <span class="toggle-icon">⤢</span>
+        <span class="toggle-text">Close</span>
+    </button>
     <button id="geolocate-btn" title="Find My Location">
         <img src="public/assets/geolocate.svg" alt="Find My Location">
     </button>
 
     <div class="experience-overlay" id="experience-overlay">
-        <button class="overlay-toggle" id="overlay-toggle" aria-expanded="true" aria-controls="experience-overlay-card">
-            <span class="toggle-icon">⤢</span>
-            <span class="toggle-text">Close</span>
-        </button>
         <div class="overlay-card" id="experience-overlay-card">
             <div class="overlay-sections">
                 <section class="overlay-section hero overlay-animated" style="--offset:0">
@@ -64,7 +64,7 @@
             </div>
             <section class="overlay-section overlay-cta-block overlay-animated" style="--offset:4">
                 <div>
-                    <p class="cta-label">Contact</p>
+                    <h3 class="cta-heading">Contact</h3>
                     <p class="cta-subtext">Want to explore 6D Address for your country? Our team will answer any queries you have about national applications, commercial opportunities, licensing, and demonstrations.</p>
                 </div>
                 <div class="cta-actions">
@@ -146,7 +146,7 @@
                 overlay?.classList.toggle('collapsed', collapsed);
                 overlayToggle?.setAttribute('aria-expanded', String(!collapsed));
                 if (overlayToggleText) {
-                    overlayToggleText.textContent = collapsed ? "What's 6D Address?" : 'Close';
+                    overlayToggleText.textContent = collapsed ? 'What is 6D Address' : 'Close';
                 }
                 if (overlayToggleIcon) {
                     overlayToggleIcon.textContent = collapsed ? '＋' : '⤢';
