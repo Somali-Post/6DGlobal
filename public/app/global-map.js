@@ -26,7 +26,7 @@ async function handleMapClick(rawLatLng) {
     drawGridBoxes(rawLatLng);
     const snappedLatLng = snapToGridCenter(rawLatLng);
     const { formattedCode, localitySuffix } = getFormatted6DCode(snappedLatLng);
-    const loadingAddress = { postalTown: 'Locating...', line1: 'Locating...', line2: '', line3: '' };
+    const loadingAddress = { line1: 'Locating...', line2: '', line3: '' };
     updateInfoPanel(formattedCode, loadingAddress, '');
     const [geocodeResult, placeResult] = await Promise.all([
         getReverseGeocode(snappedLatLng),
@@ -70,37 +70,76 @@ function getPlaceDetails(latLng) {
 }
 
 function parseAddressComponents(geocodeComponents, placeResult) {
-    const foundNames = [];
+    const selectedNames = [];
     const getComponent = (type) => {
         const component = geocodeComponents.find(c => c.types.includes(type));
         return component ? component.long_name : null;
     };
-    const postalTown =
-        getComponent('postal_town') ||
-        getComponent('locality') ||
-        getComponent('administrative_area_level_2') ||
-        getComponent('administrative_area_level_1') ||
-        getComponent('country') ||
-        null;
-    if (placeResult && placeResult.name) {
-        foundNames.push(placeResult.name);
-    }
-    const priorityList = ['locality', 'administrative_area_level_2', 'administrative_area_level_1', 'country'];
-    for (const type of priorityList) {
-        if (foundNames.length >= 3) break;
-        const foundName = getComponent(type);
-        if (foundName && !foundNames.includes(foundName)) {
-            foundNames.push(foundName);
+
+    const addUnique = (name) => {
+        if (!name) return false;
+
+        const normalizedName = name.trim();
+        if (!normalizedName) return false;
+
+        const isDuplicate = selectedNames.some(existing =>
+            existing.toLocaleLowerCase() === normalizedName.toLocaleLowerCase()
+        );
+        if (isDuplicate) return false;
+
+        selectedNames.push(normalizedName);
+        return true;
+    };
+
+    const addFromTypes = (types) => {
+        for (const type of types) {
+            if (addUnique(getComponent(type))) {
+                return true;
+            }
         }
+
+        return false;
+    };
+
+    if (placeResult?.name) {
+        addUnique(placeResult.name);
     }
-    if (foundNames.length === 0) {
-        foundNames.push(getComponent('country') || 'Unknown Location');
+
+    addFromTypes([
+        'neighborhood',
+        'sublocality_level_1',
+        'sublocality',
+        'administrative_area_level_3',
+        'administrative_area_level_4',
+        'administrative_area_level_5',
+        'postal_town'
+    ]);
+
+    addFromTypes([
+        'locality',
+        'postal_town',
+        'administrative_area_level_2',
+        'administrative_area_level_1'
+    ]);
+
+    if (selectedNames.length < 2) {
+        addFromTypes([
+            'administrative_area_level_2',
+            'administrative_area_level_1',
+            'locality'
+        ]);
     }
+
+    addUnique(getComponent('country'));
+
+    if (selectedNames.length === 0) {
+        selectedNames.push('Unknown Location');
+    }
+
     return {
-        postalTown: postalTown || foundNames[0] || 'Unknown Location',
-        line1: foundNames[0] || '',
-        line2: foundNames[1] || '',
-        line3: foundNames[2] || ''
+        line1: selectedNames[0] || '',
+        line2: selectedNames[1] || '',
+        line3: selectedNames[2] || ''
     };
 }
 
@@ -110,11 +149,10 @@ function updateInfoPanel(code, address, suffix) {
     const line2Display = document.getElementById('line2-display');
     const line3Display = document.getElementById('line3-display');
     codeDisplay.innerHTML = `<span class="code-2d">${code.c2d}</span>-<span class="code-4d">${code.c4d}</span>-<span class="code-6d">${code.c6d}</span>`;
-    const postalTown = address.postalTown || address.line1 || address.line2 || address.line3 || '';
-    const combined = [postalTown, suffix].filter(Boolean).join(' ').trim();
-    line1Display.textContent = combined || 'Unknown Location';
-    line2Display.textContent = '';
-    line3Display.textContent = '';
+    const line1 = [address.line1, suffix].filter(Boolean).join(' ').trim();
+    line1Display.textContent = line1 || 'Unknown Location';
+    line2Display.textContent = address.line2 || '';
+    line3Display.textContent = address.line3 || '';
 }
 
 function updateDynamicGrid() {
