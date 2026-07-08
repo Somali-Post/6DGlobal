@@ -540,8 +540,9 @@ body.panel-open {
     }
 
     #geolocate-btn {
-        top: 120px;
-        left: 16px;
+        top: 64px;
+        left: auto;
+        right: 16px;
         transform: none;
     }
 
