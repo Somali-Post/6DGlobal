@@ -255,12 +255,13 @@ function clearMapObjects() {
 // --- ENTRY POINT FUNCTIONS (Defined Last) ---
 
 function initMap() {
-    const defaultLocation = { lat: 13.7563, lng: 100.5018 };
+    const defaultLocation = { lat: 51.5074, lng: -0.1278 };
+    const defaultSelection = new google.maps.LatLng(51.53905, -0.10335);
     geocoder = new google.maps.Geocoder();
 
     map = new google.maps.Map(document.getElementById("map"), {
         center: defaultLocation,
-        zoom: 12,
+        zoom: 11,
         styles: [
             { featureType: "poi", stylers: [{ visibility: "off" }] },
             { featureType: "transit", stylers: [{ visibility: "off" }] },
@@ -294,6 +295,7 @@ function initMap() {
     });
     
     updateDynamicGrid();
+    handleMapClick(defaultSelection);
 }
 
 function loadGoogleMapsAPI(apiKey) {

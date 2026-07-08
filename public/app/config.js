@@ -7,6 +7,16 @@
 let localDevKeyPromise = null;
 let remoteKeyPromise = null;
 
+function isLocalDevelopmentHost() {
+    if (typeof window === "undefined") {
+        return false;
+    }
+
+    return window.location.protocol === "file:"
+        || window.location.hostname === "localhost"
+        || window.location.hostname === "127.0.0.1";
+}
+
 async function loadLocalDevKey() {
     if (localDevKeyPromise) {
         return localDevKeyPromise;
@@ -14,6 +24,10 @@ async function loadLocalDevKey() {
 
     localDevKeyPromise = (async () => {
         if (typeof window === "undefined") {
+            return null;
+        }
+
+        if (!isLocalDevelopmentHost()) {
             return null;
         }
 
