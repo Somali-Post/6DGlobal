@@ -539,6 +539,12 @@ body.panel-open {
         right: 16px;
     }
 
+    #geolocate-btn {
+        top: 120px;
+        left: 16px;
+        transform: none;
+    }
+
     #logo img {
         height: 80px;
     }
