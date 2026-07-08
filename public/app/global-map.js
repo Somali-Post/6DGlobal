@@ -256,7 +256,6 @@ function clearMapObjects() {
 
 function initMap() {
     const defaultLocation = { lat: 51.5074, lng: -0.1278 };
-    const defaultSelection = new google.maps.LatLng(51.53905, -0.10335);
     geocoder = new google.maps.Geocoder();
 
     map = new google.maps.Map(document.getElementById("map"), {
@@ -295,7 +294,6 @@ function initMap() {
     });
     
     updateDynamicGrid();
-    handleMapClick(defaultSelection);
 }
 
 function loadGoogleMapsAPI(apiKey) {
