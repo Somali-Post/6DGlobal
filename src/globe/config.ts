@@ -18,8 +18,8 @@ export const GLOBE_CONFIG: GlobeConfig = {
   horizontalOffset: 0.22,
   gridOpacity: 0.24,
   atmosphereIntensity: 0.82,
-  maxPixelRatio: 2,
-  desktopSegments: 128,
-  mobileSegments: 80,
+  maxPixelRatio: 1.5,
+  desktopSegments: 96,
+  mobileSegments: 64,
   pointerTiltDegrees: 8,
 };

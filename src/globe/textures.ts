@@ -88,101 +88,21 @@ function drawInitialSurface(ctx: OffscreenCanvasRenderingContext2D | CanvasRende
   ctx.fillRect(0, 0, width, height);
 }
 
-function styleEarthPixels(
-  earthData: Uint8ClampedArray,
-  nightData: Uint8ClampedArray,
-  width: number,
-  height: number,
-): ImageData {
-  const output = new ImageData(width, height);
-
-  for (let i = 0; i < earthData.length; i += 4) {
-    const r = earthData[i] / 255;
-    const g = earthData[i + 1] / 255;
-    const b = earthData[i + 2] / 255;
-    const nightR = nightData[i] / 255;
-    const nightG = nightData[i + 1] / 255;
-    const nightB = nightData[i + 2] / 255;
-    const luma = r * 0.2126 + g * 0.7152 + b * 0.0722;
-    const chroma = Math.max(r, g, b) - Math.min(r, g, b);
-    const blueDominance = Math.max(0, b - Math.max(r, g) * 0.82);
-    const oceanMask = Math.min(1, Math.max(0, blueDominance * 4.6 + (b - luma) * 1.8));
-    const iceMask = Math.min(1, Math.max(0, (luma - 0.74) * 4.8 - chroma * 1.4));
-    const landMask = Math.max(0, 1 - oceanMask - iceMask * 0.75);
-    const desertMask = landMask * Math.max(0, r * 1.1 - g * 0.35 - b * 0.45);
-    const vegetationMask = landMask * Math.max(0, g - b * 0.65);
-    const rawNightLight = Math.max(0, nightR * 0.95 + nightG * 0.82 - nightB * 0.2 - 0.28);
-    const nightLight = Math.pow(Math.min(1, rawNightLight * 1.65), 1.35);
-    const relief = Math.pow(luma, 1.08);
-    const terrainContrast = Math.max(-0.18, Math.min(0.28, (relief - 0.42) * 1.15));
-
-    let outR = 2 + oceanMask * 2 + landMask * 13 + desertMask * 20 + vegetationMask * 4 + terrainContrast * 20;
-    let outG = 13 + oceanMask * 9 + landMask * 34 + desertMask * 18 + vegetationMask * 18 + terrainContrast * 42;
-    let outB = 34 + oceanMask * 45 + landMask * 86 + desertMask * 28 + vegetationMask * 30 + terrainContrast * 70;
-
-    outR += iceMask * 22 + nightLight * 44;
-    outG += iceMask * 32 + nightLight * 30;
-    outB += iceMask * 44 + nightLight * 8;
-
-    output.data[i] = Math.max(0, Math.min(255, outR));
-    output.data[i + 1] = Math.max(0, Math.min(255, outG));
-    output.data[i + 2] = Math.max(0, Math.min(255, outB));
-    output.data[i + 3] = 255;
-  }
-
-  return output;
-}
-
-function createCityLightMask(nightData: Uint8ClampedArray, width: number, height: number, glowScale: number): ImageData {
-  const output = new ImageData(width, height);
-
-  for (let i = 0; i < nightData.length; i += 4) {
-    const nightR = nightData[i] / 255;
-    const nightG = nightData[i + 1] / 255;
-    const nightB = nightData[i + 2] / 255;
-    const rawLight = Math.max(0, nightR * 0.95 + nightG * 0.82 - nightB * 0.2 - 0.31);
-    const light = Math.pow(Math.min(1, rawLight * 1.45), 1.62) * glowScale;
-
-    output.data[i] = 255;
-    output.data[i + 1] = 214;
-    output.data[i + 2] = 98;
-    output.data[i + 3] = Math.max(0, Math.min(255, light * 255));
-  }
-
-  return output;
-}
-
 function drawCityLightGlow(
   ctx: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D,
-  nightData: Uint8ClampedArray,
+  night: HTMLImageElement,
   width: number,
   height: number,
 ) {
-  const glowCanvas = createCanvas(width, height);
-  const coreCanvas = createCanvas(width, height);
-  const glowCtx = glowCanvas.getContext('2d');
-  const coreCtx = coreCanvas.getContext('2d');
-
-  if (!glowCtx || !coreCtx) {
-    return;
-  }
-
-  glowCtx.putImageData(createCityLightMask(nightData, width, height, 0.46), 0, 0);
-  coreCtx.putImageData(createCityLightMask(nightData, width, height, 0.95), 0, 0);
-
   ctx.save();
   ctx.globalCompositeOperation = 'screen';
-  ctx.filter = `blur(${Math.max(0.7, width / 3200)}px)`;
-  ctx.globalAlpha = 0.28;
-  ctx.drawImage(glowCanvas, 0, 0);
+  ctx.filter = `brightness(1.9) contrast(1.55) saturate(0.8) blur(${Math.max(0.35, width / 4200)}px)`;
+  ctx.globalAlpha = 0.5;
+  ctx.drawImage(night, 0, 0, width, height);
 
-  ctx.filter = `blur(${Math.max(0.35, width / 5600)}px)`;
-  ctx.globalAlpha = 0.22;
-  ctx.drawImage(glowCanvas, 0, 0);
-
-  ctx.filter = 'none';
-  ctx.globalAlpha = 0.76;
-  ctx.drawImage(coreCanvas, 0, 0);
+  ctx.filter = 'brightness(2.5) contrast(1.9) saturate(0.7)';
+  ctx.globalAlpha = 0.34;
+  ctx.drawImage(night, 0, 0, width, height);
   ctx.restore();
 }
 
@@ -201,28 +121,22 @@ async function drawRealEarthSurface(
   width: number,
   height: number,
 ) {
-  const [earth, night] = await Promise.all([loadImage(BLUE_MARBLE_SRC), loadImage(BLACK_MARBLE_SRC)]);
-  const earthCanvas = createCanvas(width, height);
-  const nightCanvas = createCanvas(width, height);
-  const earthCtx = earthCanvas.getContext('2d', { willReadFrequently: true });
-  const nightCtx = nightCanvas.getContext('2d', { willReadFrequently: true });
+  const earth = await loadImage(BLUE_MARBLE_SRC);
 
-  if (!earthCtx || !nightCtx) {
-    throw new Error('Unable to prepare source Earth textures.');
-  }
-
-  earthCtx.drawImage(earth, 0, 0, width, height);
-  nightCtx.drawImage(night, 0, 0, width, height);
-
-  const earthData = earthCtx.getImageData(0, 0, width, height).data;
-  const nightData = nightCtx.getImageData(0, 0, width, height).data;
-  ctx.putImageData(styleEarthPixels(earthData, nightData, width, height), 0, 0);
-  drawCityLightGlow(ctx, nightData, width, height);
+  ctx.drawImage(earth, 0, 0, width, height);
+  ctx.save();
+  ctx.globalCompositeOperation = 'multiply';
+  ctx.fillStyle = 'rgba(0, 35, 86, 0.64)';
+  ctx.fillRect(0, 0, width, height);
+  ctx.globalCompositeOperation = 'screen';
+  ctx.fillStyle = 'rgba(0, 112, 227, 0.18)';
+  ctx.fillRect(0, 0, width, height);
+  ctx.restore();
   drawSoftTerminator(ctx, width, height);
 }
 
 export function createSurfaceTexture(isMobile: boolean, onReady?: TextureReadyCallback): Texture {
-  const width = isMobile ? 1536 : 3072;
+  const width = isMobile ? 1024 : 1536;
   const height = width / 2;
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -249,7 +163,7 @@ export function createSurfaceTexture(isMobile: boolean, onReady?: TextureReadyCa
 }
 
 export function createCityLightsTexture(isMobile: boolean, onReady?: TextureReadyCallback): Texture {
-  const width = isMobile ? 1536 : 3072;
+  const width = isMobile ? 1024 : 1536;
   const height = width / 2;
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext('2d');
@@ -263,16 +177,7 @@ export function createCityLightsTexture(isMobile: boolean, onReady?: TextureRead
 
   void loadImage(BLACK_MARBLE_SRC)
     .then((night) => {
-      const nightCanvas = createCanvas(width, height);
-      const nightCtx = nightCanvas.getContext('2d', { willReadFrequently: true });
-
-      if (!nightCtx) {
-        throw new Error('Unable to prepare source city lights texture.');
-      }
-
-      nightCtx.drawImage(night, 0, 0, width, height);
-      const nightData = nightCtx.getImageData(0, 0, width, height).data;
-      drawCityLightGlow(ctx, nightData, width, height);
+      drawCityLightGlow(ctx, night, width, height);
       texture.needsUpdate = true;
     })
     .catch((error: unknown) => {
@@ -501,7 +406,7 @@ function drawCountryBorders(
 }
 
 export function createCountryBordersTexture(isMobile: boolean, onReady?: TextureReadyCallback): Texture {
-  const width = isMobile ? 1024 : 2048;
+  const width = isMobile ? 768 : 1024;
   const height = width / 2;
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext('2d');

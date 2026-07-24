@@ -136,8 +136,8 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
       <section id="method" className="section method-section">
         <div className="section-heading">
           <p className="eyebrow">How it works</p>
-          <h2>Coordinate to code, code to address.</h2>
-          <p>Six digits are useful because they are short. Locality makes them clear.</p>
+          <h2>How 6D works</h2>
+          <p>Latitude and longitude provide the six digits. Locality makes the code clear.</p>
         </div>
         <MethodLabIllustration />
       </section>
@@ -675,37 +675,78 @@ function MapLoader() {
 }
 
 function MethodLabIllustration() {
-  const digits = ["4", "1", "6", "8", "9", "2"];
+  const digitColumns = [
+    { lat: "7", lng: "4", tone: "red" },
+    { lat: "9", lng: "3", tone: "green" },
+    { lat: "2", lng: "5", tone: "blue" },
+  ];
+
   return (
-    <div className="method-lab">
-      <div className="lab-stage coordinate-source">
-        <span>Coordinate source</span>
-        <b>Latitude: 02.0<mark>46</mark>89 N</b>
-        <b>Longitude: 45.3<mark>18</mark>24 E</b>
+    <div className="method-shell">
+      <div className="method-lab">
+        <article className="method-card coordinate-source">
+          <div className="method-card-title"><span>1</span><b>Coordinate source</b></div>
+          <div className="coordinate-stack">
+            <div>
+              <small>Latitude</small>
+              <strong>
+                7.
+                <em>8</em>
+                <mark className="tone-red">7</mark>
+                <mark className="tone-green">9</mark>
+                <mark className="tone-blue">2</mark>
+                27 N
+              </strong>
+            </div>
+            <div>
+              <small>Longitude</small>
+              <strong>
+                11.
+                <em>3</em>
+                <mark className="tone-red">4</mark>
+                <mark className="tone-green">3</mark>
+                <mark className="tone-blue">5</mark>
+                55 W
+              </strong>
+            </div>
+          </div>
+        </article>
+        <div className="lab-arrow" />
+        <article className="method-card extraction-stage">
+          <div className="method-card-title"><span>2</span><b>Digit extraction</b></div>
+          <div className="digit-matrix" aria-label="Latitude digits 7 9 2, longitude digits 4 3 5">
+            {digitColumns.map((column) => (
+              <div className={`digit-column ${column.tone}`} key={`${column.lat}${column.lng}`}>
+                <i>{column.lat}</i>
+                <i>{column.lng}</i>
+              </div>
+            ))}
+          </div>
+          <small>2nd, 3rd, and 4th decimal digits</small>
+          <strong>74-93-25</strong>
+        </article>
+        <div className="lab-arrow" />
+        <article className="method-card locality-stage">
+          <div className="method-card-title"><span>3</span><b>Locality added</b></div>
+          <div className="locality-pin" aria-hidden="true" />
+          <b>Blama</b>
+          <p>Local place context selects the intended matching position.</p>
+        </article>
+        <div className="lab-arrow" />
+        <article className="method-card lab-final">
+          <div className="method-card-title"><span>4</span><b>Complete address</b></div>
+          <div className="complete-address-list">
+            <strong>74-93-25</strong>
+            <b>Blama</b>
+            <span>Kenema District</span>
+            <span>Sierra Leone</span>
+          </div>
+        </article>
       </div>
-      <div className="lab-arrow" />
-      <div className="lab-stage extraction-stage">
-        <span>Digit extraction</span>
-        <div className="digit-rail">
-          {digits.map((digit, index) => (
-            <i style={{ animationDelay: `${index * 120}ms` }} key={`${digit}-${index}`}>{digit}</i>
-          ))}
-        </div>
-        <strong>41-68-92</strong>
+      <div className="method-proof">
+        <b>Why it works</b>
+        <span>Each coloured column contributes one latitude digit and one longitude digit, creating three readable pairs.</span>
       </div>
-      <div className="lab-arrow" />
-      <div className="lab-stage locality-stage">
-        <span>Locality added</span>
-        <b>Halane</b>
-        <p>Local place context selects the intended matching position.</p>
-      </div>
-      <div className="lab-arrow" />
-      <article className="final-address-card lab-final">
-        <small>Complete address</small>
-        <b>Airport Road</b>
-        <strong>41-68-92 Halane</strong>
-        <span>Mogadishu, Banaadir, Somalia</span>
-      </article>
     </div>
   );
 }
