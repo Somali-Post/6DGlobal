@@ -487,7 +487,7 @@ a { color: inherit; }
   background: linear-gradient(90deg, #006ce3, #38d5ff, #31d982);
   box-shadow: 0 0 18px rgba(56, 213, 255, 0.72);
   transform-origin: left center;
-  animation: heroLoaderFill 2.6s cubic-bezier(0.18, 0.82, 0.26, 1) forwards;
+  transition: transform 220ms ease;
 }
 .method-section {
   position: relative;
@@ -1645,11 +1645,6 @@ details p { margin: 0; padding: 0 24px 24px; font-size: 18px; }
   72% { transform: scaleX(0.82); }
   100% { transform: scaleX(0.96); }
 }
-@keyframes heroLoaderFill {
-  0% { transform: scaleX(0.08); }
-  45% { transform: scaleX(0.68); }
-  100% { transform: scaleX(0.94); }
-}
 @keyframes heroLoaderScan {
   from { transform: translateX(-100%); }
   to { transform: translateX(100%); }
@@ -1661,7 +1656,6 @@ details p { margin: 0; padding: 0 24px 24px; font-size: 18px; }
   .map-loader-square,
   .map-loader-progress-track > span,
   .hero-globe-loader-bar::after,
-  .hero-globe-loader-bar > span,
   .dot {
     animation: none !important;
   }

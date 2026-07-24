@@ -609,16 +609,15 @@ function GlobeHeroVisual() {
   const globeRef = useRef<HTMLDivElement>(null);
   const fallbackRef = useRef<HTMLDivElement>(null);
   const [globeReady, setGlobeReady] = useState(false);
+  const [globeProgress, setGlobeProgress] = useState(0.08);
 
   useEffect(() => {
     if (!globeRef.current) return;
-    const startedAt = performance.now();
     let readyTimer = 0;
     const markReady = () => {
-      const elapsed = performance.now() - startedAt;
-      const wait = Math.max(0, 1200 - elapsed);
+      setGlobeProgress(1);
       window.clearTimeout(readyTimer);
-      readyTimer = window.setTimeout(() => setGlobeReady(true), wait);
+      readyTimer = window.setTimeout(() => setGlobeReady(true), 180);
     };
 
     const globe = createHeroGlobe({
@@ -629,6 +628,9 @@ function GlobeHeroVisual() {
       globeScale: 1,
       horizontalOffset: 0.62,
       pointerTiltDegrees: 0,
+      onProgress: (loaded, total) => {
+        setGlobeProgress(Math.max(0.08, Math.min(0.96, loaded / total)));
+      },
       onReady: markReady,
     });
 
@@ -644,7 +646,9 @@ function GlobeHeroVisual() {
       <div className="hero-globe-fallback" ref={fallbackRef} />
       <div className={`hero-globe-loader ${globeReady ? "is-hidden" : ""}`}>
         <span className="hero-globe-loader-label">Loading globe</span>
-        <span className="hero-globe-loader-bar"><span /></span>
+        <span className="hero-globe-loader-bar">
+          <span style={{ transform: `scaleX(${globeProgress})` }} />
+        </span>
       </div>
     </div>
   );

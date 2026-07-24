@@ -32,6 +32,7 @@ export type HeroGlobeOptions = Partial<GlobeConfig> & {
   fallbackElement?: HTMLElement;
   autoRotate?: boolean;
   reducedMotion?: boolean;
+  onProgress?: (loaded: number, total: number) => void;
   onReady?: () => void;
 };
 
@@ -190,11 +191,14 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
 
   const isMobile = window.matchMedia('(max-width: 640px)').matches;
   const segments = isMobile ? config.mobileSegments : config.desktopSegments;
+  const textureLoadTotal = 3;
   let loadedTextureCount = 0;
   const markTextureReady = () => {
     loadedTextureCount += 1;
-    if (loadedTextureCount === 3) options.onReady?.();
+    options.onProgress?.(loadedTextureCount, textureLoadTotal);
+    if (loadedTextureCount === textureLoadTotal) options.onReady?.();
   };
+  options.onProgress?.(0, textureLoadTotal);
   const surfaceTexture = createSurfaceTexture(isMobile, markTextureReady);
   const cityLightsTexture = createCityLightsTexture(isMobile, markTextureReady);
   const countryBordersTexture = createCountryBordersTexture(isMobile, markTextureReady);
