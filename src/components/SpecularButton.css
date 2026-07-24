@@ -1,0 +1,46 @@
+.specular-button {
+  --sb-radius: 18px;
+
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+  outline: none;
+}
+
+.specular-button:active {
+  transform: translateY(1px);
+}
+
+.specular-button:focus-visible {
+  outline: 2px solid rgba(0, 184, 255, 0.58);
+  outline-offset: 4px;
+}
+
+.specular-button__fx {
+  position: absolute;
+  inset: -20px;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: calc(var(--sb-radius) + 20px);
+}
+
+.specular-button__fx canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.specular-button__label {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .specular-button__fx {
+    display: none;
+  }
+}

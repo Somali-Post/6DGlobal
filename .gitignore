@@ -1,0 +1,13 @@
+node_modules
+dist
+tsconfig.tsbuildinfo
+.env
+.env.local
+.DS_Store
+.refpath
+/globe/
+*.zip
+loader-preview-check.png
+loader-test.png
+map-loader-check.png
+hero-loader-test.png
