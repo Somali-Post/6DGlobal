@@ -249,10 +249,10 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
     camera.updateProjectionMatrix();
 
     const shortest = Math.min(width, height);
-    const responsiveScale = width < 640 ? 0.68 : width < 1024 ? 1.18 : 1.45;
+    const responsiveScale = width < 640 ? 0.56 : width < 1024 ? 1.18 : 1.45;
     globeGroup.scale.setScalar(config.globeScale * responsiveScale);
-    globeGroup.position.x = width < 640 ? 0 : config.horizontalOffset * (width / shortest);
-    globeGroup.position.y = width < 640 ? 0 : -0.02;
+    globeGroup.position.x = width < 640 ? 0.72 : config.horizontalOffset * (width / shortest);
+    globeGroup.position.y = width < 640 ? 0.72 : -0.02;
   }
 
   function applyOrientation(elapsedSeconds: number) {

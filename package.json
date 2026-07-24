@@ -11,8 +11,6 @@
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.4",
-    "ogl": "^1.0.11",
-    "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "three": "^0.185.1",
@@ -20,9 +18,21 @@
     "vite": "^6.0.7"
   },
   "devDependencies": {
-    "@types/qrcode": "^1.5.6",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@types/three": "^0.185.1"
-  }
+  },
+  "description": "Clean React/Vite rebuild for 6D Address / 6D Global. The site positions 6D as an open addressing method: a six-digit reference plus locality information.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Somali-Post/6DGlobal.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Somali-Post/6DGlobal/issues"
+  },
+  "homepage": "https://github.com/Somali-Post/6DGlobal#readme"
 }
