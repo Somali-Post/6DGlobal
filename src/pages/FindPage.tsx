@@ -186,7 +186,7 @@ export default function FindPage({ onClose }: { onClose: () => void }) {
         {panelMode === "result" ? (
           <>
             <div className="sheet-kicker"><span className="status-dot" /> Selected location</div>
-            <h1>{sixd?.code}</h1>
+            {sixd && <SixDCode code={sixd.code} />}
             <p className="sheet-locality">{address?.locality}</p>
             <pre>{complete}</pre>
           </>
@@ -247,6 +247,20 @@ function MapLoader() {
         </span>
       </span>
     </div>
+  );
+}
+
+function SixDCode({ code }: { code: string }) {
+  const pairs = code.split("-");
+
+  return (
+    <h1 className="sheet-code" aria-label={code}>
+      {pairs.map((pair, index) => (
+        <span className={`sheet-code-pair tone-${index === 0 ? "red" : index === 1 ? "green" : "blue"}`} key={`${pair}-${index}`}>
+          {pair}
+        </span>
+      ))}
+    </h1>
   );
 }
 

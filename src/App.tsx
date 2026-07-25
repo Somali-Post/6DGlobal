@@ -708,7 +708,7 @@ function Footer({ onFind }: { onFind: () => void }) {
         <a href="mailto:contact@6daddress.com">contact@6daddress.com</a>
       </div>
       <div className="footer-bottom">
-        <span>© 2026 6D Address</span>
+        <span>Copyright 2026 6D Address</span>
         <span>Six digits plus locality.</span>
         <span>Privacy</span>
         <span>Terms</span>
