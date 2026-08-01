@@ -16,7 +16,7 @@ export const GLOBE_CONFIG: GlobeConfig = {
   initialLongitude: -150,
   globeScale: 1,
   horizontalOffset: 0.22,
-  gridOpacity: 0.24,
+  gridOpacity: 0.34,
   atmosphereIntensity: 0.82,
   maxPixelRatio: 1.5,
   desktopSegments: 96,

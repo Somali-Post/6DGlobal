@@ -16,13 +16,19 @@ import {
   WebGLRenderer,
 } from 'three';
 import { GLOBE_CONFIG, type GlobeConfig } from './config';
-import { createCityLightsMaterial, createGridMaterial, createSunGlowMaterial, createSurfaceMaterial } from './materials';
+import {
+  createAtmosphereRimMaterial,
+  createCityLightsMaterial,
+  createGridMaterial,
+  createLimbGlowMaterial,
+  createSurfaceMaterial,
+} from './materials';
 import {
   createCityLightsTexture,
   createCountryBordersTexture,
+  createLimbGlowTexture,
   createLocationLabelTexture,
   getLocationLabelMarkerUv,
-  createSunGlowTexture,
   createSurfaceTexture,
   type LocationLabelPlacement,
 } from './textures';
@@ -42,9 +48,10 @@ export type HeroGlobeHandle = {
 };
 
 const degreesToRadians = (degrees: number) => (degrees * Math.PI) / 180;
-const LABEL_FADE_START = 0.42;
-const LABEL_FADE_END = 0.72;
+const LABEL_FADE_START = 0.66;
+const LABEL_FADE_END = 0.86;
 const LABEL_MAX_OPACITY = 0.98;
+const LABEL_VISIBLE_THRESHOLD = 0.08;
 
 type GlobeLocationLabel = {
   latitude: number;
@@ -55,15 +62,15 @@ type GlobeLocationLabel = {
 };
 
 const LOCATION_LABELS: GlobeLocationLabel[] = [
-  { latitude: 2.032189, longitude: 45.312983, code: '31-22-19', details: ['Hodan, Mogadishu', 'Somalia'], placement: 'east' },
+  { latitude: 2.032189, longitude: 45.312983, code: '31-22-19', details: ['Hodan, Mogadishu', 'Somalia'], placement: 'southEast' },
   { latitude: -17.863955, longitude: -63.230619, code: '63-30-96', details: ['Urbanizacion La Mar', 'Municipio La Guardia', 'Bolivia'], placement: 'west' },
   { latitude: 5.442089, longitude: -55.210824, code: '41-20-08', details: ['Hollandse Kamp', 'Zanderij', 'Suriname'], placement: 'southEast' },
   { latitude: 10.083832, longitude: -83.3448, code: '84-34-88', details: ['La Zonita', 'Batan', 'Costa Rica'], placement: 'west' },
   { latitude: -19.253986, longitude: 140.348779, code: '54-38-97', details: ['Four Ways', 'Queensland', 'Australia'], placement: 'east' },
   { latitude: -5.933265, longitude: 144.889876, code: '38-39-28', details: ['Burba', 'Sim', 'Papua New Guinea'], placement: 'east' },
-  { latitude: 12.277211, longitude: 76.637814, code: '73-77-28', details: ['JP Nagar', 'Mysuru', 'India'], placement: 'west' },
-  { latitude: 26.932701, longitude: 64.078386, code: '37-28-73', details: ['Panjgur District', 'Balochistan', 'Pakistan'], placement: 'southWest' },
-  { latitude: -14.84562, longitude: 24.814683, code: '41-54-66', details: ['Kaoma District', 'Western Province', 'Zambia'], placement: 'east' },
+  { latitude: 12.277211, longitude: 76.637814, code: '73-77-28', details: ['JP Nagar', 'Mysuru', 'India'], placement: 'northEast' },
+  { latitude: 26.932701, longitude: 64.078386, code: '37-28-73', details: ['Panjgur District', 'Balochistan', 'Pakistan'], placement: 'northWest' },
+  { latitude: -14.84562, longitude: 24.814683, code: '41-54-66', details: ['Kaoma District', 'Western Province', 'Zambia'], placement: 'southWest' },
   { latitude: 7.879227, longitude: -11.343555, code: '74-93-25', details: ['Blama', 'Kenema District', 'Sierra Leone'], placement: 'northWest' },
   { latitude: 40.724661, longitude: -74.000804, code: '20-40-68', details: ['University Village', 'New York', 'United States'], placement: 'east' },
   { latitude: 62.521117, longitude: -42.241282, code: '24-11-12', details: ['Kujalleq', 'Greenland'], placement: 'southEast' },
@@ -100,7 +107,7 @@ function createCurvedLocationLabel(label: GlobeLocationLabel, texture: Texture):
   const indices: number[] = [];
   const radius = 1.022;
   const { u: markerU, v: markerV } = getLocationLabelMarkerUv(label.placement);
-  const longitudeSpan = 34;
+  const longitudeSpan = 33.2;
   const latitudeSpan = 15.2;
   const startLongitude = label.longitude - markerU * longitudeSpan;
   const startLatitude = label.latitude + markerV * latitudeSpan;
@@ -202,35 +209,38 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
   const surfaceTexture = createSurfaceTexture(isMobile, markTextureReady);
   const cityLightsTexture = createCityLightsTexture(isMobile, markTextureReady);
   const countryBordersTexture = createCountryBordersTexture(isMobile, markTextureReady);
-  const sunGlowTexture = createSunGlowTexture();
+  const limbGlowTexture = createLimbGlowTexture();
   const locationLabelTextures = LOCATION_LABELS.map((label) => createLocationLabelTexture(label, label.placement));
   const globeGeometry = new SphereGeometry(1, segments, Math.floor(segments / 2));
   const cityLightsGeometry = new SphereGeometry(1.004, segments, Math.floor(segments / 2));
   const countryBordersGeometry = new SphereGeometry(1.006, segments, Math.floor(segments / 2));
+  const atmosphereRimGeometry = new SphereGeometry(1.018, segments, Math.floor(segments / 2));
   const surfaceMaterial = createSurfaceMaterial(surfaceTexture);
   const cityLightsMaterial = createCityLightsMaterial(cityLightsTexture);
   const countryBordersMaterial = createGridMaterial(countryBordersTexture, config.gridOpacity);
-  const sunGlowMaterial = createSunGlowMaterial(sunGlowTexture, config.atmosphereIntensity);
+  const limbGlowMaterial = createLimbGlowMaterial(limbGlowTexture, config.atmosphereIntensity);
+  const atmosphereRimMaterial = createAtmosphereRimMaterial(config.atmosphereIntensity);
 
   const globeGroup = new Group();
   const spinningGroup = new Group();
   const surface = new Mesh(globeGeometry, surfaceMaterial);
   const cityLights = new Mesh(cityLightsGeometry, cityLightsMaterial);
   const countryBorders = new Mesh(countryBordersGeometry, countryBordersMaterial);
+  const atmosphereRim = new Mesh(atmosphereRimGeometry, atmosphereRimMaterial);
   const locationLabels = LOCATION_LABELS.map((label, index) => ({
     mesh: createCurvedLocationLabel(label, locationLabelTextures[index]),
     anchor: new Vector3(...Object.values(lonLatToSpherePosition(label.latitude, label.longitude, 1))),
     opacity: 0,
   }));
-  const sunGlow = new Sprite(sunGlowMaterial);
-  sunGlow.position.set(-0.58, 0.66, 0.18);
-  sunGlow.scale.set(0.48, 0.48, 1);
+  const limbGlow = new Sprite(limbGlowMaterial);
+  limbGlow.position.set(1.28, 0.08, -0.24);
+  limbGlow.scale.set(2.22, 2.36, 1);
   spinningGroup.add(surface, cityLights, countryBorders, ...locationLabels.map((label) => label.mesh));
-  globeGroup.add(spinningGroup, sunGlow);
+  globeGroup.add(limbGlow, spinningGroup, atmosphereRim);
   scene.add(globeGroup);
 
-  scene.add(new AmbientLight(0x6facdf, 1.25));
-  const keyLight = new DirectionalLight(0xb7eaff, 1.85);
+  scene.add(new AmbientLight(0x5f95c8, 0.96));
+  const keyLight = new DirectionalLight(0x9bd8f5, 0.76);
   keyLight.position.set(-2.4, 2.1, 2.7);
   scene.add(keyLight);
 
@@ -278,7 +288,7 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
         const targetOpacity = smoothstep(LABEL_FADE_START, LABEL_FADE_END, visibleAnchor.z) * LABEL_MAX_OPACITY;
         label.opacity += (targetOpacity - label.opacity) * 0.08;
         label.mesh.material.opacity = label.opacity;
-        label.mesh.visible = label.opacity > 0.015;
+        label.mesh.visible = targetOpacity > LABEL_VISIBLE_THRESHOLD && label.opacity > 0.04;
       });
 
       renderer.render(scene, camera);
@@ -339,7 +349,8 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
     updateConfig(nextOptions) {
       Object.assign(config, nextOptions);
       countryBordersMaterial.opacity = config.gridOpacity;
-      sunGlowMaterial.opacity = Math.min(1, Math.max(0, config.atmosphereIntensity * 0.88));
+      limbGlowMaterial.opacity = Math.min(0.58, Math.max(0, config.atmosphereIntensity * 0.52));
+      atmosphereRimMaterial.uniforms.opacity.value = Math.min(0.42, Math.max(0, config.atmosphereIntensity * 0.4));
       applyResponsiveLayout();
       applyOrientation(reducedMotion ? 0 : (performance.now() - startTime - hiddenDuration) / 1000);
       renderer.render(scene, camera);
@@ -356,16 +367,18 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
       globeGeometry.dispose();
       cityLightsGeometry.dispose();
       countryBordersGeometry.dispose();
+      atmosphereRimGeometry.dispose();
       surfaceTexture.dispose();
       cityLightsTexture.dispose();
       countryBordersTexture.dispose();
-      sunGlowTexture.dispose();
+      limbGlowTexture.dispose();
       locationLabelTextures.forEach((texture) => texture.dispose());
       locationLabels.forEach((label) => label.mesh.geometry.dispose());
       surfaceMaterial.dispose();
       cityLightsMaterial.dispose();
       countryBordersMaterial.dispose();
-      sunGlowMaterial.dispose();
+      limbGlowMaterial.dispose();
+      atmosphereRimMaterial.dispose();
       locationLabels.forEach((label) => {
         if (Array.isArray(label.mesh.material)) {
           label.mesh.material.forEach((material) => material.dispose());

@@ -1,5 +1,6 @@
 import { lazy, MouseEvent, ReactNode, Suspense, useEffect, useRef, useState } from "react";
 import CursorGrid from "./components/CursorGrid";
+import { AddressingProblemSection } from "./components/sections/AddressingProblemSection";
 import { Coordinate, generate6DCode } from "./lib/sixd";
 
 const MOGADISHU: Coordinate = { lat: 2.0469, lng: 45.3182 };
@@ -114,31 +115,46 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
         </div>
         <div className="hero-shell">
           <div className="hero-copy hero-content reveal">
-            <h1>
-              <span className="hero-line">6D Address.</span>
-              <span className="hero-line">Addressing the world</span>
-              <span className="hero-line">in 6 digits</span>
+            <h1 className="hero-title">
+              <span className="hero-title-primary">6D Address</span>
+              <span className="hero-title-secondary">Addressing the world</span>
+              <span className="hero-title-secondary">in six digits</span>
             </h1>
-            <p>
-              A memorable six-digit code generated from latitude and longitude coordinates. Working with existing address
-              information it provides accuracy within 10 metres.
+            <p className="hero-subtitle">
+              A memorable six-digit code generated from latitude and longitude coordinates, combined with existing locality
+              information, provides accuracy within 10 metres.
             </p>
-            <div className="actions">
-              <LiteButton className="button primary" onClick={() => onFind(true)}>Find my 6D Address</LiteButton>
-              <LiteButton className="button secondary" href="#method">See how it works</LiteButton>
+            <div className="hero-code-rhythm" aria-label="As easy as 10-20-30">
+              <span className="hero-code-rhythm__label">As easy as </span>
+              <span className="hero-code-rhythm__code" aria-hidden="true">
+                <span className="code-pair code-pair--red">10</span>
+                <span className="code-separator">-</span>
+                <span className="code-pair code-pair--green">20</span>
+                <span className="code-separator">-</span>
+                <span className="code-pair code-pair--blue">30</span>
+              </span>
+            </div>
+            <div className="actions hero-actions">
+              <LiteButton className="button hero-cta hero-cta--primary" onClick={() => onFind(true)}>Find my 6D Address</LiteButton>
+              <LiteButton className="button hero-cta hero-cta--secondary" href="#method">See how it works</LiteButton>
             </div>
           </div>
           <GlobeHeroVisual />
         </div>
       </section>
 
-      <section id="method" className="section method-section">
-        <div className="section-heading">
-          <p className="eyebrow">How it works</p>
-          <h2>How 6D works</h2>
-          <p>Latitude and longitude provide the six digits. Locality makes the code clear.</p>
+      <AddressingProblemSection />
+
+      <section id="method" className="how-sixd">
+        <div className="how-sixd__inner">
+          <div className="how-sixd__header">
+            <p className="section-eyebrow">HOW IT WORKS</p>
+            <h2>How 6D Address works</h2>
+            <p className="how-sixd__lead">Latitude and longitude provide the six digits. Locality makes the code clear.</p>
+          </div>
+
+          <MethodLabIllustration />
         </div>
-        <MethodLabIllustration />
       </section>
 
       <section id="examples" className="section examples-section">
@@ -433,81 +449,104 @@ function MethodLabIllustration() {
   ];
 
   return (
-    <div className="method-shell">
-      <div className="method-lab">
-        <article className="method-card coordinate-source">
-          <div className="method-card-title"><span>1</span><b>Coordinate source</b></div>
-          <div className="coordinate-stack">
-            <div>
-              <small>Latitude</small>
-              <strong>
-                7.
-                <em>8</em>
-                <mark className="tone-red">7</mark>
-                <mark className="tone-green">9</mark>
-                <mark className="tone-blue">2</mark>
-                27 N
-              </strong>
+    <>
+      <div className="how-sixd__layout">
+        <aside className="how-sixd__example">
+          <span className="how-sixd__panel-label">Example location</span>
+          <div className="how-sixd__placeholder">
+            <div className="how-sixd__placeholder-art" aria-hidden="true">
+              <span />
+              <span />
+              <span />
             </div>
-            <div>
-              <small>Longitude</small>
-              <strong>
-                11.
-                <em>3</em>
-                <mark className="tone-red">4</mark>
-                <mark className="tone-green">3</mark>
-                <mark className="tone-blue">5</mark>
-                55 W
-              </strong>
+            <div className="how-sixd__placeholder-copy">
+              <strong>Placeholder image</strong>
+              <p>A map or locality image will be added here.</p>
             </div>
           </div>
-          <p>Latitude and longitude are the starting point.</p>
-        </article>
-        <div className="lab-arrow" />
-        <article className="method-card extraction-stage">
-          <div className="method-card-title"><span>2</span><b>Digit extraction</b></div>
-          <div className="digit-matrix" aria-label="Latitude digits 7 9 2, longitude digits 4 3 5">
-            {digitColumns.map((column) => (
-              <div className={`digit-column ${column.tone}`} key={`${column.lat}${column.lng}`}>
-                <i>{column.lat}</i>
-                <i>{column.lng}</i>
+          <p className="how-sixd__example-caption">Gbenderu, Sierra Leone</p>
+        </aside>
+
+        <div className="how-sixd__process">
+          <article className="how-step how-step--source">
+            <div className="how-step__title"><span>1</span><b>Coordinate source</b></div>
+            <div className="how-coordinate-stack">
+              <div>
+                <small>Latitude</small>
+                <strong>
+                  7.<em>8</em><mark className="tone-red">7</mark><mark className="tone-green">9</mark><mark className="tone-blue">2</mark>27 N
+                </strong>
               </div>
-            ))}
-          </div>
-          <small>2nd, 3rd, and 4th decimal digits become vertical pairs</small>
-          <strong>74-93-25</strong>
-          <p>The extracted digits form the 6D code.</p>
-        </article>
-        <div className="lab-arrow" />
-        <article className="method-card locality-stage">
-          <div className="method-card-title"><span>3</span><b>Locality added</b></div>
-          <div className="locality-pin" aria-hidden="true" />
-          <b>Blama</b>
-          <p>Local place context selects the intended matching position.</p>
-        </article>
-        <div className="lab-arrow" />
-        <article className="method-card lab-final">
-          <div className="method-card-title"><span>4</span><b>Complete address</b></div>
-          <div className="complete-address-list">
-            <strong>74-93-25</strong>
-            <b>Blama</b>
-            <span>Kenema District</span>
-            <span>Sierra Leone</span>
-          </div>
-          <p>The 6D code with locality becomes a complete address.</p>
-        </article>
+              <div>
+                <small>Longitude</small>
+                <strong>
+                  11.<em>3</em><mark className="tone-red">4</mark><mark className="tone-green">3</mark><mark className="tone-blue">5</mark>55 W
+                </strong>
+              </div>
+            </div>
+            <p>Latitude and longitude are the starting point.</p>
+          </article>
+
+          <span className="how-step__connector how-step__connector--one" aria-hidden="true" />
+
+          <article className="how-step how-step--digits">
+            <div className="how-step__title"><span>2</span><b>Digit extraction</b></div>
+            <p className="how-step__explanation">2nd, 3rd and 4th decimals become vertical pairs</p>
+            <div className="how-digit-matrix" aria-label="Latitude digits 7 9 2, longitude digits 4 3 5">
+              {digitColumns.map((column) => (
+                <div className={`how-digit-column how-digit-column--${column.tone}`} key={`${column.lat}${column.lng}`}>
+                  <i>{column.lat}</i>
+                  <i>{column.lng}</i>
+                </div>
+              ))}
+            </div>
+            <strong className="how-code-output"><MethodCode code="74-93-25" /></strong>
+            <p>The extracted digits form the 6D code.</p>
+          </article>
+
+          <span className="how-step__connector how-step__connector--two" aria-hidden="true" />
+
+          <article className="how-step how-step--locality">
+            <div className="how-step__title"><span>3</span><b>Locality added</b></div>
+            <span className="how-locality-marker" aria-hidden="true" />
+            <strong className="how-locality-name">Blama</strong>
+            <p>Local place context selects the intended matching position.</p>
+          </article>
+
+          <span className="how-step__connector how-step__connector--three" aria-hidden="true" />
+
+          <article className="how-step how-step--complete">
+            <div className="how-step__title"><span>4</span><b>Complete address</b></div>
+            <div className="how-address-card">
+              <strong><MethodCode code="74-93-25" /></strong>
+              <b>Blama</b>
+              <span>Kenema District</span>
+              <span>Sierra Leone</span>
+            </div>
+            <p>The 6D code with locality becomes a complete address.</p>
+          </article>
+        </div>
       </div>
-      <div className="method-proof">
-        <span className="proof-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" focusable="false">
-            <path d="M12 3.4 18.2 6v5.2c0 4-2.4 7.7-6.2 9.4-3.8-1.7-6.2-5.4-6.2-9.4V6L12 3.4Z" />
-            <path d="m8.8 12.1 2.1 2.1 4.5-5" />
-          </svg>
-        </span>
-        <b>Why it works</b>
-        <span>Six digits stay short, memorable, and clear when paired with a locality.</span>
+
+      <div className="how-sixd__why">
+        <span className="how-sixd__why-label">Why it works</span>
+        <p>Six digits stay short, memorable, and clear when paired with a locality.</p>
       </div>
-    </div>
+    </>
+  );
+}
+
+function MethodCode({ code }: { code: string }) {
+  const [red, green, blue] = code.split("-");
+
+  return (
+    <span className="method-code">
+      <span className="code-red">{red}</span>
+      <span className="code-sep">-</span>
+      <span className="code-green">{green}</span>
+      <span className="code-sep">-</span>
+      <span className="code-blue">{blue}</span>
+    </span>
   );
 }
 
