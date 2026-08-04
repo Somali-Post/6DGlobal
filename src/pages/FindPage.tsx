@@ -1,275 +1,311 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Coordinate, generate6DCode } from "../lib/sixd";
 import { createGoogleMapsAdapter, MapAdapter, MapAddress } from "../map/googleMapsAdapter";
 
-const MOGADISHU: Coordinate = { lat: 2.0469, lng: 45.3182 };
+const INITIAL_MAP_CENTER: Coordinate = { lat: 51.5074, lng: -0.1278 };
 
-export default function FindPage({ onClose }: { onClose: () => void }) {
+type MapLoadState = "loading" | "ready" | "missing-key" | "error";
+type LocationState = "idle" | "locating" | "denied" | "unavailable" | "error";
+
+type FormattedCode = {
+  c2d: string;
+  c4d: string;
+  c6d: string;
+};
+
+type FinderResult = {
+  code: FormattedCode;
+  address: AddressLines;
+};
+
+type AddressLines = {
+  line1: string;
+  line2?: string;
+  line3?: string;
+};
+
+type PanelState = {
+  title: string;
+  body: string;
+};
+
+export default function FindPage() {
   const mapRef = useRef<HTMLDivElement>(null);
   const adapter = useRef<MapAdapter | null>(null);
-  const requestedLocation = useRef(false);
-  const [coordinate, setCoordinate] = useState<Coordinate | null>(null);
-  const [address, setAddress] = useState<MapAddress | null>(null);
-  const [notice, setNotice] = useState("Choose a location to create a 6D address.");
-  const [mapStatus, setMapStatus] = useState<"loading" | "ready" | "missing-key" | "error">("loading");
-  const [locating, setLocating] = useState(false);
-  const [denied, setDenied] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [showLocality, setShowLocality] = useState(false);
-  const autoLocate = new URLSearchParams(window.location.search).get("locate") === "1";
-  const sixd = useMemo(() => coordinate ? generate6DCode(coordinate) : null, [coordinate]);
-  const fallbackPinStyle = useMemo(() => {
-    if (!coordinate) return undefined;
-    const x = 50 + ((coordinate.lng - MOGADISHU.lng) / 0.08) * 100;
-    const y = 50 - ((coordinate.lat - MOGADISHU.lat) / 0.08) * 100;
-    return { left: `${Math.max(4, Math.min(96, x))}%`, top: `${Math.max(4, Math.min(96, y))}%` };
-  }, [coordinate]);
-  const complete = useMemo(
-    () => sixd && address
-      ? [
-        `${sixd.code} ${address.locality}`,
-        address.city,
-        [address.region, address.country].filter(Boolean).join(", ") || address.cityLine,
-      ].filter(Boolean).join("\n")
-      : "",
-    [address, sixd],
-  );
+  const requestedInitialLocateRef = useRef(false);
+  const latestCode = useRef<FormattedCode | null>(null);
+  const latestSuffix = useRef("");
+  const [mapLoadState, setMapLoadState] = useState<MapLoadState>("loading");
+  const [locationState, setLocationState] = useState<LocationState>("idle");
+  const [result, setResult] = useState<FinderResult | null>(null);
+  const [pendingCode, setPendingCode] = useState<FormattedCode | null>(null);
+  const autoLocate = useMemo(() => new URLSearchParams(window.location.search).get("locate") === "1", []);
+
+  const handleLocate = useCallback((mapAdapter = adapter.current) => {
+    if (mapLoadState !== "ready" || !mapAdapter) return;
+    setLocationState("locating");
+
+    if (!navigator.geolocation) {
+      setLocationState("unavailable");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocationState("idle");
+        mapAdapter.setPin({ lat: position.coords.latitude, lng: position.coords.longitude }, 18);
+      },
+      (error) => {
+        if (error.code === error.PERMISSION_DENIED) {
+          setLocationState("denied");
+          return;
+        }
+
+        if (error.code === error.POSITION_UNAVAILABLE) {
+          setLocationState("unavailable");
+          return;
+        }
+
+        setLocationState("error");
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 },
+    );
+  }, [mapLoadState]);
 
   useEffect(() => {
     let cancelled = false;
     if (!mapRef.current) return;
-    const startedAt = performance.now();
-    let readyTimer = 0;
-    let readyFallbackTimer = 0;
-    const markReady = () => {
-      const elapsed = performance.now() - startedAt;
-      const wait = Math.max(0, 2200 - elapsed);
-      window.clearTimeout(readyTimer);
-      readyTimer = window.setTimeout(() => {
-        if (!cancelled) setMapStatus("ready");
-      }, wait);
-    };
+
+    setMapLoadState("loading");
 
     createGoogleMapsAdapter({
       element: mapRef.current,
-      initial: MOGADISHU,
-      onPick: (picked) => {
-        setCoordinate(picked);
-        setDenied(false);
-        setNotice("Selected location. Move the pin if the entrance or delivery point is different.");
+      initial: INITIAL_MAP_CENTER,
+      onPick: (coordinate) => {
+        const sixd = generate6DCode(coordinate);
+        latestCode.current = formatCode(sixd.code);
+        latestSuffix.current = sixd.localitySuffix;
+        setResult(null);
+        setPendingCode(latestCode.current);
+        setLocationState("idle");
       },
-      onAddress: (resolved) => setAddress(resolved),
-      onNotice: setNotice,
-      onReady: markReady,
+      onAddress: (address) => {
+        if (!latestCode.current) return;
+        setResult({
+          code: latestCode.current,
+          address: toAddressLines(address, latestSuffix.current),
+        });
+        setPendingCode(null);
+      },
+      onNotice: (message) => {
+        console.warn("[find]", message);
+      },
+      onReady: () => {
+        if (!cancelled) setMapLoadState("ready");
+      },
     }).then((created) => {
       if (cancelled) {
         created?.destroy();
         return;
       }
+
       adapter.current = created;
       if (!created) {
-        setMapStatus("missing-key");
-        setNotice("Map key missing. Add VITE_GOOGLE_MAPS_API_KEY to .env.local.");
-      } else {
-        readyFallbackTimer = window.setTimeout(markReady, 8000);
+        setMapLoadState("missing-key");
       }
-      if (autoLocate && !requestedLocation.current) requestLocation(created);
     }).catch((error) => {
-      console.error("[find] Google Maps failed to initialise:", error);
-      if (!cancelled) {
-        setMapStatus("error");
-        setNotice("The map could not load. Check the Google Maps API key and browser restrictions.");
-      }
+      console.warn("[find] Google Maps failed to initialise:", error);
+      if (!cancelled) setMapLoadState("error");
     });
 
     return () => {
       cancelled = true;
-      window.clearTimeout(readyTimer);
-      window.clearTimeout(readyFallbackTimer);
       adapter.current?.destroy();
+      adapter.current = null;
     };
   }, []);
 
-  const selectFallbackCoordinate = (picked: Coordinate) => {
-    setCoordinate(picked);
-    setAddress({
-      locality: "Unknown locality",
-      city: "Manual pin",
-      cityLine: "Manual pin",
-    });
-    setDenied(false);
-  };
+  useEffect(() => {
+    if (mapLoadState !== "ready") return;
+    if (requestedInitialLocateRef.current || !autoLocate) return;
 
-  const requestLocation = (mapAdapter = adapter.current) => {
-    requestedLocation.current = true;
-    setLocating(true);
-    setDenied(false);
-    setNotice("Waiting for location permission...");
-    if (!navigator.geolocation) {
-      setLocating(false);
-      setDenied(true);
-        setNotice("This browser does not support location lookup. Click the map to choose a location manually.");
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const picked = { lat: position.coords.latitude, lng: position.coords.longitude };
-        setLocating(false);
-        if (mapAdapter) mapAdapter.setPin(picked, 18);
-        else selectFallbackCoordinate(picked);
-        setNotice("Location found. Move the pin if the entrance or delivery point is different.");
-      },
-      () => {
-        setLocating(false);
-        setDenied(true);
-        setNotice("Location access was not allowed. Click the map to choose a location manually.");
-      },
-      { enableHighAccuracy: true, timeout: 12000 },
-    );
-  };
+    requestedInitialLocateRef.current = true;
+    handleLocate();
+  }, [autoLocate, handleLocate, mapLoadState]);
 
-  const copy = async () => {
-    if (!complete) return;
-    await navigator.clipboard?.writeText(complete);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1600);
-  };
-
-  const share = async () => {
-    if (!complete) return;
-    if (navigator.share) await navigator.share({ title: "6D Address", text: complete });
-    else await copy();
-  };
-
-  const canUseFallbackPin = mapStatus === "missing-key";
-  const panelMode = locating || mapStatus === "loading" ? "loading" : coordinate && sixd && address ? "result" : denied ? "denied" : mapStatus === "error" ? "map-error" : "empty";
-  const isMapLoadingScreen = panelMode === "loading";
+  const panelState = getFinderPanelState({
+    mapLoadState,
+    locationState,
+    hasResult: Boolean(result),
+  });
 
   return (
-    <main className="finder">
-      <div
-        className="map-stage"
-        onClick={(event) => {
-          if (adapter.current || !canUseFallbackPin) return;
-          const rect = event.currentTarget.getBoundingClientRect();
-          const x = (event.clientX - rect.left) / rect.width - 0.5;
-          const y = (event.clientY - rect.top) / rect.height - 0.5;
-          selectFallbackCoordinate({ lat: MOGADISHU.lat - y * 0.08, lng: MOGADISHU.lng + x * 0.08 });
-          setNotice("Preview pin selected. Add a Google Maps key for live reverse geocoding.");
-        }}
-      >
-        <div className="map-canvas" ref={mapRef} />
-        {mapStatus !== "ready" && (
-        <div className={`fallback-map ${mapStatus === "error" ? "error" : ""}`}>
-          {mapStatus !== "loading" && <span className="fallback-route" />}
-          {mapStatus !== "loading" && coordinate && <span className="fallback-pin" style={fallbackPinStyle} />}
-          <div className="map-message">
-            {mapStatus === "loading" && <MapLoader />}
-            {mapStatus === "missing-key" && "Map key missing. Add VITE_GOOGLE_MAPS_API_KEY to .env.local."}
-            {mapStatus === "error" && "The map could not load. Check the Google Maps API key and browser restrictions."}
-          </div>
-        </div>
-        )}
+    <main className="find-map-page">
+      <div className="find-map-page__fallback-surface" aria-hidden="true">
+        <div className="find-map-page__fallback-crosshair" />
+        <div className="find-map-page__fallback-label">6D grid preview</div>
       </div>
 
-      <header className={`finder-top ${isMapLoadingScreen ? "loading-only" : ""}`}>
-        <button className="icon-button" onClick={onClose} aria-label="Return to homepage">x</button>
-        {!isMapLoadingScreen && <img src="/logo-256.webp" alt="6D Address" />}
-        {!isMapLoadingScreen && (
-          <button className="location-control" onClick={() => requestLocation()} aria-label="Use my location">
-            <LocationIcon /> <span>Use my location</span>
-          </button>
-        )}
-      </header>
+      <div
+        ref={mapRef}
+        className={`find-map-page__map ${mapLoadState === "ready" ? "is-ready" : ""}`}
+        aria-hidden={mapLoadState !== "ready"}
+      />
 
-      {!isMapLoadingScreen && <aside className="finder-sheet">
-        {panelMode === "result" ? (
-          <>
-            <div className="sheet-kicker"><span className="status-dot" /> Selected location</div>
-            {sixd && <SixDCode code={sixd.code} />}
-            <p className="sheet-locality">{address?.locality}</p>
-            <pre>{complete}</pre>
-          </>
-        ) : (
-          <div className="empty-panel">
-            <p className="sheet-kicker muted">Create a 6D address</p>
-            <h2>
-              {panelMode === "denied" && "Choose a location manually"}
-              {panelMode === "map-error" && "Map unavailable"}
-              {panelMode === "empty" && "Create your 6D address"}
-            </h2>
-            <p>
-              {panelMode === "denied" && "Location access was not allowed. Click the map to choose a location manually."}
-              {panelMode === "map-error" && "The map could not load. Check the Google Maps API key and browser restrictions."}
-              {panelMode === "empty" && "Click the map or use your current location to create a 6D address."}
-            </p>
-          </div>
-        )}
-        <p className="notice">{notice}</p>
-        {complete && <div className="finder-actions">
-          {complete && <button onClick={copy}>{copied ? "Copied" : "Copy"}</button>}
-          {complete && <button onClick={share}>Share</button>}
-        </div>}
-        <button className="locality-link" onClick={() => setShowLocality(true)}>Why locality matters</button>
-        {complete && <p className="result-note">A complete 6D address is the six-digit reference plus locality. The digits alone are not globally unique.</p>}
-      </aside>}
-      {showLocality && (
-        <div className="modal-backdrop" onClick={() => setShowLocality(false)}>
-          <section className="locality-modal" onClick={(event) => event.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowLocality(false)} aria-label="Close locality explanation">x</button>
-            <h2>Why locality matters</h2>
-            <p>The six digits are a reference, not the whole address. The same digits can appear in more than one place. Locality tells a compatible app which matching position you mean.</p>
-          </section>
-        </div>
-      )}
+      <a className="find-map-page__logo" href="/" aria-label="6D Address home">
+        <img src="/images/logo-compact.png" alt="" />
+      </a>
+
+      <button
+        className="find-map-page__locate"
+        type="button"
+        onClick={() => handleLocate()}
+        disabled={locationState === "locating" || mapLoadState !== "ready"}
+        aria-label={locationState === "locating" ? "Finding your location" : "Use my location"}
+      >
+        <img src="/assets/geolocate.svg" alt="" aria-hidden="true" />
+      </button>
+
+      <FindInfoPanel panelState={panelState} pendingCode={pendingCode} result={result} />
     </main>
   );
 }
 
-function MapLoader() {
+function getFinderPanelState({
+  mapLoadState,
+  locationState,
+  hasResult,
+}: {
+  mapLoadState: MapLoadState;
+  locationState: LocationState;
+  hasResult: boolean;
+}): PanelState | null {
+  if (hasResult) return null;
+
+  if (mapLoadState === "missing-key") {
+    return {
+      title: "Map key not configured",
+      body: "Add a Google Maps API key to enable the live finder.",
+    };
+  }
+
+  if (mapLoadState === "error") {
+    return {
+      title: "Map unavailable",
+      body: "The live map could not load. Check the connection, browser settings or map configuration.",
+    };
+  }
+
+  if (mapLoadState === "loading") {
+    return {
+      title: "Loading map",
+      body: "Preparing the 6D Address finder.",
+    };
+  }
+
+  if (locationState === "locating") {
+    return {
+      title: "Locating...",
+      body: "Allow location access to calculate your 6D Address.",
+    };
+  }
+
+  if (locationState === "denied") {
+    return mapLoadState === "ready"
+      ? {
+          title: "Location permission denied",
+          body: "You can still click on the map to choose a location.",
+        }
+      : {
+          title: "Location permission denied",
+          body: "The live map is not available yet.",
+        };
+  }
+
+  if (locationState === "unavailable" || locationState === "error") {
+    return mapLoadState === "ready"
+      ? {
+          title: "Location unavailable",
+          body: "Your browser could not provide a location. You can choose a point on the map manually.",
+        }
+      : {
+          title: "Location unavailable",
+          body: "Your browser could not provide a location and the live map is not available yet.",
+        };
+  }
+
+  return {
+    title: "Click on the map to generate",
+    body: "Choose a location to calculate a 6D Address.",
+  };
+}
+
+function FindInfoPanel({
+  panelState,
+  pendingCode,
+  result,
+}: {
+  panelState: PanelState | null;
+  pendingCode: FormattedCode | null;
+  result: FinderResult | null;
+}) {
   return (
-    <div className="map-loader" role="status" aria-live="polite" aria-label="Loading Global Map">
-      <img className="map-loader-brand" src="/navlogo-dark-320.webp" alt="6D Address" />
-      <span className="map-loader-mark" aria-hidden="true">
-        <span className="map-loader-square red" />
-        <span className="map-loader-square green" />
-        <span className="map-loader-square blue" />
-      </span>
-      <span className="map-loader-copy">
-        <strong>Loading Global Map</strong>
-        <small>Preparing map tiles, grid references, and location tools.</small>
-      </span>
-      <span className="map-loader-progress" aria-hidden="true">
-        <span className="map-loader-progress-track"><span /></span>
-        <span className="map-loader-progress-meta">
-          <span>Syncing</span>
-          <span>Global map</span>
-        </span>
-      </span>
+    <section
+      className={`find-map-page__panel ${result ? "has-result" : ""}`}
+      aria-live="polite"
+      aria-label="6D Address result"
+    >
+      {result ? (
+        <>
+          <p className="find-map-page__panel-label">6D Address</p>
+          <FindCode code={result.code} />
+          <address className="find-map-page__address-lines">
+            <span>{result.address.line1}</span>
+            {result.address.line2 && <span>{result.address.line2}</span>}
+            {result.address.line3 && <span>{result.address.line3}</span>}
+          </address>
+        </>
+      ) : pendingCode ? (
+        <>
+          <p className="find-map-page__panel-label">6D Address</p>
+          <FindCode code={pendingCode} />
+          <p className="find-map-page__panel-body">Resolving locality information for the selected point.</p>
+        </>
+      ) : (
+        <>
+          <p className="find-map-page__panel-title">{panelState?.title}</p>
+          <p className="find-map-page__panel-body">{panelState?.body}</p>
+        </>
+      )}
+    </section>
+  );
+}
+
+function FindCode({ code }: { code: FormattedCode }) {
+  return (
+    <div className="find-map-page__code" aria-label={`${code.c2d}-${code.c4d}-${code.c6d}`}>
+      <span className="code-2d">{code.c2d}</span>
+      <span className="code-sep">-</span>
+      <span className="code-4d">{code.c4d}</span>
+      <span className="code-sep">-</span>
+      <span className="code-6d">{code.c6d}</span>
     </div>
   );
 }
 
-function SixDCode({ code }: { code: string }) {
-  const pairs = code.split("-");
-
-  return (
-    <h1 className="sheet-code" aria-label={code}>
-      {pairs.map((pair, index) => (
-        <span className={`sheet-code-pair tone-${index === 0 ? "red" : index === 1 ? "green" : "blue"}`} key={`${pair}-${index}`}>
-          {pair}
-        </span>
-      ))}
-    </h1>
-  );
+function formatCode(code: string): FormattedCode {
+  const [c2d, c4d, c6d] = code.split("-");
+  return { c2d, c4d, c6d };
 }
 
-function LocationIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 3v4M12 17v4M3 12h4M17 12h4" />
-      <circle cx="12" cy="12" r="5" />
-      <circle cx="12" cy="12" r="1.8" />
-    </svg>
-  );
+function toAddressLines(address: MapAddress, suffix: string): AddressLines {
+  const locality = address.locality === "Unknown locality" ? "Locality unavailable" : address.locality;
+  const line1 = [locality, suffix].filter(Boolean).join(" ").trim();
+  const isUk = address.country === "United Kingdom";
+  const line2 = isUk
+    ? (address.postalTown || address.city || address.region || "")
+    : [address.city, address.region].filter(Boolean).join(", ") || address.cityLine;
+  const line3 = isUk ? "United Kingdom" : address.country || "";
+
+  return { line1, line2, line3 };
 }

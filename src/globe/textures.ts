@@ -7,8 +7,8 @@ import {
   TextureFilter,
 } from 'three';
 
-const BLUE_MARBLE_SRC = '/textures/earth-blue-marble-december-5400.jpg';
-const BLACK_MARBLE_SRC = '/textures/earth-night-lights-2012-3600.jpg';
+const BLUE_MARBLE_SRC = '/images/globe/earth-day-1536.webp';
+const BLACK_MARBLE_SRC = '/images/globe/earth-night-1536.webp';
 const COUNTRY_BORDERS_SRC = '/data/ne_110m_admin_0_countries.geojson';
 
 type LonLat = [number, number];

@@ -25,6 +25,8 @@ VITE_GOOGLE_MAPS_API_KEY=your_google_maps_key_here
 
 The key is read by Vite at build/dev time. Do not commit `.env` or `.env.local`.
 
+For clean sharing, use `git archive` from a committed state rather than zipping the working folder directly. Do not include `.env.local`, `.git`, `node_modules`, `dist`, or `tsconfig.tsbuildinfo` in shared archives.
+
 ## Map Provider
 
 The finder route (`/find`) uses Google Maps through `src/map/googleMapsAdapter.ts`. If `VITE_GOOGLE_MAPS_API_KEY` is not set, the page falls back to a non-provider preview grid so the address UI and 6D calculation can still be tested locally.

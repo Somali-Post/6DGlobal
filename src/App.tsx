@@ -1,46 +1,195 @@
-import { lazy, MouseEvent, ReactNode, Suspense, useEffect, useRef, useState } from "react";
+import { lazy, MouseEvent, PointerEvent, ReactNode, Suspense, TouchEvent, useEffect, useRef, useState } from "react";
 import CursorGrid from "./components/CursorGrid";
 import { AddressingProblemSection } from "./components/sections/AddressingProblemSection";
-import { Coordinate, generate6DCode } from "./lib/sixd";
+import { AddressExample, addressExamples, splitCompleteAddress } from "./data/addressExamples";
+import { localityMattersExample } from "./data/localityMattersExample";
 
-const MOGADISHU: Coordinate = { lat: 2.0469, lng: 45.3182 };
 const FindPage = lazy(() => import("./pages/FindPage"));
 
 const navItems = [
-  ["method", "How it works"],
+  ["how-it-works", "How it works"],
   ["examples", "Examples"],
-  ["open-system", "Open system"],
   ["locality", "Locality"],
-  ["postal", "Postal authorities"],
-  ["developers", "Developers"],
+  ["faq", "FAQ"],
+  ["contact", "Contact"],
 ];
 
-const examples = [
-  ["Airport Road", "35-12-12 Halane", "Mogadishu, Banaadir, Somalia", "calculated from the Mogadishu sample"],
-  ["Market entrance", "71-58-42 Kariakoo", "Dar es Salaam, Tanzania", "illustrative example"],
-  ["Village clinic", "28-09-63 Aweil Centre", "Aweil, South Sudan", "illustrative example"],
-  ["Old ferry road", "44-73-10 Likoni", "Mombasa, Kenya", "illustrative example"],
+const faqGroups = [
+  {
+    label: "Basics",
+    items: [
+      {
+        question: "Is each 6D Address code unique?",
+        answer: "Not without a locality. The six digits are a geographic reference based on the 2nd, 3rd and 4th decimal places of the latitude and longitude coordinates.",
+      },
+      {
+        question: "Why is locality required?",
+        answer: "6D Address is designed to fit within a conventional addressing system. The 6D Address code effectively replaces the property number and street name elements of a conventional address. Therefore, the locality is a key element of the address.",
+      },
+      {
+        question: "What are latitude and longitude?",
+        answer: "Latitude and longitude have existed for thousands of years as a means of determining a location. 6D Address is simply a reconfiguration of part of the latitude and longitude coordinates, making it far less complex than other digital address systems.",
+      },
+      {
+        question: "Do I need GPS?",
+        answer: "GPS, survey coordinates, or another coordinate source is needed to create the reference. A user can still place a pin manually.",
+      },
+      {
+        question: "Do I need an app?",
+        answer: "No single app should be compulsory. Websites, mobile apps, delivery tools and government systems can implement the method.",
+      },
+    ],
+  },
+  {
+    label: "Accuracy and addressing",
+    items: [
+      {
+        question: "How precise is 6D Address?",
+        answer: "The 6D Address is accurate to approximately 10m². In the 6D Address 20-30-40, the 20 is approximately 1km², the 30 is approximately 100m² and the 40 is approximately 10m².",
+      },
+      {
+        question: "Why approximately 10m²?",
+        answer: "Because 6D Address is derived from latitude and longitude, the squares formed by the three sets of two digits are trapeziums, although on a map they may appear square or rectangular in shape. Other systems divide the earth into exact squares, but a globe cannot be created using squares.",
+      },
+      {
+        question: "How does 6D Address manage vertical addresses?",
+        answer: "In the same way conventional addresses manage vertical addressing. In a ten-storey block of 40 apartments, each apartment would be recognised by its apartment number before the 6D Address and locality line.",
+      },
+      {
+        question: "Can 6D Address be used in uninhabited areas?",
+        answer: "Technically, 6D Address can be used anywhere on earth. However, it needs a locality to provide a unique address. The 1st decimal place from the latitude and longitude coordinates can be used to create a regional code, which extends the scope of the 6D Address to 100km², and the 5th decimal place can be used to increase accuracy to 1m². These would only be required in exceptional circumstances.",
+      },
+      {
+        question: "Why didn't you use the 1st and 5th decimals to create a 10D Address?",
+        answer: "Because it is much more difficult to remember than six digits. In most parts of the world, the existing locality information is detailed enough to ensure there is no duplication of a 6D Address within its boundaries. Current GPS data usually works to around 10m accuracy, so there is limited benefit in being more accurate for normal addressing. For certain applications, 1m² accuracy could be beneficial, such as identifying electricity, gas and water points.",
+      },
+    ],
+  },
+  {
+    label: "Implementation",
+    items: [
+      {
+        question: "Can it work offline?",
+        answer: "The code can be calculated offline from coordinates. Search, maps and locality datasets may need cached or local data.",
+      },
+      {
+        question: "Does 6D operate a central database?",
+        answer: "The method does not require one central database to create addresses. Organisations may maintain their own registers for pilots or operations.",
+      },
+      {
+        question: "Can another company build a compatible app?",
+        answer: "Yes. The system is intended for independent compatible implementations.",
+      },
+    ],
+  },
+  {
+    label: "Governance and limitations",
+    items: [
+      {
+        question: "Where does 6D not work well?",
+        answer: "It is weaker in uninhabited places, areas with no meaningful locality, or situations requiring a globally unique standalone code.",
+      },
+      {
+        question: "Who governs the method or system?",
+        answer: "Governance should be clear, documented and practical enough for public-sector, developer and community use.",
+      },
+    ],
+  },
 ];
 
-const principles = [
-  "Published method",
-  "Compatible apps can implement independently",
-  "Addresses remain portable",
-  "No mandatory central supplier",
-  "People can choose the app they trust",
+const applicationGroups = [
+  {
+    label: "Public infrastructure",
+    items: [
+      {
+        title: "National addressing support",
+        body: "6D can support national addressing programmes by providing a practical location reference in areas where property numbers or named streets are incomplete.",
+      },
+      {
+        title: "Public registries and ID systems",
+        body: "Government systems may use 6D as an additional location reference for service delivery or registration, where appropriate governance, privacy and verification rules are in place.",
+      },
+    ],
+  },
+  {
+    label: "Service delivery",
+    items: [
+      {
+        title: "Utility services",
+        body: "Utility providers can use 6D-style location references to identify service points, assets or customer locations where conventional addresses are unavailable.",
+      },
+      {
+        title: "Humanitarian and disaster response",
+        body: "In humanitarian or disaster-response settings, 6D can help identify agreed locations for service delivery, aid distribution or field coordination when used with verified local context.",
+      },
+    ],
+  },
+  {
+    label: "Digital access",
+    items: [
+      {
+        title: "Digital address services",
+        body: "6D can help create a simple digital address that works with existing locality information and can be shared through mobile or web services.",
+      },
+      {
+        title: "Financial inclusion",
+        body: "Banks, mobile-money providers and financial institutions may use location references to support customer registration, service access and location verification, subject to local rules and safeguards.",
+      },
+      {
+        title: "Underserved settlements",
+        body: "6D can support addressability in informal or underserved settlements where residents use local names and landmarks but formal property addressing is incomplete.",
+      },
+    ],
+  },
 ];
 
-const faqs = [
-  ["Is a 6D code globally unique?", "No. The six digits are a reference. A complete 6D address also includes locality information."],
-  ["Why is locality required?", "The same six digits can appear in many places. Locality tells a compatible app which matching position you mean."],
-  ["How precise is it?", "The code is derived from latitude and longitude decimal digits after snapping to a small coordinate cell. Practical precision depends on GPS and map quality."],
-  ["Do I need GPS?", "GPS, survey coordinates, or another coordinate source is needed to create the reference. A user can still place a pin manually."],
-  ["Do I need an app?", "No single app should be compulsory. Websites, mobile apps, delivery tools, and government systems can implement the method."],
-  ["Can it work offline?", "The code can be calculated offline from coordinates. Search, maps, and locality datasets may need cached or local data."],
-  ["Does 6D operate a central database?", "The method does not require one central database to create addresses. Organisations may maintain their own registers for pilots or operations."],
-  ["Can another company build a compatible app?", "Yes. The system is intended for independent compatible implementations."],
-  ["Where does 6D not work well?", "It is weaker in uninhabited places, areas with no meaningful locality, or situations requiring a globally unique standalone code."],
-  ["Who governs the method or system?", "Governance should be clear, documented, and practical enough for public-sector, developer, and community use."],
+const teamMembers = [
+  {
+    initials: "GL",
+    image: "/images/team/GL.jpeg",
+    name: "Graeme Lee",
+    role: "Addressing and postal development",
+    bio: "Graeme developed the original 6D Address concept from his experience in postal-sector development and addressing challenges in countries where conventional addressing is incomplete.",
+  },
+  {
+    initials: "AG",
+    image: "/images/team/AG.jpeg",
+    name: "Abdiaziz Ga'al",
+    role: "Software implementation and product development",
+    bio: "Abdiaziz brought the 6D Address concept to life through software development, map-based demonstrations and practical testing of the user experience.",
+  },
+  {
+    initials: "SH",
+    image: "/images/team/SH.jpeg",
+    name: "Said Hassan",
+    role: "Postal operations and Somalia use case",
+    bio: "Said supports the Somalia use case through his role in the Somali National Postal Service Department, helping connect the concept to practical postal and addressing needs.",
+  },
+];
+
+const propositionPillars = [
+  {
+    title: "The method",
+    body: "A clear 6D format based on coordinate-derived digits and locality context. The method is being documented so compatible tools can implement it consistently.",
+  },
+  {
+    title: "The tools",
+    body: "A working map-based demonstration allows users to generate a 6D address, understand the format and see how locality completes the address.",
+  },
+  {
+    title: "Implementation support",
+    body: "Governments, postal operators and service providers can pilot 6D in a defined area before wider rollout, with support for address format design, testing, training and integration.",
+  },
+];
+
+const partnerDeliverables = [
+  "6D method explanation and technical specification",
+  "Pilot area design",
+  "Address format guidance",
+  "Map/demo configuration",
+  "Staff and stakeholder training",
+  "Integration planning for postal, delivery or civic services",
+  "Data governance and operational recommendations",
 ];
 
 function App() {
@@ -60,21 +209,68 @@ function App() {
 
   return route === "/find" || route === "/map" ? (
     <Suspense fallback={null}>
-      <FindPage onClose={() => navigate("/")} />
+      <FindPage />
     </Suspense>
   ) : (
     <HomePage onFind={(autoLocate = true) => navigate(autoLocate ? "/find?locate=1" : "/find")} />
   );
 }
 
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(() => window.matchMedia(query).matches);
+
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    const handleChange = () => setMatches(media.matches);
+    handleChange();
+    media.addEventListener("change", handleChange);
+    return () => media.removeEventListener("change", handleChange);
+  }, [query]);
+
+  return matches;
+}
+
+function usePrefersReducedMotion() {
+  return useMediaQuery("(prefers-reduced-motion: reduce)");
+}
+
+function useHeavyVisualState() {
+  const [state, setState] = useState<"waiting" | "enabled" | "disabled">("waiting");
+
+  useEffect(() => {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+
+    if (reducedMotion || connection?.saveData) {
+      setState("disabled");
+      return;
+    }
+
+    const load = () => setState("enabled");
+
+    if ("requestIdleCallback" in window && "cancelIdleCallback" in window) {
+      const idleWindow = window as Window & {
+        requestIdleCallback: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+        cancelIdleCallback: (handle: number) => void;
+      };
+      const id = idleWindow.requestIdleCallback(load, { timeout: 1400 });
+      return () => idleWindow.cancelIdleCallback(id);
+    }
+
+    const id = globalThis.setTimeout(load, 650);
+    return () => globalThis.clearTimeout(id);
+  }, []);
+
+  return state;
+}
+
 function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
   const [active, setActive] = useState("top");
   const [menuOpen, setMenuOpen] = useState(false);
   const heroRef = useRef<HTMLElement | null>(null);
-  const openRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    const sections = ["top", ...navItems.map(([id]) => id), "faq", "contact"]
+    const sections = ["top", ...navItems.map(([id]) => id)]
       .map((id) => document.getElementById(id))
       .filter(Boolean) as HTMLElement[];
     const observer = new IntersectionObserver(
@@ -136,7 +332,7 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
             </div>
             <div className="actions hero-actions">
               <LiteButton className="button hero-cta hero-cta--primary" onClick={() => onFind(true)}>Find my 6D Address</LiteButton>
-              <LiteButton className="button hero-cta hero-cta--secondary" href="#method">See how it works</LiteButton>
+              <LiteButton className="button hero-cta hero-cta--secondary" href="#how-it-works">See how it works</LiteButton>
             </div>
           </div>
           <GlobeHeroVisual />
@@ -145,187 +341,50 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
 
       <AddressingProblemSection />
 
-      <section id="method" className="how-sixd">
-        <div className="how-sixd__inner">
-          <div className="how-sixd__header">
-            <p className="section-eyebrow">HOW IT WORKS</p>
-            <h2>How 6D Address works</h2>
-            <p className="how-sixd__lead">Latitude and longitude provide the six digits. Locality makes the code clear.</p>
-          </div>
-
+      <section className="craft-section craft-section--blueprint craft-grid-bg how-method" id="how-it-works">
+        <div className="craft-container">
           <MethodLabIllustration />
         </div>
       </section>
 
-      <section id="examples" className="section examples-section">
-        <div className="section-heading compact">
-          <p className="eyebrow">Examples</p>
-          <h2>Address labels people can read aloud.</h2>
-          <p>A complete 6D address carries the reference and the place context together.</p>
-        </div>
-        <div className="address-grid">
-          {examples.map(([line1, code, city, note]) => (
-            <article className="address-label" key={code}>
-              <span className="label-grid" />
-              <small>{note}</small>
-              <b>{line1}</b>
-              <strong>{code}</strong>
-              <span>{city}</span>
-            </article>
-          ))}
-        </div>
-      </section>
+      <AddressExamplesCarousel />
 
-      <section className="section section-dark share-section">
-        <div className="section-heading compact">
-          <p className="eyebrow">Share. Scan. Find.</p>
-          <h2>Create a position people can communicate.</h2>
-        </div>
-        <div className="process-grid">
-          <ProcessCard icon={<GpsPhoneIcon />} title="Create it with GPS" text="A phone or survey device supplies the coordinate." />
-          <ProcessCard icon={<QrMessageIcon />} title="Share or scan it" text="Copy it, print it, send it, or encode it as QR text." />
-          <ProcessCard icon={<RouteIcon />} title="Resolve the place" text="A compatible app combines the code and locality." />
-        </div>
-      </section>
+      <LocalityMattersSection />
 
-      <section className="section product-doorway">
-        <div>
-          <p className="eyebrow">Try it now</p>
-          <h2>Create your 6D address now.</h2>
-          <p>The product screen opens full-screen, asks for location, and still works when a user prefers to drop a pin manually.</p>
-          <div className="launch-chip">
-            <span>Live sample</span>
-            <strong>{generate6DCode(MOGADISHU).code} Halane</strong>
+      <SomaliaUseCaseSection />
+
+      <PracticalApplicationsSection />
+
+      <PropositionSection />
+
+      <TeamSection />
+
+      <FAQSection />
+
+      <section id="contact" className="craft-section craft-section--dark craft-grid-bg craft-grid-bg--dark contact-chapter">
+        <div className="craft-container">
+          <div className="contact-chapter__grid">
+            <header className="contact-chapter__header craft-reveal">
+              <p className="chapter-label">CONTACT</p>
+              <h2 className="display-section">Start a 6D Address conversation</h2>
+              <p className="craft-lead">
+                For postal operators, public-sector teams, developers or service providers interested in the method,
+                pilot design or implementation support.
+              </p>
+
+              <div className="contact-chapter__meta">
+                <span>Open method</span>
+                <span>Practical pilots</span>
+                <span>Implementation support</span>
+              </div>
+            </header>
+
+            <ContactForm />
           </div>
         </div>
-        <div className="doorway-actions">
-          <LiteButton className="button primary" onClick={() => onFind(true)}>Find my 6D Address</LiteButton>
-          <LiteButton className="button secondary dark" onClick={() => onFind(false)}>Drop a pin manually</LiteButton>
-        </div>
       </section>
 
-      <section id="open-system" className="section section-ink open-system" ref={openRef}>
-        <div className="section-grid-layer subtle" aria-hidden="true">
-          <CursorGrid
-            cellSize={70}
-            color="#00B8FF"
-            radius={140}
-            falloff="smooth"
-            holdTime={400}
-            fadeDuration={800}
-            lineWidth={1.2}
-            maxOpacity={0.5}
-            fillOpacity={0}
-            gridOpacity={0.025}
-            cellRadius={0}
-            clickPulse
-            pulseSpeed={600}
-            trackTargetRef={openRef}
-          />
-        </div>
-        <div className="section-heading compact section-content">
-          <p className="eyebrow">A system, not a dependency</p>
-          <h2>Open infrastructure should not depend on one supplier.</h2>
-          <p>The method can be documented, implemented, tested and improved by compatible tools without a mandatory central supplier.</p>
-        </div>
-        <OpenSystemIllustration />
-        <div className="principle-list section-content">
-          {principles.map((principle, index) => (
-            <article key={principle}>
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <b>{principle}</b>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section id="locality" className="section locality-section">
-        <div className="section-heading compact">
-          <p className="eyebrow">Why locality matters</p>
-          <h2>The six digits are a reference, not the whole address.</h2>
-          <p>Locality tells a compatible app which matching position you mean.</p>
-        </div>
-        <LocalityResolverIllustration />
-      </section>
-
-      <section className="section works-best">
-        <div className="section-heading compact">
-          <p className="eyebrow">Where 6D works best</p>
-          <h2>Designed for settled communities with local place knowledge.</h2>
-        </div>
-        <div className="two-column-brief">
-          <BriefList title="Works best" items={["settled communities", "known neighbourhoods, roads, villages, landmarks or districts", "incomplete property addressing"]} />
-          <BriefList title="Works less well" items={["uninhabited places", "areas with no meaningful locality", "situations where a globally unique standalone code is required"]} />
-        </div>
-      </section>
-
-      <section className="section section-dark mogadishu">
-        <div className="mogadishu-copy">
-          <p className="eyebrow">Mogadishu use case</p>
-          <h2>Making homes, offices and service points easier to reach.</h2>
-          <p>
-            6D is being explored through the Mogadishu use case as a practical way to make homes, offices and service
-            points easier to reach.
-          </p>
-        </div>
-        <MogadishuFlow />
-      </section>
-
-      <section id="postal" className="section postal-section">
-        <div className="section-heading compact">
-          <p className="eyebrow">For postal authorities</p>
-          <h2>Extend the reach of the national address.</h2>
-          <p>Pilot in one delivery zone, learn with real operations, then decide how to scale.</p>
-        </div>
-        <PostalPilotIllustration />
-        <div className="postal-ops">
-          {["delivery zones", "address education", "field testing", "data governance", "postal integration"].map((item) => (
-            <span key={item}>{item}</span>
-          ))}
-        </div>
-          <LiteButton className="button secondary dark" href="#contact">Discuss a postal pilot</LiteButton>
-      </section>
-
-      <section id="developers" className="section developers-section">
-        <div className="section-heading compact">
-          <p className="eyebrow">Developer ecosystem</p>
-          <h2>Build compatible tools around an open method.</h2>
-          <p>6D becomes more useful when address creation, scanning, checkout and local-language tools can work together.</p>
-        </div>
-        <DeveloperTilesIllustration />
-        <LiteButton className="button primary" href="#contact">Join the ecosystem</LiteButton>
-      </section>
-
-      <section id="faq" className="section faq-section">
-        <div className="section-heading compact">
-          <p className="eyebrow">FAQ</p>
-          <h2>Clear answers for pilots and implementation.</h2>
-        </div>
-        <div className="faq-list">
-          {faqs.map(([q, a]) => (
-            <details key={q}>
-              <summary>{q}<span>+</span></summary>
-              <p>{a}</p>
-            </details>
-          ))}
-        </div>
-      </section>
-
-      <section id="contact" className="section contact-section">
-        <div className="contact-copy">
-          <p className="eyebrow">Contact</p>
-          <h2>Start a practical conversation.</h2>
-          <p>Useful for postal authorities, government teams, developers, and delivery or logistics partners evaluating a real pilot.</p>
-          <div className="trust-list">
-            <span>Postal pilots</span>
-            <span>Developer compatibility</span>
-            <span>Delivery operations</span>
-          </div>
-        </div>
-        <ContactForm />
-      </section>
-
-      <Footer onFind={() => onFind(true)} />
+      <Footer />
     </main>
   );
 }
@@ -354,13 +413,19 @@ function Navigation({
 
   const renderLinks = () =>
     navItems.map(([id, label]) => (
-      <a key={id} className={`nav-link ${active === id ? "active" : ""}`} href={`#${id}`} onClick={onNavigate}>
+      <a
+        key={id}
+        className={`nav-link ${active === id ? "active" : ""}`}
+        href={`#${id}`}
+        onClick={onNavigate}
+        aria-current={active === id ? "page" : undefined}
+      >
         {label}
       </a>
     ));
 
   return (
-    <nav className={`nav ${scrolled ? "scrolled" : ""} ${menuOpen ? "menu-open" : ""}`}>
+    <nav className={`nav ${scrolled ? "scrolled" : ""} ${menuOpen ? "menu-open" : ""}`} aria-label="Primary navigation">
       <a className="brand" href="#top" onClick={onNavigate} aria-label="6D Address home">
         <img src="/navlogo-320.webp" alt="6D Address" />
       </a>
@@ -368,12 +433,19 @@ function Navigation({
       <div className="nav-actions">
         <span className="method-badge"><span /> Open method</span>
         <LiteButton className="button primary nav-cta" onClick={onFind}>Find my 6D</LiteButton>
-        <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-label="Open navigation menu">
+        <button
+          className="menu-button"
+          type="button"
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-controls="site-navigation"
+          aria-expanded={menuOpen}
+          aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+        >
           <span />
           <span />
         </button>
       </div>
-      <div className={`mobile-menu ${menuOpen ? "open" : ""}`}>
+      <div className={`mobile-menu ${menuOpen ? "open" : ""}`} id="site-navigation">
         {renderLinks()}
         <LiteButton className="button primary" onClick={onFind}>Find my 6D Address</LiteButton>
       </div>
@@ -385,10 +457,12 @@ function Navigation({
 function GlobeHeroVisual() {
   const globeRef = useRef<HTMLDivElement>(null);
   const fallbackRef = useRef<HTMLDivElement>(null);
+  const heavyVisualState = useHeavyVisualState();
   const [globeReady, setGlobeReady] = useState(false);
   const [globeProgress, setGlobeProgress] = useState(0.08);
 
   useEffect(() => {
+    if (heavyVisualState !== "enabled") return;
     if (!globeRef.current) return;
     let readyTimer = 0;
     let cancelled = false;
@@ -425,13 +499,13 @@ function GlobeHeroVisual() {
       window.clearTimeout(readyTimer);
       destroyGlobe?.();
     };
-  }, []);
+  }, [heavyVisualState]);
 
   return (
     <div className="hero-visual hero-content" aria-hidden="true">
       <div className={`hero-globe-root ${globeReady ? "is-ready" : ""}`} ref={globeRef} />
-      <div className="hero-globe-fallback" ref={fallbackRef} />
-      <div className={`hero-globe-loader ${globeReady ? "is-hidden" : ""}`}>
+      <div className={`hero-globe-fallback ${globeReady ? "" : "is-visible"}`} ref={fallbackRef} />
+      <div className={`hero-globe-loader ${globeReady || heavyVisualState === "disabled" ? "is-hidden" : ""}`}>
         <span className="hero-globe-loader-label">Loading globe</span>
         <span className="hero-globe-loader-bar">
           <span style={{ transform: `scaleX(${globeProgress})` }} />
@@ -442,105 +516,268 @@ function GlobeHeroVisual() {
 }
 
 function MethodLabIllustration() {
-  const digitColumns = [
-    { lat: "7", lng: "4", tone: "red" },
-    { lat: "9", lng: "3", tone: "green" },
-    { lat: "2", lng: "5", tone: "blue" },
-  ];
-
   return (
-    <>
-      <div className="how-sixd__layout">
-        <aside className="how-sixd__example">
-          <span className="how-sixd__panel-label">Example location</span>
-          <div className="how-sixd__placeholder">
-            <div className="how-sixd__placeholder-art" aria-hidden="true">
-              <span />
-              <span />
-              <span />
+    <div className="how-method__grid">
+      <header className="how-method__header craft-reveal">
+        <p className="chapter-label">HOW IT WORKS</p>
+        <h2 className="display-section">How 6D Address works</h2>
+        <p className="craft-lead">
+          Latitude and longitude provide the six digits. Locality turns those digits into a clear address people can use.
+        </p>
+      </header>
+
+      <div className="how-method__coordinate-panel craft-panel craft-panel--blueprint craft-reveal">
+        <div className="digit-matrix" aria-label="Latitude digits 7, 9, 2 combine with longitude digits 4, 3, 5 to make 74-93-25">
+          <div className="digit-matrix__sources">
+            <div>
+              <span>Latitude digits</span>
+              <strong><span className="digit-pick digit-pick--red">7</span><span className="digit-pick digit-pick--green">9</span><span className="digit-pick digit-pick--blue">2</span></strong>
             </div>
-            <div className="how-sixd__placeholder-copy">
-              <strong>Placeholder image</strong>
-              <p>A map or locality image will be added here.</p>
+            <div>
+              <span>Longitude digits</span>
+              <strong><span className="digit-pick digit-pick--red">4</span><span className="digit-pick digit-pick--green">3</span><span className="digit-pick digit-pick--blue">5</span></strong>
             </div>
           </div>
-          <p className="how-sixd__example-caption">Gbenderu, Sierra Leone</p>
-        </aside>
 
-        <div className="how-sixd__process">
-          <article className="how-step how-step--source">
-            <div className="how-step__title"><span>1</span><b>Coordinate source</b></div>
-            <div className="how-coordinate-stack">
-              <div>
-                <small>Latitude</small>
-                <strong>
-                  7.<em>8</em><mark className="tone-red">7</mark><mark className="tone-green">9</mark><mark className="tone-blue">2</mark>27 N
-                </strong>
-              </div>
-              <div>
-                <small>Longitude</small>
-                <strong>
-                  11.<em>3</em><mark className="tone-red">4</mark><mark className="tone-green">3</mark><mark className="tone-blue">5</mark>55 W
-                </strong>
-              </div>
-            </div>
-            <p>Latitude and longitude are the starting point.</p>
-          </article>
-
-          <span className="how-step__connector how-step__connector--one" aria-hidden="true" />
-
-          <article className="how-step how-step--digits">
-            <div className="how-step__title"><span>2</span><b>Digit extraction</b></div>
-            <p className="how-step__explanation">2nd, 3rd and 4th decimals become vertical pairs</p>
-            <div className="how-digit-matrix" aria-label="Latitude digits 7 9 2, longitude digits 4 3 5">
-              {digitColumns.map((column) => (
-                <div className={`how-digit-column how-digit-column--${column.tone}`} key={`${column.lat}${column.lng}`}>
-                  <i>{column.lat}</i>
-                  <i>{column.lng}</i>
-                </div>
-              ))}
-            </div>
-            <strong className="how-code-output"><MethodCode code="74-93-25" /></strong>
-            <p>The extracted digits form the 6D code.</p>
-          </article>
-
-          <span className="how-step__connector how-step__connector--two" aria-hidden="true" />
-
-          <article className="how-step how-step--locality">
-            <div className="how-step__title"><span>3</span><b>Locality added</b></div>
-            <span className="how-locality-marker" aria-hidden="true" />
-            <strong className="how-locality-name">Blama</strong>
-            <p>Local place context selects the intended matching position.</p>
-          </article>
-
-          <span className="how-step__connector how-step__connector--three" aria-hidden="true" />
-
-          <article className="how-step how-step--complete">
-            <div className="how-step__title"><span>4</span><b>Complete address</b></div>
-            <div className="how-address-card">
-              <strong><MethodCode code="74-93-25" /></strong>
-              <b>Blama</b>
-              <span>Kenema District</span>
-              <span>Sierra Leone</span>
-            </div>
-            <p>The 6D code with locality becomes a complete address.</p>
-          </article>
+          <div className="digit-matrix__pairs" aria-label="Pair formation">
+            <span><b>7</b><i>+</i><b>4</b><em>74</em></span>
+            <span><b>9</b><i>+</i><b>3</b><em>93</em></span>
+            <span><b>2</b><i>+</i><b>5</b><em>25</em></span>
+          </div>
+          <div className="digit-matrix__result">
+            <ColouredCode code="74-93-25" />
+          </div>
         </div>
       </div>
 
-      <div className="how-sixd__why">
-        <span className="how-sixd__why-label">Why it works</span>
-        <p>Six digits stay short, memorable, and clear when paired with a locality.</p>
+      <div className="how-method__map-placeholder craft-reveal">
+        <div className="how-method__map-label">
+          <span>Example location</span>
+          <strong>Blama</strong>
+          <span>Kenema District</span>
+        </div>
       </div>
-    </>
+
+      <div className="how-method__address-output craft-panel craft-reveal">
+        <span className="how-method__address-label">Complete address</span>
+        <address>
+          <ColouredCode code="74-93-25" />
+          <span className="how-method__address-lines">
+            <span>Blama</span>
+            <span>Kenema District</span>
+            <span>Sierra Leone</span>
+          </span>
+        </address>
+        <p>The six digits remain short. The locality makes the address clear.</p>
+      </div>
+    </div>
   );
 }
 
-function MethodCode({ code }: { code: string }) {
+function AddressExamplesCarousel() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const isMobileViewport = useMediaQuery("(max-width: 760px)");
+  const [userPaused, setUserPaused] = useState(false);
+  const [mobileAutoplayEnabled, setMobileAutoplayEnabled] = useState(false);
+  const [interactionPaused, setInteractionPaused] = useState(false);
+  const [documentHidden, setDocumentHidden] = useState(() => document.hidden);
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const dragStartX = useRef<number | null>(null);
+  const total = addressExamples.length;
+  const mobileAutoplayPaused = isMobileViewport && !mobileAutoplayEnabled;
+  const autoplayPaused = prefersReducedMotion || mobileAutoplayPaused || userPaused || interactionPaused || documentHidden;
+
+  useEffect(() => {
+    if (autoplayPaused || total < 2) return;
+    const timer = window.setInterval(() => {
+      setActiveIndex((index) => (index + 1) % total);
+    }, 3800);
+
+    return () => window.clearInterval(timer);
+  }, [autoplayPaused, total]);
+
+  useEffect(() => {
+    const onVisibilityChange = () => setDocumentHidden(document.hidden);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, []);
+
+  const goTo = (index: number) => setActiveIndex((index + total) % total);
+  const goPrevious = () => {
+    setUserPaused(true);
+    goTo(activeIndex - 1);
+  };
+  const goNext = () => {
+    setUserPaused(true);
+    goTo(activeIndex + 1);
+  };
+
+  useEffect(() => {
+    const track = trackRef.current;
+    const card = track?.children[activeIndex] as HTMLElement | undefined;
+    if (!track || !card) return;
+
+    track.scrollTo({
+      left: card.offsetLeft - track.offsetLeft,
+      behavior: "smooth",
+    });
+  }, [activeIndex]);
+
+  const finishDrag = (clientX: number) => {
+    if (dragStartX.current === null) return;
+    const distance = clientX - dragStartX.current;
+    dragStartX.current = null;
+
+    if (Math.abs(distance) < 42) return;
+    if (distance < 0) goNext();
+    else goPrevious();
+  };
+
+  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === "mouse") return;
+    dragStartX.current = event.clientX;
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      // Some synthetic touch checks do not create an active pointer capture target.
+    }
+  };
+
+  const handlePointerUp = (event: PointerEvent<HTMLDivElement>) => {
+    finishDrag(event.clientX);
+
+    try {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    } catch {
+      // Capture may already be released if the browser handled the gesture natively.
+    }
+  };
+
+  const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
+    dragStartX.current = event.touches[0]?.clientX ?? null;
+  };
+
+  const handleTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
+    const touch = event.changedTouches[0];
+    if (!touch) return;
+    finishDrag(touch.clientX);
+  };
+
+  return (
+    <section className="craft-section craft-section--light examples-chapter address-examples" id="examples">
+      <div className="craft-container address-examples__inner">
+        <div className="examples-chapter__header craft-grid address-examples__header">
+          <div className="examples-chapter__title craft-reveal">
+            <p className="chapter-label">EXAMPLES FROM AROUND THE WORLD</p>
+            <h2 className="display-section">6D Address in action</h2>
+          </div>
+          <div className="examples-chapter__intro craft-reveal">
+          <p className="craft-lead address-examples__lead">
+            The same format can work with local place names in different countries. Each example combines a six-digit
+            reference with locality information people already use.
+          </p>
+          </div>
+        </div>
+
+        <div
+          className="address-examples__carousel"
+          onMouseEnter={() => setInteractionPaused(true)}
+          onMouseLeave={() => setInteractionPaused(false)}
+          onFocusCapture={() => setInteractionPaused(true)}
+          onBlurCapture={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget)) setInteractionPaused(false);
+          }}
+        >
+          <div
+            className="address-examples__viewport"
+            onPointerDown={handlePointerDown}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={() => {
+              dragStartX.current = null;
+            }}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
+            <div className="address-examples__track" ref={trackRef}>
+              {addressExamples.map((example, index) => (
+                <AddressExampleCard example={example} isActive={index === activeIndex} key={example.country} />
+              ))}
+            </div>
+          </div>
+
+          <div className="examples-chapter__controls address-examples__controls" aria-label="Address example carousel controls">
+            <button type="button" className="craft-button craft-button--light examples-chapter__control" onClick={goPrevious} aria-label="Show previous address example">
+              Previous
+            </button>
+            <span className="examples-chapter__counter" aria-live="polite">
+              {String(activeIndex + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
+            </span>
+            <button
+              type="button"
+              className="craft-button craft-button--light examples-chapter__control carousel-pause"
+              onClick={() => {
+                if (isMobileViewport) {
+                  setMobileAutoplayEnabled((value) => !value);
+                  setUserPaused(false);
+                  return;
+                }
+
+                setUserPaused((value) => !value);
+              }}
+              aria-pressed={autoplayPaused}
+            >
+              {autoplayPaused ? "Play" : "Pause"}
+            </button>
+            <button type="button" className="craft-button craft-button--light examples-chapter__control" onClick={goNext} aria-label="Show next address example">
+              Next
+            </button>
+          </div>
+        </div>
+
+        <div className="examples-chapter__progress" aria-hidden="true">
+          <span style={{ transform: `scaleX(${(activeIndex + 1) / total})` }} />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function AddressExampleCard({ example, isActive }: { example: AddressExample; isActive: boolean }) {
+  const { displayLocality, remainingLines } = splitCompleteAddress(example);
+
+  return (
+    <article className={`address-example-card ${isActive ? "is-active" : ""}`}>
+      <h3 className="address-example-card__country">{example.country}</h3>
+
+      <div className="address-example-card__placeholder" aria-hidden="true">
+        <span className="address-example-card__placeholder-logo">6D</span>
+        <span className="address-example-card__road address-example-card__road--one" />
+        <span className="address-example-card__road address-example-card__road--two" />
+        <span className="address-example-card__placeholder-pin" />
+      </div>
+
+      <div className="address-example-card__label">
+        <span className="address-example-card__label-kicker">Format example</span>
+        <strong className="address-example-card__main-line">
+          <ColouredCode code={example.code} className="address-specimen__code" />
+          <span className="address-example-card__locality"> {displayLocality}</span>
+        </strong>
+        <span className="address-example-card__support-lines">
+          {remainingLines.map((line) => (
+            <span key={line}>{line}</span>
+          ))}
+        </span>
+      </div>
+    </article>
+  );
+}
+
+function ColouredCode({ code, className = "" }: { code: string; className?: string }) {
   const [red, green, blue] = code.split("-");
 
   return (
-    <span className="method-code">
+    <span className={`coloured-code ${className}`} aria-label={code}>
       <span className="code-red">{red}</span>
       <span className="code-sep">-</span>
       <span className="code-green">{green}</span>
@@ -550,222 +787,422 @@ function MethodCode({ code }: { code: string }) {
   );
 }
 
-function CoordinateGridIllustration() {
+function LocalityMattersSection() {
+  const { city, code, image, mobileImage, places } = localityMattersExample;
+
   return (
-    <div className="coordinate-visual">
-      <div className="coord-source">
-        <span>Coordinate</span>
-        <b>02.0469 N</b>
-        <b>45.3182 E</b>
+    <section id="locality" className="craft-section craft-section--dark craft-grid-bg craft-grid-bg--dark locality-proof">
+      <div className="craft-container">
+        <div className="locality-proof__grid">
+          <header className="locality-proof__header craft-reveal">
+            <p className="chapter-label">WHY LOCALITY MATTERS</p>
+            <h2 className="display-section">Same code. Different localities.</h2>
+            <p className="craft-lead">
+              A 6D code is a reference, not a complete address on its own. The same six digits can appear in different
+              places. Locality is what makes the intended address clear.
+            </p>
+          </header>
+
+          <figure className="locality-proof__visual craft-reveal">
+            <div className="locality-proof__map">
+              <picture>
+                <source media="(max-width: 560px)" srcSet={mobileImage} />
+                <img
+                  src={image}
+                  alt={`Map-style illustration showing the same 6D code appearing in ${places.map((place) => place.locality).join(", ")}.`}
+                />
+              </picture>
+            </div>
+            <figcaption>
+              Example locations in {city} sharing the same reference.
+            </figcaption>
+          </figure>
+
+          <div className="locality-proof__rows craft-reveal">
+            <div className="locality-proof__shared-code">
+              <span>One shared 6D reference</span>
+              <ColouredCode code={code} />
+              <small>Every locality below uses this same code.</small>
+            </div>
+
+            <div className="locality-proof__rows-header">
+              <span>No.</span>
+              <span>Same code</span>
+              <span>Locality</span>
+              <span>City</span>
+            </div>
+
+            {places.map((place, index) => (
+              <article className="locality-proof__row" key={place.locality}>
+                <span className="locality-proof__index">{String(index + 1).padStart(2, "0")}</span>
+                <ColouredCode code={code} className="locality-proof__code coloured-code--inline" />
+                <span className="locality-proof__place">{place.locality}</span>
+                <span className="locality-proof__city">{place.city}</span>
+              </article>
+            ))}
+          </div>
+
+          <p className="locality-proof__note craft-reveal">
+            The code repeats across the wider area. The locality tells you which matching place is intended.
+          </p>
+        </div>
       </div>
-      <div className="digit-rail">
-        {["3", "5", "1", "2", "1", "2"].map((digit, index) => (
-          <span style={{ animationDelay: `${index * 120}ms` }} key={`${digit}-${index}`}>{digit}</span>
-        ))}
-      </div>
-      <AddressCardIllustration />
-    </div>
+    </section>
   );
 }
 
-function AddressCardIllustration() {
+function SomaliaUseCaseSection() {
   return (
-    <article className="final-address-card">
-      <small>Complete address</small>
-      <b>Airport Road</b>
-      <strong>35-12-12 Halane</strong>
-      <span>Mogadishu, Banaadir, Somalia</span>
-    </article>
-  );
-}
+    <section id="somalia-use-case" className="craft-section craft-section--warm somalia-case">
+      <div className="craft-container">
+        <div className="somalia-case__grid">
+          <header className="somalia-case__header craft-reveal">
+            <p className="chapter-label">SOMALIA USE CASE</p>
+            <h2 className="display-section">Somalia use case</h2>
+            <p className="craft-lead">
+            Somalia provides a practical example of how 6D Address can work with existing locality information. In areas
+            where property numbers or named streets are incomplete, a 6D reference can help provide a clearer last-mile
+            location when combined with district, town, city and regional information.
+          </p>
+          </header>
 
-function LocalityResolverIllustration() {
-  const cells = [
-    ["35-12-12", "Kariakoo", "Dar es Salaam"],
-    ["35-12-12", "Halane", "Mogadishu"],
-    ["35-12-12", "Likoni", "Mombasa"],
-    ["35-12-12", "Aweil Centre", "Aweil"],
-    ["35-12-12", "Old Town", "Hargeisa"],
-    ["35-12-12", "Port Road", "Berbera"],
-  ];
-
-  return (
-    <div className="resolver-visual">
-      <div className="resolver-map">
-        {cells.map(([code, place, city]) => (
-          <article className={place === "Halane" ? "resolved" : ""} key={`${place}-${city}`}>
-            <span>{code}</span>
-            <b>{place}</b>
-            <small>{city}</small>
+          <article className="somalia-case__format craft-panel craft-reveal" aria-labelledby="somalia-format-title">
+            <span className="somalia-case__meta">Address format</span>
+            <h3 id="somalia-format-title">A complete address can combine local context and 6D</h3>
+            <ol className="somalia-case__format-list">
+              <li>Property number and street name</li>
+              <li>6D Address and locality</li>
+              <li>District / town / city</li>
+              <li>Region</li>
+              <li>Country</li>
+            </ol>
           </article>
-        ))}
+
+          <div className="somalia-case__examples craft-reveal" aria-label="Somalia address format examples">
+            <article className="somalia-address-slip somalia-address-slip--street">
+              <span className="somalia-address-slip__label">Example with street context</span>
+              <SomaliaAddressLines
+                lines={["Isbarbardhig Road", "35-12-12 Halane", "Mogadishu", "Wadajir", "Banaadir", "Somalia"]}
+              />
+            </article>
+
+            <article className="somalia-address-slip somalia-address-slip--local">
+              <span className="somalia-address-slip__label">Example without full street context</span>
+              <SomaliaAddressLines
+                lines={["Unnamed local road", "87-67-21 Bargaal", "Bargaal", "Bari", "Puntland", "Somalia"]}
+              />
+            </article>
+          </div>
+
+          <div className="somalia-case__note craft-reveal">
+            <p>
+              Where full property and street addressing is not yet available, 6D Address can provide a practical location
+              reference that works with existing locality information.
+            </p>
+            <small>
+              Examples are provided to illustrate the address format and should be verified against the selected coordinate
+              before operational use.
+            </small>
+          </div>
+        </div>
       </div>
-      <div className="resolver-result">
-        <span>Locality match</span>
-        <strong>35-12-12 Halane</strong>
-        <p>Mogadishu, Banaadir, Somalia</p>
+    </section>
+  );
+}
+
+function SomaliaAddressLines({ lines }: { lines: string[] }) {
+  return (
+    <address className="somalia-address-lines">
+      {lines.map((line) => {
+        const match = line.match(/^(\d{2}-\d{2}-\d{2})\s+(.+)$/);
+        return (
+          <span className={match ? "somalia-address-lines__code" : undefined} key={line}>
+            {match ? (
+              <>
+                <ColouredCode code={match[1]} className="coloured-code--inline somalia-address-lines__inline-code" />
+                <span className="somalia-address-lines__locality">{match[2]}</span>
+              </>
+            ) : line}
+          </span>
+        );
+      })}
+    </address>
+  );
+}
+
+function PracticalApplicationsSection() {
+  return (
+    <section id="applications" className="craft-section craft-section--blueprint craft-grid-bg applications-index">
+      <div className="craft-container">
+        <div className="applications-index__grid">
+          <header className="applications-index__header craft-reveal">
+            <p className="chapter-label">PRACTICAL APPLICATIONS</p>
+            <h2 className="display-section">Where 6D can help</h2>
+            <p className="craft-lead">
+            6D Address can support services that need a simple, shareable location reference where formal addressing is
+            incomplete. The strongest applications are those that work with existing locality information rather than
+            replacing it.
+          </p>
+          </header>
+
+          <div className="applications-index__matrix craft-reveal">
+            {applicationGroups.map((group, groupIndex) => (
+              <section className="application-group" key={group.label} aria-labelledby={`application-group-${groupIndex}`}>
+                <h3 id={`application-group-${groupIndex}`}>{group.label}</h3>
+
+                <div className="application-group__items">
+                  {group.items.map((item, itemIndex) => (
+                    <article className="application-row" key={item.title}>
+                      <span className="application-row__number">
+                        {String(groupIndex + 1).padStart(2, "0")}.{String(itemIndex + 1).padStart(2, "0")}
+                      </span>
+                      <div className="application-row__content">
+                        <h4>{item.title}</h4>
+                        <p>{item.body}</p>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+
+          <p className="applications-index__note craft-reveal">
+          Each use case requires local validation, data governance and clear institutional ownership before operational
+          deployment.
+        </p>
+        </div>
       </div>
-      <p>
-        The same six digits can appear in multiple grid positions. Adding locality selects the intended result.
-      </p>
-    </div>
+    </section>
   );
 }
 
-function OpenSystemIllustration() {
-  const actors = [
-    ["apps", 146, 66],
-    ["postal authority", 252, 192],
-    ["developer", 450, 210],
-    ["delivery company", 642, 192],
-    ["resident", 752, 66],
-  ] as const;
-
+function PropositionSection() {
   return (
-    <svg className="open-illustration section-content" viewBox="0 0 900 320" aria-hidden="true">
-      <defs>
-        <radialGradient id="openCore">
-          <stop offset="0%" stopColor="#00b8ff" stopOpacity="0.28" />
-          <stop offset="100%" stopColor="#006ce3" stopOpacity="0.05" />
-        </radialGradient>
-      </defs>
-      <circle className="core-halo" cx="450" cy="132" r="92" />
-      <g className="open-core">
-        <circle cx="450" cy="132" r="62" />
-        <text x="450" y="126">open 6D</text>
-        <text x="450" y="148">method</text>
-      </g>
-      {actors.map(([label, x, y]) => (
-        <g className="open-actor" key={label}>
-          <path d={`M450 132 C${(450 + x) / 2} ${y < 132 ? y + 70 : y - 44} ${(450 + x) / 2} ${y} ${x} ${y}`} />
-          <rect x={x - 78} y={y - 24} width="156" height="48" rx="24" />
-          <text x={x} y={y + 5}>{label}</text>
-        </g>
-      ))}
-    </svg>
-  );
-}
+    <section id="proposition" className="craft-section craft-section--dark craft-grid-bg craft-grid-bg--dark proposition-chapter">
+      <div className="craft-container">
+        <div className="proposition-chapter__grid">
+          <header className="proposition-chapter__header craft-reveal">
+            <p className="chapter-label">OUR PROPOSITION</p>
+            <h2 className="display-section">An open addressing method, supported by practical implementation tools.</h2>
+            <p className="craft-lead">
+            6D Address provides a simple way to create a short location reference from latitude and longitude, then
+            combine it with the locality information people already use. The method can support postal, civic, delivery
+            and digital services in places where formal property addressing is incomplete.
+          </p>
+          </header>
 
-function PostalPilotIllustration() {
-  return (
-    <div className="pilot-flow">
-      {["Pilot", "Learn", "Scale"].map((step, index) => (
-        <article key={step}>
-          <span>{index + 1}</span>
-          <b>{step}</b>
-          <p>{index === 0 ? "Choose one district or delivery zone." : index === 1 ? "Measure creation, resolution and trust." : "Expand only when the operating model works."}</p>
-        </article>
-      ))}
-    </div>
-  );
-}
+          <aside className="proposition-chapter__partner craft-panel craft-panel--dark craft-reveal" aria-labelledby="partner-receive-title">
+            <span className="proposition-chapter__meta">Partner package</span>
+            <h3 id="partner-receive-title">What partners can receive</h3>
+            <ul>
+              {partnerDeliverables.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </aside>
 
-function DeveloperTilesIllustration() {
-  const tiles = ["API / resolver", "QR tools", "Local-language apps", "Checkout integrations", "Offline resolvers", "Government tools"];
-  return (
-    <div className="developer-tiles">
-      {tiles.map((tile, index) => (
-        <article key={tile}>
-          <span>{String(index + 1).padStart(2, "0")}</span>
-          <b>{tile}</b>
-        </article>
-      ))}
-    </div>
-  );
-}
+          <div className="proposition-chapter__pillars craft-reveal" aria-label="6D proposition pillars">
+            {propositionPillars.map((pillar, index) => (
+              <article className="proposition-pillar" key={pillar.title}>
+                <span className="proposition-pillar__number">{String(index + 1).padStart(2, "0")}</span>
+                <div>
+                  <h3>{pillar.title}</h3>
+                  <p>{pillar.body}</p>
+                </div>
+              </article>
+            ))}
+          </div>
 
-function ProcessCard({ icon, title, text }: { icon: ReactNode; title: string; text: string }) {
-  return (
-    <article className="process-card">
-      {icon}
-      <h3>{title}</h3>
-      <p>{text}</p>
-    </article>
-  );
-}
-
-function BriefList({ title, items }: { title: string; items: string[] }) {
-  return (
-    <article className="brief-list">
-      <h3>{title}</h3>
-      <ul>
-        {items.map((item) => <li key={item}>{item}</li>)}
-      </ul>
-    </article>
-  );
-}
-
-function MogadishuFlow() {
-  return (
-    <div className="mogadishu-panel">
-      <div className="mini-map">
-        <span className="destination-marker" />
-        <AddressCardIllustration />
+          <div className="proposition-chapter__close craft-reveal">
+            <p>The aim is not to replace local addressing systems. It is to make them easier to complete, share and use.</p>
+            <a className="craft-button craft-button--primary" href="#contact">Discuss a pilot</a>
+          </div>
+        </div>
       </div>
-      <div className="flow-steps">
-        {["Local names", "6D reference", "Driver resolves", "Service point reached"].map((step) => <span key={step}>{step}</span>)}
+    </section>
+  );
+}
+
+function TeamSection() {
+  return (
+    <section id="team" className="craft-section craft-section--warm team-editorial">
+      <div className="craft-container">
+        <div className="team-editorial__grid">
+          <header className="team-editorial__header craft-reveal">
+            <p className="chapter-label">THE TEAM</p>
+            <h2 className="display-section">Our 6D Address team</h2>
+            <p className="craft-lead">
+            6D Address is being developed by a small founding team with experience in postal development, software
+            implementation and addressing systems. The team is working to document the method, test practical use cases
+            and engage partners who can help develop compatible implementations.
+          </p>
+          </header>
+
+          <div className="team-editorial__list craft-reveal" aria-label="6D Address founding team">
+          {teamMembers.map((member, index) => (
+            <article className="team-editorial__member" key={member.name}>
+              <div className="team-editorial__mark" aria-hidden="true">
+                <img src={member.image} alt="" loading="lazy" />
+              </div>
+              <div className="team-editorial__content">
+                <span className="team-editorial__index">{String(index + 1).padStart(2, "0")}</span>
+                <h3>{member.name}</h3>
+                <p className="team-editorial__role">{member.role}</p>
+                <p className="team-editorial__bio">{member.bio}</p>
+              </div>
+            </article>
+          ))}
+          </div>
+
+          <p className="team-editorial__closing craft-reveal">
+          The team is now focused on refining the method, preparing documentation and engaging partners for practical
+          pilots.
+        </p>
+        </div>
       </div>
-    </div>
+    </section>
+  );
+}
+
+function FAQSection() {
+  const [activeFaqGroup, setActiveFaqGroup] = useState(0);
+  const [openFaqKey, setOpenFaqKey] = useState("0-0");
+
+  const selectFaqGroup = (groupIndex: number) => {
+    setActiveFaqGroup(groupIndex);
+    setOpenFaqKey(`${groupIndex}-0`);
+  };
+
+  const toggleFaqItem = (groupIndex: number, itemIndex: number) => {
+    const key = `${groupIndex}-${itemIndex}`;
+    setOpenFaqKey((current) => (current === key ? "" : key));
+  };
+
+  const activeGroup = faqGroups[activeFaqGroup];
+
+  return (
+    <section id="faq" className="craft-section craft-section--warm faq-chapter">
+      <div className="craft-container">
+        <div className="faq-chapter__grid">
+          <header className="faq-chapter__header craft-reveal">
+            <p className="chapter-label">FAQ</p>
+            <h2 className="display-section">Frequently asked questions</h2>
+            <p className="craft-lead">
+              6D Address only becomes unique when the locality is present. 6D Address is a reconfiguration of latitude
+              and longitude coordinates and repeats many times across a territory. But it never repeats across a locality.
+            </p>
+
+            <div className="faq-chapter__groups" aria-label="FAQ categories">
+              {faqGroups.map((group, groupIndex) => (
+                <button
+                  className="faq-chapter__group-button"
+                  type="button"
+                  key={group.label}
+                  aria-pressed={activeFaqGroup === groupIndex}
+                  onClick={() => selectFaqGroup(groupIndex)}
+                >
+                  <span>{String(groupIndex + 1).padStart(2, "0")}</span>
+                  {group.label}
+                </button>
+              ))}
+            </div>
+          </header>
+
+          <div className="faq-chapter__accordion craft-reveal">
+            <p className="faq-chapter__active-label">{activeGroup.label}</p>
+
+            {activeGroup.items.map((item, itemIndex) => {
+              const key = `${activeFaqGroup}-${itemIndex}`;
+              const isOpen = openFaqKey === key;
+              const answerId = `faq-panel-${key}`;
+              const buttonId = `faq-button-${key}`;
+
+            return (
+              <article className="faq-item" key={item.question}>
+                <button
+                  className="faq-item__button"
+                  type="button"
+                  id={buttonId}
+                  aria-expanded={isOpen}
+                  aria-controls={answerId}
+                  onClick={() => toggleFaqItem(activeFaqGroup, itemIndex)}
+                >
+                  <span>{item.question}</span>
+                  <span className="faq-item__indicator" aria-hidden="true">{isOpen ? "-" : "+"}</span>
+                </button>
+                <div className="faq-item__answer" id={answerId} role="region" aria-labelledby={buttonId} hidden={!isOpen}>
+                  <p>{item.answer}</p>
+                </div>
+              </article>
+            );
+          })}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
 function ContactForm() {
   return (
-    <form className="contact-form" name="contact" method="POST" data-netlify="true" action="/contact-thanks">
+    <form
+      className="contact-form craft-reveal"
+      name="contact"
+      method="POST"
+      data-netlify="true"
+      netlify-honeypot="bot-field"
+      action="/contact-thanks"
+    >
       <input type="hidden" name="form-name" value="contact" />
-      <label>Name<input name="name" required /></label>
-      <label>Organisation<input name="organisation" /></label>
-      <label>Work email<input name="email" type="email" required /></label>
-      <label>Country / region<input name="country" /></label>
-      <label>Enquiry type<select name="type" defaultValue="Postal authority / government">
-        <option>Postal authority / government</option>
-        <option>Humanitarian / development</option>
-        <option>Developer / API</option>
-        <option>Delivery / logistics</option>
-        <option>Commercial partnership</option>
-        <option>Other</option>
+      <p className="contact-form__hidden">
+        <label>
+          Do not fill this out if you are human:
+          <input name="bot-field" />
+        </label>
+      </p>
+      <div className="contact-form__row">
+        <label><span>Name</span><input name="name" type="text" autoComplete="name" required /></label>
+        <label><span>Organisation</span><input name="organisation" type="text" autoComplete="organization" /></label>
+      </div>
+      <label><span>Email</span><input name="email" type="email" autoComplete="email" required /></label>
+      <label><span>Interest area</span><select name="interest" defaultValue="" required>
+        <option value="" disabled>Select one</option>
+        <option value="Pilot discussion">Pilot discussion</option>
+        <option value="Postal or public-sector use">Postal or public-sector use</option>
+        <option value="Developer / compatible tools">Developer / compatible tools</option>
+        <option value="General enquiry">General enquiry</option>
       </select></label>
-      <label>Message<textarea name="message" rows={5} required /></label>
-      <LiteButton className="button primary" type="submit">Send enquiry</LiteButton>
-      <p>Prefer email? Contact us at <a href="mailto:contact@6daddress.com">contact@6daddress.com</a></p>
+      <label><span>Message</span><textarea name="message" rows={5} required /></label>
+      <LiteButton className="craft-button craft-button--primary" type="submit">Send enquiry</LiteButton>
     </form>
   );
 }
 
-function Footer({ onFind }: { onFind: () => void }) {
+function Footer() {
   return (
-    <footer className="footer">
-      <div className="footer-brand">
-        <img src="/logo-256.webp" alt="6D Address" />
-        <p>An open addressing method for places formal addressing systems have missed.</p>
-      </div>
-      <FooterColumn title="Product" links={[["Find my 6D", onFind], ["How it works", "#method"], ["Why locality matters", "#locality"]]} />
-      <FooterColumn title="Audiences" links={[["Postal authorities", "#postal"], ["Developers", "#developers"], ["Delivery partners", "#contact"]]} />
-      <FooterColumn title="Method" links={[["Open system", "#open-system"], ["Examples", "#examples"], ["FAQ", "#faq"]]} />
-      <div className="footer-column">
-        <h3>Contact</h3>
-        <a href="mailto:contact@6daddress.com">contact@6daddress.com</a>
-      </div>
-      <div className="footer-bottom">
-        <span>Copyright 2026 6D Address</span>
-        <span>Six digits plus locality.</span>
-        <span>Privacy</span>
-        <span>Terms</span>
+    <footer className="site-footer">
+      <div className="craft-container site-footer__inner">
+        <div className="site-footer__brand">
+          <a href="#" className="site-footer__logo" aria-label="6D Address home">6D Address</a>
+          <p>6D Address is being documented as an open addressing method.</p>
+        </div>
+
+        <nav className="site-footer__nav" aria-label="Footer navigation">
+          <a href="#how-it-works">How it works</a>
+          <a href="#examples">Examples</a>
+          <a href="#locality">Locality</a>
+          <a href="#proposition">Proposition</a>
+          <a href="#faq">FAQ</a>
+          <a href="#contact">Contact</a>
+        </nav>
+
+        <div className="site-footer__meta">
+          <span>© {new Date().getFullYear()} 6D Address</span>
+          <span>Open method under documentation</span>
+        </div>
       </div>
     </footer>
-  );
-}
-
-function FooterColumn({ title, links }: { title: string; links: Array<[string, string | (() => void)]> }) {
-  return (
-    <div className="footer-column">
-      <h3>{title}</h3>
-      {links.map(([label, href]) => typeof href === "function" ? (
-        <button key={label} onClick={href}>{label}</button>
-      ) : (
-        <a key={label} href={href}>{label}</a>
-      ))}
-    </div>
   );
 }
 
@@ -794,35 +1231,6 @@ function LiteButton({
   }
 
   return <button className={classes} type={type} onClick={onClick} onPointerMove={handlePointerMove}>{children}</button>;
-}
-
-function GpsPhoneIcon() {
-  return (
-    <svg viewBox="0 0 96 96" aria-hidden="true">
-      <rect x="30" y="12" width="36" height="72" rx="8" />
-      <path d="M40 68h16M48 28v28M34 42h28" />
-      <circle cx="48" cy="42" r="10" />
-    </svg>
-  );
-}
-
-function QrMessageIcon() {
-  return (
-    <svg viewBox="0 0 96 96" aria-hidden="true">
-      <path d="M18 22h60v42H42L26 78V64h-8V22Z" />
-      <path d="M32 34h10v10H32zM54 34h10v10H54zM32 50h10v10H32zM54 50h4M64 50h2M54 58h12" />
-    </svg>
-  );
-}
-
-function RouteIcon() {
-  return (
-    <svg viewBox="0 0 96 96" aria-hidden="true">
-      <path d="M20 74C32 44 52 58 58 34c4-17 18-18 24-12" />
-      <circle cx="20" cy="74" r="7" />
-      <path d="M78 22c-8 12-12 18-12 18S54 30 54 22a12 12 0 0 1 24 0Z" />
-    </svg>
-  );
 }
 
 export default App;

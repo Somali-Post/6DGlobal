@@ -64,9 +64,9 @@ export function createGridOverlay(google: any, map: any) {
     clearSelectedBoxes();
     const snapped = snapToGridCenter(coordinate);
     const styles = [
-      { scale: 100, strokeColor: "#FF7A1A", strokeOpacity: 0.58, fillOpacity: 0, zIndex: 31 },
-      { scale: 1000, strokeColor: "#00B8FF", strokeOpacity: 0.6, fillOpacity: 0, zIndex: 32 },
-      { scale: 10000, strokeColor: "#006CE3", strokeOpacity: 0.95, fillOpacity: 0.16, zIndex: 33 },
+      { scale: 100, strokeColor: "#D32F2F", strokeOpacity: 0.8, fillOpacity: 0, zIndex: 31 },
+      { scale: 1000, strokeColor: "#388E3C", strokeOpacity: 0.8, fillOpacity: 0, zIndex: 32 },
+      { scale: 10000, strokeColor: "#1976D2", strokeOpacity: 0.8, fillOpacity: 0.15, zIndex: 33 },
     ];
 
     styles.forEach((style) => {

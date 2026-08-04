@@ -13,13 +13,13 @@ export type MapAddress = {
   locality: string;
   cityLine: string;
   city?: string;
+  postalTown?: string;
   region?: string;
   country?: string;
 };
 
 export type MapAdapter = {
   setPin: (coordinate: Coordinate, zoom?: number) => void;
-  useMyLocation: () => void;
   destroy: () => void;
 };
 
@@ -39,15 +39,16 @@ export async function createGoogleMapsAdapter(args: {
 
   const map = new google.maps.Map(args.element, {
     center: args.initial,
-    zoom: 13,
+    zoom: 11,
     disableDefaultUI: true,
-    zoomControl: false,
+    zoomControl: true,
     streetViewControl: false,
     mapTypeControl: false,
     fullscreenControl: false,
     cameraControl: false,
     clickableIcons: false,
     gestureHandling: "greedy",
+    draggableCursor: "pointer",
     styles: [
       { featureType: "poi", stylers: [{ visibility: "off" }] },
       { featureType: "transit", stylers: [{ visibility: "off" }] },
@@ -91,21 +92,6 @@ export async function createGoogleMapsAdapter(args: {
 
   return {
     setPin,
-    useMyLocation() {
-      if (!navigator.geolocation) {
-        args.onNotice("This browser does not support location lookup. Click the map to choose a location manually.");
-        return;
-      }
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setPin({ lat: position.coords.latitude, lng: position.coords.longitude }, 18);
-        },
-        () => {
-          args.onNotice("Location access was not allowed. Click the map to choose a location manually.");
-        },
-        { enableHighAccuracy: true, timeout: 12000 },
-      );
-    },
     destroy() {
       google.maps.event.removeListener(mapClick);
       google.maps.event.removeListener(idleListener);
@@ -146,12 +132,21 @@ function resolveAddress(
 ) {
   const fallback: MapAddress = {
     locality: "Unknown locality",
-    cityLine: "Manual pin",
+    cityLine: "Selected location",
   };
+  let settled = false;
+  let timeout = 0;
+  const finish = (address: MapAddress) => {
+    if (settled) return;
+    settled = true;
+    window.clearTimeout(timeout);
+    onAddress(address);
+  };
+  timeout = window.setTimeout(() => finish(fallback), 5000);
 
   geocoder.geocode({ location: coordinate }, (results?: any[], status?: string) => {
     if (status !== "OK" || !Array.isArray(results) || !results[0]) {
-      onAddress(fallback);
+      finish(fallback);
       return;
     }
 
@@ -162,6 +157,7 @@ function resolveAddress(
     const country = byType("country");
     const region = byType("administrative_area_level_1");
     const district = byType("administrative_area_level_2");
+    const postalTown = byType("postal_town") || byType("locality");
     const sublocality = byType("sublocality_level_1") || byType("sublocality") || byType("neighborhood");
     const city = byType("locality") || (region === "Banaadir" ? "Mogadishu" : undefined) || district;
     const locality = sublocality || district || city || "Unknown locality";
@@ -174,9 +170,10 @@ function resolveAddress(
       const finalCity = finalRegion === "Banaadir" ? "Mogadishu" : city;
       const finalCountry = districtBoundary ? "Somalia" : cleanCountry;
 
-      onAddress({
+      finish({
         locality: finalLocality,
         city: finalCity,
+        postalTown,
         region: finalRegion,
         country: finalCountry,
         cityLine: [finalCity, finalRegion, finalCountry].filter(Boolean).join(", ") || fallback.cityLine,
