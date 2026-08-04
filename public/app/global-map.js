@@ -75,6 +75,9 @@ function parseAddressComponents(geocodeComponents, placeResult) {
         const component = geocodeComponents.find(c => c.types.includes(type));
         return component ? component.long_name : null;
     };
+    const countryComponent = geocodeComponents.find(c => c.types.includes('country'));
+    const isUnitedKingdom = countryComponent
+        && (countryComponent.short_name === 'GB' || countryComponent.long_name === 'United Kingdom');
 
     const addUnique = (name) => {
         if (!name) return false;
@@ -100,6 +103,35 @@ function parseAddressComponents(geocodeComponents, placeResult) {
 
         return false;
     };
+
+    if (isUnitedKingdom) {
+        addFromTypes([
+            'sublocality_level_1',
+            'sublocality',
+            'neighborhood'
+        ]);
+
+        if (selectedNames.length === 0 && placeResult?.name) {
+            addUnique(placeResult.name);
+        }
+
+        addFromTypes([
+            'postal_town',
+            'locality'
+        ]);
+
+        addUnique(countryComponent.long_name);
+
+        if (selectedNames.length === 0) {
+            selectedNames.push('Unknown Location');
+        }
+
+        return {
+            line1: selectedNames[0] || '',
+            line2: selectedNames[1] || '',
+            line3: selectedNames[2] || ''
+        };
+    }
 
     if (placeResult?.name) {
         addUnique(placeResult.name);
