@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>6D Address - Global Demonstrator</title>
-    <link rel="stylesheet" href="global-map.css?v=20260708-controls">
+    <link rel="stylesheet" href="global-map.css?v=20260805-address-lines">
 </head>
 <body>
     <div id="map"></div>
@@ -20,13 +20,12 @@
     <div id="info-panel">
         <div id="code-display"></div>
         <div id="address-display">
-            <div id="line1-display">Click on the map to generate</div>
-            <div id="line2-display">a 6D Address</div>
-            <div id="line3-display"></div>
+            <div class="address-line address-line-primary">Click on the map to generate</div>
+            <div class="address-line">a 6D Address</div>
         </div>
     </div>
 
     
-     <script type="module" src="public/app/global-map.js"></script>
+     <script type="module" src="public/app/global-map.js?v=20260805-address-lines"></script>
 </body>
 </html>

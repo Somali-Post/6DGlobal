@@ -26,7 +26,7 @@ async function handleMapClick(rawLatLng) {
     drawGridBoxes(rawLatLng);
     const snappedLatLng = snapToGridCenter(rawLatLng);
     const { formattedCode, localitySuffix } = getFormatted6DCode(snappedLatLng);
-    const loadingAddress = { line1: 'Locating...', line2: '', line3: '' };
+    const loadingAddress = { lines: ['Locating...'] };
     updateInfoPanel(formattedCode, loadingAddress, '');
     const [geocodeResult, placeResult] = await Promise.all([
         getReverseGeocode(snappedLatLng),
@@ -71,13 +71,6 @@ function getPlaceDetails(latLng) {
 
 function parseAddressComponents(geocodeComponents, placeResult) {
     const selectedNames = [];
-    const getComponent = (type) => {
-        const component = geocodeComponents.find(c => c.types.includes(type));
-        return component ? component.long_name : null;
-    };
-    const countryComponent = geocodeComponents.find(c => c.types.includes('country'));
-    const isUnitedKingdom = countryComponent
-        && (countryComponent.short_name === 'GB' || countryComponent.long_name === 'United Kingdom');
 
     const addUnique = (name) => {
         if (!name) return false;
@@ -94,81 +87,50 @@ function parseAddressComponents(geocodeComponents, placeResult) {
         return true;
     };
 
-    const addFromTypes = (types) => {
+    const addAllFromTypes = (types) => {
         for (const type of types) {
-            if (addUnique(getComponent(type))) {
-                return true;
+            for (const component of geocodeComponents) {
+                if (component.types.includes(type)) {
+                    addUnique(component.long_name);
+                }
             }
         }
-
-        return false;
     };
-
-    if (isUnitedKingdom) {
-        addFromTypes([
-            'sublocality_level_1',
-            'sublocality',
-            'neighborhood'
-        ]);
-
-        if (selectedNames.length === 0 && placeResult?.name) {
-            addUnique(placeResult.name);
+    const addRemainingComponents = () => {
+        for (const component of geocodeComponents) {
+            addUnique(component.long_name);
         }
-
-        addFromTypes([
-            'postal_town',
-            'locality'
-        ]);
-
-        addUnique(countryComponent.long_name);
-
-        if (selectedNames.length === 0) {
-            selectedNames.push('Unknown Location');
-        }
-
-        return {
-            line1: selectedNames[0] || '',
-            line2: selectedNames[1] || '',
-            line3: selectedNames[2] || ''
-        };
-    }
+    };
 
     if (placeResult?.name) {
         addUnique(placeResult.name);
     }
 
-    addFromTypes([
+    addAllFromTypes([
         'neighborhood',
+        'sublocality_level_5',
+        'sublocality_level_4',
+        'sublocality_level_3',
+        'sublocality_level_2',
         'sublocality_level_1',
         'sublocality',
-        'administrative_area_level_3',
-        'administrative_area_level_4',
-        'administrative_area_level_5',
-        'postal_town'
-    ]);
-
-    addFromTypes([
-        'locality',
         'postal_town',
+        'locality',
+        'administrative_area_level_5',
+        'administrative_area_level_4',
+        'administrative_area_level_3',
         'administrative_area_level_2',
-        'administrative_area_level_1'
+        'administrative_area_level_1',
+        'country'
     ]);
-
-    if (selectedNames.length < 2) {
-        addFromTypes([
-            'administrative_area_level_2',
-            'administrative_area_level_1',
-            'locality'
-        ]);
-    }
-
-    addUnique(getComponent('country'));
+    addRemainingComponents();
 
     if (selectedNames.length === 0) {
         selectedNames.push('Unknown Location');
     }
 
     return {
+        lines: selectedNames,
         line1: selectedNames[0] || '',
         line2: selectedNames[1] || '',
         line3: selectedNames[2] || ''
@@ -177,14 +139,28 @@ function parseAddressComponents(geocodeComponents, placeResult) {
 
 function updateInfoPanel(code, address, suffix) {
     const codeDisplay = document.getElementById('code-display');
-    const line1Display = document.getElementById('line1-display');
-    const line2Display = document.getElementById('line2-display');
-    const line3Display = document.getElementById('line3-display');
+    const addressDisplay = document.getElementById('address-display');
     codeDisplay.innerHTML = `<span class="code-2d">${code.c2d}</span>-<span class="code-4d">${code.c4d}</span>-<span class="code-6d">${code.c6d}</span>`;
-    const line1 = [address.line1, suffix].filter(Boolean).join(' ').trim();
-    line1Display.textContent = line1 || 'Unknown Location';
-    line2Display.textContent = address.line2 || '';
-    line3Display.textContent = address.line3 || '';
+    const sourceLines = Array.isArray(address.lines)
+        ? address.lines
+        : [address.line1, address.line2, address.line3];
+    const displayLines = sourceLines
+        .map(line => line ? line.trim() : '')
+        .filter(Boolean);
+
+    if (displayLines.length === 0) {
+        displayLines.push('Unknown Location');
+    }
+
+    displayLines[0] = [displayLines[0], suffix].filter(Boolean).join(' ').trim();
+    addressDisplay.replaceChildren(...displayLines.map((line, index) => {
+        const lineElement = document.createElement('div');
+        lineElement.className = index === 0
+            ? 'address-line address-line-primary'
+            : 'address-line';
+        lineElement.textContent = line;
+        return lineElement;
+    }));
 }
 
 function updateDynamicGrid() {

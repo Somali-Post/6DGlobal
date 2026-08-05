@@ -445,6 +445,9 @@ body.panel-open {
     box-shadow: 14px 14px 32px rgba(15, 18, 32, 0.12), -10px -10px 26px rgba(255,255,255,0.85);
     text-align: center;
     min-width: 320px;
+    max-width: min(520px, calc(100vw - 48px));
+    max-height: min(52vh, 420px);
+    overflow-y: auto;
     transition: all 0.3s ease;
 }
 
@@ -459,22 +462,23 @@ body.panel-open {
 .code-4d { color: #388E3C; }
 .code-6d { color: #1976D2; }
 
-#line1-display {
+#address-display {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.address-line {
+    overflow-wrap: anywhere;
+    font-size: 0.86rem;
+    line-height: 1.25;
+    color: rgba(16, 32, 64, 0.68);
+}
+
+.address-line-primary {
     font-size: 1rem;
     font-weight: 600;
     color: #0b3d91;
-}
-
-#line2-display {
-    font-size: 0.92rem;
-    color: rgba(16, 32, 64, 0.75);
-}
-
-#line3-display {
-    font-size: 0.8rem;
-    color: rgba(16, 32, 64, 0.55);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
 }
 
 @media (max-width: 1024px) {
