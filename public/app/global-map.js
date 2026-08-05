@@ -71,6 +71,15 @@ function getPlaceDetails(latLng) {
 
 function parseAddressComponents(geocodeComponents, placeResult) {
     const selectedNames = [];
+    const hiddenAddressTypes = new Set(['plus_code', 'postal_code']);
+
+    const shouldShowAddressComponent = (component) => {
+        if (!Array.isArray(component?.types)) return true;
+
+        return !component.types.some(type =>
+            hiddenAddressTypes.has(type) || type.startsWith('postal_code')
+        );
+    };
 
     const addUnique = (name) => {
         if (!name) return false;
@@ -90,7 +99,7 @@ function parseAddressComponents(geocodeComponents, placeResult) {
     const addAllFromTypes = (types) => {
         for (const type of types) {
             for (const component of geocodeComponents) {
-                if (component.types.includes(type)) {
+                if (shouldShowAddressComponent(component) && component.types.includes(type)) {
                     addUnique(component.long_name);
                 }
             }
@@ -98,6 +107,8 @@ function parseAddressComponents(geocodeComponents, placeResult) {
     };
     const addRemainingComponents = () => {
         for (const component of geocodeComponents) {
+            if (!shouldShowAddressComponent(component)) continue;
+
             addUnique(component.long_name);
         }
     };
