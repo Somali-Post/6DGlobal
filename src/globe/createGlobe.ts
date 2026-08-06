@@ -35,7 +35,6 @@ import {
 
 export type HeroGlobeOptions = Partial<GlobeConfig> & {
   container: HTMLElement;
-  fallbackElement?: HTMLElement;
   autoRotate?: boolean;
   reducedMotion?: boolean;
   onProgress?: (loaded: number, total: number) => void;
@@ -157,7 +156,7 @@ function createCurvedLocationLabel(label: GlobeLocationLabel, texture: Texture):
 
 export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
   const config: GlobeConfig = { ...GLOBE_CONFIG, ...options };
-  const { container, fallbackElement } = options;
+  const { container } = options;
   const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
   let reducedMotion = options.reducedMotion ?? reducedMotionQuery.matches;
   let isVisible = document.visibilityState === 'visible';
@@ -172,15 +171,11 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
   let currentTiltY = 0;
 
   if (!canUseWebGL()) {
-    fallbackElement?.classList.add('is-visible');
-    options.onReady?.();
     return {
       updateConfig: () => undefined,
       destroy: () => undefined,
     };
   }
-
-  fallbackElement?.classList.remove('is-visible');
 
   const renderer = new WebGLRenderer({
     alpha: true,
@@ -200,10 +195,17 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
   const segments = isMobile ? config.mobileSegments : config.desktopSegments;
   const textureLoadTotal = 3;
   let loadedTextureCount = 0;
+  let texturesReady = false;
+  let readyReported = false;
   const markTextureReady = () => {
     loadedTextureCount += 1;
     options.onProgress?.(loadedTextureCount, textureLoadTotal);
-    if (loadedTextureCount === textureLoadTotal) options.onReady?.();
+    texturesReady = loadedTextureCount === textureLoadTotal;
+  };
+  const reportReadyAfterRender = () => {
+    if (!texturesReady || readyReported) return;
+    readyReported = true;
+    options.onReady?.();
   };
   options.onProgress?.(0, textureLoadTotal);
   const surfaceTexture = createSurfaceTexture(isMobile, markTextureReady);
@@ -292,6 +294,7 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
       });
 
       renderer.render(scene, camera);
+      reportReadyAfterRender();
     }
 
     animationId = window.requestAnimationFrame(render);

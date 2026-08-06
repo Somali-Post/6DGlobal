@@ -32,13 +32,6 @@ const imageJobs = [
     widths: [1024, 1536, 2048],
     quality: 76,
   },
-  {
-    input: "public/images/hero-globe-fallback.png",
-    outputDir: "public/images/globe",
-    name: "hero-globe-fallback",
-    widths: [720, 1200, 1600],
-    quality: 78,
-  },
 ];
 
 const logoJobs = [

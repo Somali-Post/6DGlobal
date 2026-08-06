@@ -343,7 +343,7 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
 
       <section className="craft-section craft-section--blueprint craft-grid-bg how-method" id="how-it-works">
         <div className="craft-container">
-          <MethodLabIllustration />
+          <HowItWorksSection />
         </div>
       </section>
 
@@ -456,12 +456,11 @@ function Navigation({
 
 function GlobeHeroVisual() {
   const globeRef = useRef<HTMLDivElement>(null);
-  const fallbackRef = useRef<HTMLDivElement>(null);
   const heavyVisualState = useHeavyVisualState();
   const [globeReady, setGlobeReady] = useState(false);
-  const [globeProgress, setGlobeProgress] = useState(0.08);
 
   useEffect(() => {
+    setGlobeReady(false);
     if (heavyVisualState !== "enabled") return;
     if (!globeRef.current) return;
     let readyTimer = 0;
@@ -469,7 +468,6 @@ function GlobeHeroVisual() {
     let destroyGlobe: (() => void) | undefined;
     const markReady = () => {
       if (cancelled) return;
-      setGlobeProgress(1);
       window.clearTimeout(readyTimer);
       readyTimer = window.setTimeout(() => setGlobeReady(true), 180);
     };
@@ -479,15 +477,11 @@ function GlobeHeroVisual() {
 
       const globe = createHeroGlobe({
         container: globeRef.current,
-        fallbackElement: fallbackRef.current ?? undefined,
         rotationDuration: 50,
         initialLongitude: -150,
         globeScale: 1,
         horizontalOffset: 0.62,
         pointerTiltDegrees: 0,
-        onProgress: (loaded, total) => {
-          if (!cancelled) setGlobeProgress(Math.max(0.08, Math.min(0.96, loaded / total)));
-        },
         onReady: markReady,
       });
 
@@ -504,95 +498,115 @@ function GlobeHeroVisual() {
   return (
     <div className="hero-visual hero-content" aria-hidden="true">
       <div className={`hero-globe-root ${globeReady ? "is-ready" : ""}`} ref={globeRef} />
-      <div className={`hero-globe-fallback ${globeReady ? "" : "is-visible"}`} ref={fallbackRef} />
-      <div className={`hero-globe-loader ${globeReady || heavyVisualState === "disabled" ? "is-hidden" : ""}`}>
-        <span className="hero-globe-loader-label">Loading globe</span>
-        <span className="hero-globe-loader-bar">
-          <span style={{ transform: `scaleX(${globeProgress})` }} />
-        </span>
-      </div>
     </div>
   );
 }
 
-function MethodLabIllustration() {
+function HowItWorksSection() {
   return (
-    <div className="how-method__grid">
-      <header className="how-method__header craft-reveal">
-        <p className="chapter-label">HOW IT WORKS</p>
-        <h2 className="display-section">How 6D Address works</h2>
-        <p className="craft-lead">
-          Latitude and longitude provide the six digits. Locality turns those digits into a clear address people can use.
-        </p>
-      </header>
+    <>
+      <div className="how-method__layout">
+        <header className="how-method__intro craft-reveal">
+          <p className="chapter-label">HOW IT WORKS</p>
+          <h2 className="display-section">How 6D Address works</h2>
+          <p className="craft-lead">
+            Latitude and longitude provide the six digits. Locality turns those digits into a clear address people can use.
+          </p>
+          <p className="how-method__helper">
+            6D Address uses the 2nd, 3rd and 4th decimal places of latitude and longitude.
+          </p>
+        </header>
 
-      <div className="how-method__coordinate-panel craft-panel craft-panel--blueprint craft-reveal">
-        <div className="digit-matrix" aria-label="Latitude digits 7, 9, 2 combine with longitude digits 4, 3, 5 to make 74-93-25">
-          <div className="digit-matrix__sources">
-            <div>
-              <span>Latitude digits</span>
-              <strong><span className="digit-pick digit-pick--red">7</span><span className="digit-pick digit-pick--green">9</span><span className="digit-pick digit-pick--blue">2</span></strong>
+        <article className="how-method__board craft-panel craft-panel--blueprint craft-reveal" aria-label="How the six-digit code is formed">
+          <div className="how-method__coordinates">
+            <h3>Coordinate source</h3>
+            <div className="how-method__coordinate-row">
+              <span>Latitude</span>
+              <strong>7.8<span className="digit-pair--red">7</span><span className="digit-pair--green">9</span><span className="digit-pair--blue">2</span>27 N</strong>
             </div>
-            <div>
-              <span>Longitude digits</span>
-              <strong><span className="digit-pick digit-pick--red">4</span><span className="digit-pick digit-pick--green">3</span><span className="digit-pick digit-pick--blue">5</span></strong>
+            <div className="how-method__coordinate-row">
+              <span>Longitude</span>
+              <strong>11.3<span className="digit-pair--red">4</span><span className="digit-pair--green">3</span><span className="digit-pair--blue">5</span>55 W</strong>
             </div>
           </div>
 
-          <div className="digit-matrix__pairs" aria-label="Pair formation">
-            <span><b>7</b><i>+</i><b>4</b><em>74</em></span>
-            <span><b>9</b><i>+</i><b>3</b><em>93</em></span>
-            <span><b>2</b><i>+</i><b>5</b><em>25</em></span>
+          <div className="how-method__extraction">
+            <h3>Digit extraction</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Decimal place</th>
+                  <th scope="col">Latitude</th>
+                  <th scope="col">Longitude</th>
+                  <th scope="col">6D pair</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>2nd decimal place</td>
+                  <td><span className="digit-pair--red">7</span></td>
+                  <td><span className="digit-pair--red">4</span></td>
+                  <td><span className="digit-pair--red">74</span></td>
+                </tr>
+                <tr>
+                  <td>3rd decimal place</td>
+                  <td><span className="digit-pair--green">9</span></td>
+                  <td><span className="digit-pair--green">3</span></td>
+                  <td><span className="digit-pair--green">93</span></td>
+                </tr>
+                <tr>
+                  <td>4th decimal place</td>
+                  <td><span className="digit-pair--blue">2</span></td>
+                  <td><span className="digit-pair--blue">5</span></td>
+                  <td><span className="digit-pair--blue">25</span></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-          <div className="digit-matrix__result">
+
+          <div className="how-method__result">
+            <span>Resulting 6D code</span>
             <ColouredCode code="74-93-25" />
           </div>
-        </div>
+        </article>
       </div>
 
-      <div className="how-method__map-placeholder craft-reveal">
-        <div className="how-method__map-label">
-          <span>Example location</span>
-          <strong>Blama</strong>
-          <span>Kenema District</span>
-        </div>
-      </div>
-
-      <div className="how-method__address-output craft-panel craft-reveal">
-        <span className="how-method__address-label">Complete address</span>
+      <div className="how-method__address-strip craft-reveal">
+        <ColouredCode code="74-93-25" />
         <address>
-          <ColouredCode code="74-93-25" />
-          <span className="how-method__address-lines">
-            <span>Blama</span>
-            <span>Kenema District</span>
-            <span>Sierra Leone</span>
-          </span>
+          <span>Blama</span>
+          <span>Kenema District</span>
+          <span>Sierra Leone</span>
         </address>
-        <p>The six digits remain short. The locality makes the address clear.</p>
       </div>
-    </div>
+
+      <p className="how-method__takeaway craft-reveal">
+        The code gives the positional reference. Locality makes the address usable in the real world.
+      </p>
+    </>
   );
 }
 
 function AddressExamplesCarousel() {
-  const [activeIndex, setActiveIndex] = useState(0);
   const prefersReducedMotion = usePrefersReducedMotion();
-  const isMobileViewport = useMediaQuery("(max-width: 760px)");
   const [userPaused, setUserPaused] = useState(false);
-  const [mobileAutoplayEnabled, setMobileAutoplayEnabled] = useState(false);
   const [interactionPaused, setInteractionPaused] = useState(false);
   const [documentHidden, setDocumentHidden] = useState(() => document.hidden);
   const trackRef = useRef<HTMLDivElement | null>(null);
   const dragStartX = useRef<number | null>(null);
   const total = addressExamples.length;
-  const mobileAutoplayPaused = isMobileViewport && !mobileAutoplayEnabled;
-  const autoplayPaused = prefersReducedMotion || mobileAutoplayPaused || userPaused || interactionPaused || documentHidden;
+  const [trackIndex, setTrackIndex] = useState(total);
+  const [trackOffset, setTrackOffset] = useState(0);
+  const [suppressTransition, setSuppressTransition] = useState(true);
+  const activeIndex = ((trackIndex % total) + total) % total;
+  const autoplayPaused = prefersReducedMotion || userPaused || interactionPaused || documentHidden;
+  const carouselExamples = [...addressExamples, ...addressExamples, ...addressExamples];
 
   useEffect(() => {
     if (autoplayPaused || total < 2) return;
     const timer = window.setInterval(() => {
-      setActiveIndex((index) => (index + 1) % total);
-    }, 3800);
+      setTrackIndex((index) => index + 1);
+    }, 5200);
 
     return () => window.clearInterval(timer);
   }, [autoplayPaused, total]);
@@ -603,26 +617,55 @@ function AddressExamplesCarousel() {
     return () => document.removeEventListener("visibilitychange", onVisibilityChange);
   }, []);
 
-  const goTo = (index: number) => setActiveIndex((index + total) % total);
   const goPrevious = () => {
     setUserPaused(true);
-    goTo(activeIndex - 1);
+    setTrackIndex((index) => index - 1);
   };
   const goNext = () => {
     setUserPaused(true);
-    goTo(activeIndex + 1);
+    setTrackIndex((index) => index + 1);
   };
 
   useEffect(() => {
-    const track = trackRef.current;
-    const card = track?.children[activeIndex] as HTMLElement | undefined;
-    if (!track || !card) return;
+    if (trackIndex >= total && trackIndex < total * 2) return;
 
-    track.scrollTo({
-      left: card.offsetLeft - track.offsetLeft,
-      behavior: "smooth",
-    });
-  }, [activeIndex]);
+    const timer = window.setTimeout(() => {
+      setSuppressTransition(true);
+      setTrackIndex(activeIndex + total);
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => setSuppressTransition(false));
+      });
+    }, prefersReducedMotion ? 0 : 760);
+
+    return () => window.clearTimeout(timer);
+  }, [activeIndex, prefersReducedMotion, total, trackIndex]);
+
+  useEffect(() => {
+    const updateOffset = () => {
+      const track = trackRef.current;
+      const firstCard = track?.querySelector<HTMLElement>(".address-example-card");
+      if (!track || !firstCard) return;
+
+      const trackStyles = window.getComputedStyle(track);
+      const gap = Number.parseFloat(trackStyles.columnGap || trackStyles.gap || "0") || 0;
+      setTrackOffset(trackIndex * (firstCard.getBoundingClientRect().width + gap));
+    };
+
+    updateOffset();
+
+    const track = trackRef.current;
+    if (!track) return;
+
+    const observer = new ResizeObserver(updateOffset);
+    observer.observe(track);
+    window.addEventListener("resize", updateOffset);
+    window.requestAnimationFrame(() => setSuppressTransition(false));
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", updateOffset);
+    };
+  }, [trackIndex]);
 
   const finishDrag = (clientX: number) => {
     if (dragStartX.current === null) return;
@@ -673,10 +716,10 @@ function AddressExamplesCarousel() {
             <h2 className="display-section">6D Address in action</h2>
           </div>
           <div className="examples-chapter__intro craft-reveal">
-          <p className="craft-lead address-examples__lead">
-            The same format can work with local place names in different countries. Each example combines a six-digit
-            reference with locality information people already use.
-          </p>
+            <p className="craft-lead address-examples__lead">
+              The same format can work with local place names in different countries. Each example combines a six-digit
+              reference with locality information people already use.
+            </p>
           </div>
         </div>
 
@@ -699,9 +742,18 @@ function AddressExamplesCarousel() {
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
-            <div className="address-examples__track" ref={trackRef}>
-              {addressExamples.map((example, index) => (
-                <AddressExampleCard example={example} isActive={index === activeIndex} key={example.country} />
+            <div
+              className={`address-examples__track ${suppressTransition ? "is-resetting" : ""}`}
+              ref={trackRef}
+              style={{ transform: `translate3d(-${trackOffset}px, 0, 0)` }}
+            >
+              {carouselExamples.map((example, index) => (
+                <AddressExampleCard
+                  example={example}
+                  isActive={index === trackIndex}
+                  isDuplicate={index < total || index >= total * 2}
+                  key={`${example.country}-${index}`}
+                />
               ))}
             </div>
           </div>
@@ -716,15 +768,7 @@ function AddressExamplesCarousel() {
             <button
               type="button"
               className="craft-button craft-button--light examples-chapter__control carousel-pause"
-              onClick={() => {
-                if (isMobileViewport) {
-                  setMobileAutoplayEnabled((value) => !value);
-                  setUserPaused(false);
-                  return;
-                }
-
-                setUserPaused((value) => !value);
-              }}
+              onClick={() => setUserPaused((value) => !value)}
               aria-pressed={autoplayPaused}
             >
               {autoplayPaused ? "Play" : "Pause"}
@@ -743,13 +787,21 @@ function AddressExamplesCarousel() {
   );
 }
 
-function AddressExampleCard({ example, isActive }: { example: AddressExample; isActive: boolean }) {
+function AddressExampleCard({
+  example,
+  isActive,
+  isDuplicate = false,
+}: {
+  example: AddressExample;
+  isActive: boolean;
+  isDuplicate?: boolean;
+}) {
   const { displayLocality, remainingLines } = splitCompleteAddress(example);
+  const countryLine = remainingLines[remainingLines.length - 1] ?? example.country;
+  const regionLines = remainingLines.slice(0, -1);
 
   return (
-    <article className={`address-example-card ${isActive ? "is-active" : ""}`}>
-      <h3 className="address-example-card__country">{example.country}</h3>
-
+    <article className={`address-example-card ${isActive ? "is-active" : ""}`} aria-hidden={isDuplicate}>
       <div className="address-example-card__placeholder" aria-hidden="true">
         <span className="address-example-card__placeholder-logo">6D</span>
         <span className="address-example-card__road address-example-card__road--one" />
@@ -759,14 +811,13 @@ function AddressExampleCard({ example, isActive }: { example: AddressExample; is
 
       <div className="address-example-card__label">
         <span className="address-example-card__label-kicker">Format example</span>
-        <strong className="address-example-card__main-line">
-          <ColouredCode code={example.code} className="address-specimen__code" />
-          <span className="address-example-card__locality"> {displayLocality}</span>
-        </strong>
+        <ColouredCode code={example.code} className="address-example-card__code" />
+        <h3 className="address-example-card__locality">{displayLocality}</h3>
         <span className="address-example-card__support-lines">
-          {remainingLines.map((line) => (
-            <span key={line}>{line}</span>
+          {regionLines.map((line) => (
+            <span className="address-example-card__region" key={line}>{line}</span>
           ))}
+          <span className="address-example-card__country">{countryLine}</span>
         </span>
       </div>
     </article>
