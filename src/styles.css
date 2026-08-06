@@ -3077,7 +3077,8 @@ kbd,
 }
 .locality-proof__map {
   position: relative;
-  min-height: clamp(380px, 42vw, 620px);
+  aspect-ratio: 5 / 3;
+  min-height: 0;
   overflow: hidden;
   border: 1px solid var(--border-dark);
   border-radius: var(--radius-panel);
@@ -3087,12 +3088,12 @@ kbd,
 }
 .locality-proof__map picture,
 .locality-proof__map img {
+  display: block;
   width: 100%;
   height: 100%;
-  min-height: inherit;
 }
 .locality-proof__map img {
-  object-fit: cover;
+  object-fit: contain;
   opacity: .92;
   filter: saturate(.9) contrast(1.05);
 }
@@ -3203,7 +3204,7 @@ kbd,
     gap: 1.6rem;
   }
   .locality-proof__map {
-    min-height: 300px;
+    aspect-ratio: 38 / 49;
   }
   .locality-proof__rows-header {
     display: none;
@@ -3304,13 +3305,6 @@ kbd,
 .somalia-address-lines span {
   display: block;
   min-width: 0;
-}
-.somalia-address-lines__code {
-  color: #071b46;
-  font-weight: 850;
-}
-.somalia-address-lines__code .coloured-code {
-  font-size: 1em;
 }
 .somalia-use-case__note,
 .somalia-use-case__closing {
@@ -3550,13 +3544,14 @@ kbd,
   color: var(--brand-blue-deep);
 }
 .somalia-case__examples {
-  grid-column: 9 / span 4;
+  grid-column: 8 / span 5;
   display: grid;
   gap: 1rem;
   margin-top: clamp(2rem, 5vw, 5rem);
 }
 .somalia-address-slip {
   position: relative;
+  min-width: 0;
   overflow: hidden;
   border: 1px solid var(--border-light);
   background: oklch(0.995 0.006 88 / .86);
@@ -3573,18 +3568,31 @@ kbd,
 }
 .somalia-address-slip address {
   display: grid;
+  min-width: 0;
   gap: .42rem;
   font-style: normal;
   color: var(--text-secondary);
   line-height: 1.35;
 }
-.somalia-address-slip address span:nth-child(2) {
+.somalia-address-slip__code-line {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  flex-wrap: wrap;
   margin-block: .25rem .35rem;
   color: var(--text-primary);
   font-family: var(--font-display);
-  font-size: clamp(1.35rem, 2vw, 2rem);
-  line-height: 1.02;
-  letter-spacing: -.04em;
+  font-size: clamp(1.2rem, 1.5vw, 1.55rem);
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+}
+.somalia-address-slip__code-line .coloured-code {
+  flex: 0 0 auto;
+}
+.somalia-address-slip__code-line strong {
+  min-width: 0;
+  color: var(--text-primary);
+  font-weight: 700;
 }
 .somalia-address-slip .coloured-code {
   font-family: var(--font-mono);
@@ -3748,8 +3756,8 @@ kbd,
   .somalia-address-slip {
     padding: 1.05rem;
   }
-  .somalia-address-slip address span:nth-child(2) {
-    font-size: clamp(1.25rem, 7vw, 1.75rem);
+  .somalia-address-slip__code-line {
+    font-size: clamp(1.16rem, 5.6vw, 1.48rem);
   }
 }
 
@@ -5445,7 +5453,7 @@ body,
   }
 
   .locality-proof__map {
-    min-height: 240px;
+    aspect-ratio: 38 / 49;
   }
 
   .locality-proof__rows {
@@ -5487,8 +5495,8 @@ body,
     gap: .32rem;
   }
 
-  .somalia-address-slip address span:nth-child(2) {
-    font-size: clamp(1.2rem, 6.5vw, 1.6rem);
+  .somalia-address-slip__code-line {
+    font-size: clamp(1.12rem, 5.8vw, 1.42rem);
   }
 
   .somalia-case__note {
@@ -6019,6 +6027,28 @@ body,
   white-space: nowrap;
 }
 
+.coloured-code--compact {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.04em;
+  white-space: nowrap;
+  flex-wrap: nowrap;
+  font-size: 1em;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  vertical-align: baseline;
+}
+
+.coloured-code--compact span {
+  display: inline;
+  white-space: nowrap;
+}
+
+.coloured-code--compact .code-sep {
+  padding-inline: 0.02em;
+  color: var(--text-muted);
+}
+
 .problem-chapter__tab,
 .problem-chapter__column li,
 .application-row__content p,
@@ -6224,34 +6254,25 @@ body,
   gap: .3rem;
 }
 
-.somalia-address-lines__code {
+.somalia-address-slip__code-line {
   display: flex !important;
   align-items: baseline;
   gap: .45rem;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   margin-block: .2rem .3rem;
   color: var(--text-primary);
   font-family: var(--font-display);
-  font-size: clamp(1.28rem, 1.65vw, 1.7rem);
-  line-height: 1.05;
+  font-size: clamp(1.2rem, 1.5vw, 1.55rem);
+  line-height: 1.1;
   letter-spacing: -.035em;
 }
 
-.somalia-address-lines__code .coloured-code {
-  font-family: var(--font-mono);
-  font-size: 1em;
+.somalia-address-slip__code-line .coloured-code {
+  flex: 0 0 auto;
 }
 
-.somalia-address-lines__locality {
-  display: inline !important;
+.somalia-address-slip__code-line strong {
   min-width: 0;
-}
-
-.somalia-address-slip address span:nth-child(2) {
-  margin-block: 0;
-  font-family: inherit;
-  font-size: inherit;
-  letter-spacing: inherit;
 }
 
 .somalia-case__note {

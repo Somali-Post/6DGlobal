@@ -919,7 +919,7 @@ function SomaliaUseCaseSection() {
 
           <article className="somalia-case__format craft-panel craft-reveal" aria-labelledby="somalia-format-title">
             <span className="somalia-case__meta">Address format</span>
-            <h3 id="somalia-format-title">A complete address can combine local context and 6D</h3>
+            <h3 id="somalia-format-title">A complete address can combine local context with 6D</h3>
             <ol className="somalia-case__format-list">
               <li>Property number and street name</li>
               <li>6D Address and locality</li>
@@ -967,11 +967,11 @@ function SomaliaAddressLines({ lines }: { lines: string[] }) {
       {lines.map((line) => {
         const match = line.match(/^(\d{2}-\d{2}-\d{2})\s+(.+)$/);
         return (
-          <span className={match ? "somalia-address-lines__code" : undefined} key={line}>
+          <span className={match ? "somalia-address-slip__code-line" : undefined} key={line}>
             {match ? (
               <>
-                <ColouredCode code={match[1]} className="coloured-code--inline somalia-address-lines__inline-code" />
-                <span className="somalia-address-lines__locality">{match[2]}</span>
+                <ColouredCode code={match[1]} className="coloured-code--compact" />
+                <strong>{match[2]}</strong>
               </>
             ) : line}
           </span>
