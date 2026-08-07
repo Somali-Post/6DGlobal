@@ -1,8 +1,25 @@
-import { useId, useState } from "react";
-import { addressExamples, splitCompleteAddress } from "../../data/addressExamples";
-
-const missingItems = ["Property number", "Named street"];
-const availableItems = ["Locality", "District / town / city", "Region", "Country"];
+const problemStoryPanels = [
+  {
+    number: "01",
+    title: "The problem",
+    body: "The final delivery point is often the weakest part of an address.",
+    items: [
+      "Property number missing",
+      "Street name absent or informal",
+      "Postcode identifies an area, not the exact point",
+    ],
+  },
+  {
+    number: "02",
+    title: "The current situation",
+    body: "People still know places through local context.",
+    items: [
+      "Locality or neighbourhood",
+      "District, town or region",
+      "Landmarks and directions",
+    ],
+  },
+];
 
 function ColouredCode({ code }: { code: string }) {
   const [red, green, blue] = code.split("-");
@@ -19,85 +36,79 @@ function ColouredCode({ code }: { code: string }) {
 }
 
 export function AddressingProblemSection() {
-  const tablistId = useId();
-  const [selectedCountry, setSelectedCountry] = useState("Somalia");
-  const selectedExample = addressExamples.find((example) => example.country === selectedCountry) ?? addressExamples[0];
-  const { displayLocality: completeLocality } = splitCompleteAddress(selectedExample);
-  const addressLines = selectedExample.completeAddressLines.slice(1);
-
   return (
     <section className="craft-section craft-section--dark craft-grid-bg craft-grid-bg--dark problem-chapter" id="problem">
-      <div className="craft-container problem-chapter__inner">
-        <header className="problem-chapter__header craft-reveal">
-          <p className="chapter-label">ADDRESSING THE PROBLEM</p>
-          <h2 className="display-section">Where conventional addressing is incomplete, locality still exists.</h2>
-          <p className="craft-lead">
-            Many communities do not have consistent property numbers or named streets. But people often still use
-            neighbourhoods, villages, districts, towns and regions to describe where they are. 6D Address adds a short
-            coordinate-based reference to that existing local context.
-          </p>
-        </header>
-
-        <div className="problem-chapter__control craft-panel craft-panel--dark craft-reveal">
-          <p className="problem-chapter__control-label" id={`${tablistId}-label`}>Example context</p>
-          <div className="problem-chapter__tabs" role="tablist" aria-labelledby={`${tablistId}-label`}>
-              {addressExamples.map((example) => (
-                <button
-                  key={example.country}
-                  type="button"
-                  className="problem-chapter__tab"
-                  role="tab"
-                  aria-selected={selectedExample.country === example.country}
-                  onClick={() => setSelectedCountry(example.country)}
-                >
-                  <span>{example.country}</span>
-                  <span aria-hidden="true">{example.code}</span>
-                </button>
-              ))}
-          </div>
-        </div>
-
-        <div className="problem-chapter__diagnostic craft-reveal">
-          <div className="problem-chapter__column problem-chapter__column--missing">
-            <span className="problem-chapter__kicker">Often missing</span>
-            <ul>
-              {missingItems.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="problem-chapter__column problem-chapter__column--available">
-            <span className="problem-chapter__kicker">Usually available</span>
-            <ul>
-              {availableItems.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="problem-chapter__result">
-            <span className="problem-chapter__kicker">Completed with 6D</span>
-            <p className="problem-chapter__formula">
-              <span>Local context</span>
-              <span aria-hidden="true">+</span>
-              <span>6D reference</span>
-              <span aria-hidden="true">=</span>
-              <strong>Complete address</strong>
+      <div className="craft-container">
+        <div className="problem-chapter__story">
+          <header className="problem-chapter__header craft-reveal">
+            <p className="chapter-label">ADDRESSING THE PROBLEM</p>
+            <h2 className="display-section">The last mile often depends on local knowledge.</h2>
+            <p className="craft-lead">
+              Locality, districts, towns and postcodes may exist - but the exact delivery point can still be difficult
+              to describe when property numbers or street names are missing.
             </p>
+            <p className="problem-chapter__support-line">
+              People often rely on landmarks and directions: near the market, opposite the school, behind the mosque,
+              beside the clinic.
+            </p>
+            <div className="problem-s42-badge">
+              <img
+                src="/images/s42badge.png"
+                alt="S42 address structure badge"
+                loading="lazy"
+                decoding="async"
+              />
+              <span>6D as part of a complete address</span>
+            </div>
+          </header>
 
-            <address className="problem-chapter__address">
-              <span className="problem-chapter__address-label">{selectedExample.country} example</span>
-              <span>
-                <ColouredCode code={selectedExample.code} />
-                <span className="problem-chapter__locality"> {completeLocality}</span>
-              </span>
-              {addressLines.map((line) => (
-                <span key={line}>{line}</span>
-              ))}
-            </address>
+          <div className="problem-storyline craft-reveal">
+            {problemStoryPanels.map((panel, index) => (
+              <article className="problem-storyline__panel" key={panel.number}>
+                <span className="problem-storyline__number">{panel.number} - {panel.title}</span>
+                <h3>{panel.title}</h3>
+                <p>{panel.body}</p>
+                <ul>
+                  {panel.items.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
 
-            <p className="problem-chapter__note">Six digits do not replace locality. They complete it.</p>
+                {index === 1 ? (
+                  <div className="problem-storyline__country-example">
+                    <span>Costa Rica example:</span>
+                    <p>
+                      A postcode and locality may exist, but the final description can still depend on directions such
+                      as "near the church" or "200 metres from the main road."
+                    </p>
+                  </div>
+                ) : null}
+              </article>
+            ))}
+
+            <article className="problem-storyline__panel problem-storyline__panel--solution">
+              <span className="problem-storyline__number">03 - The solution</span>
+              <h3>The solution</h3>
+              <p>
+                6D adds a short final-location reference while keeping the existing address context.
+              </p>
+
+              <div className="problem-address-specimen">
+                <span>Complete address structure</span>
+                <ColouredCode code="74-93-25" />
+                <address>
+                  <span>Barrio / locality</span>
+                  <span>Canton or district</span>
+                  <span>Province</span>
+                  <span>Postal code</span>
+                  <span>Costa Rica</span>
+                </address>
+              </div>
+
+              <p className="problem-storyline__note">
+                The code identifies the final location. The rest of the address keeps the local and postal context.
+              </p>
+            </article>
           </div>
         </div>
       </div>

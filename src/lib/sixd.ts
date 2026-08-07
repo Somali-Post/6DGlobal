@@ -19,23 +19,38 @@ export function snapToGridCenter(coordinate: Coordinate): Coordinate {
   };
 }
 
+export function calculateSixDCode(lat: number, lng: number): string {
+  const getDigits = (value: number) => {
+    const decimal = Math.abs(value).toFixed(6).split(".")[1] ?? "000000";
+
+    return {
+      second: decimal[1] ?? "0",
+      third: decimal[2] ?? "0",
+      fourth: decimal[3] ?? "0",
+    };
+  };
+
+  const latDigits = getDigits(lat);
+  const lngDigits = getDigits(lng);
+
+  return [
+    `${latDigits.second}${lngDigits.second}`,
+    `${latDigits.third}${lngDigits.third}`,
+    `${latDigits.fourth}${lngDigits.fourth}`,
+  ].join("-");
+}
+
 export function generate6DCode(coordinate: Coordinate): SixDResult {
   const snapped = snapToGridCenter(coordinate);
   const absLat = Math.abs(snapped.lat);
   const absLng = Math.abs(snapped.lng);
 
   const latD1 = Math.floor(absLat * 10) % 10;
-  const latD2 = Math.floor(absLat * 100) % 10;
-  const latD3 = Math.floor(absLat * 1000) % 10;
-  const latD4 = Math.floor(absLat * 10000) % 10;
   const lngD1 = Math.floor(absLng * 10) % 10;
-  const lngD2 = Math.floor(absLng * 100) % 10;
-  const lngD3 = Math.floor(absLng * 1000) % 10;
-  const lngD4 = Math.floor(absLng * 10000) % 10;
 
   return {
     coordinate: snapped,
-    code: `${latD2}${lngD2}-${latD3}${lngD3}-${latD4}${lngD4}`,
+    code: calculateSixDCode(snapped.lat, snapped.lng),
     localitySuffix: `${latD1}${lngD1}`,
   };
 }

@@ -1,18 +1,65 @@
 import { lazy, MouseEvent, PointerEvent, ReactNode, Suspense, TouchEvent, useEffect, useRef, useState } from "react";
 import CursorGrid from "./components/CursorGrid";
 import { AddressingProblemSection } from "./components/sections/AddressingProblemSection";
-import { AddressExample, addressExamples, splitCompleteAddress } from "./data/addressExamples";
+import { LandmarkExampleWithCode, landmarkExamples, withCalculatedCode } from "./data/landmarkExamples";
 import { localityMattersExample } from "./data/localityMattersExample";
 
 const FindPage = lazy(() => import("./pages/FindPage"));
 
 const navItems = [
-  ["how-it-works", "How it works"],
-  ["examples", "Examples"],
-  ["locality", "Locality"],
-  ["faq", "FAQ"],
-  ["contact", "Contact"],
+  {
+    id: "how-it-works",
+    label: "How it works",
+    href: "#how-it-works",
+    activeFor: ["problem", "how-it-works"],
+  },
+  {
+    id: "examples",
+    label: "Examples",
+    href: "#examples",
+    activeFor: ["examples"],
+  },
+  {
+    id: "locality",
+    label: "Locality",
+    href: "#locality",
+    activeFor: ["locality"],
+  },
+  {
+    id: "use-cases",
+    label: "Use cases",
+    href: "#somalia-use-case",
+    activeFor: ["somalia-use-case", "applications", "proposition", "team"],
+  },
+  {
+    id: "faq",
+    label: "FAQ",
+    href: "#faq",
+    activeFor: ["faq"],
+  },
+  {
+    id: "contact",
+    label: "Contact",
+    href: "#contact",
+    activeFor: ["contact"],
+  },
 ];
+
+const observedSectionIds = [
+  "top",
+  "problem",
+  "how-it-works",
+  "examples",
+  "locality",
+  "somalia-use-case",
+  "applications",
+  "proposition",
+  "team",
+  "faq",
+  "contact",
+];
+
+const LANDMARK_AUTOPLAY_DELAY = 4200;
 
 const faqGroups = [
   {
@@ -270,15 +317,17 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
   const heroRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    const sections = ["top", ...navItems.map(([id]) => id)]
+    const sections = observedSectionIds
       .map((id) => document.getElementById(id))
       .filter(Boolean) as HTMLElement[];
+    if (!sections.length) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
         if (visible?.target.id) setActive(visible.target.id);
       },
-      { rootMargin: "-28% 0px -58% 0px", threshold: [0.08, 0.2, 0.4] },
+      { rootMargin: "-28% 0px -58% 0px", threshold: [0.08, 0.16, 0.28, 0.42] },
     );
     sections.forEach((section) => observer.observe(section));
     return () => observer.disconnect();
@@ -411,25 +460,31 @@ function Navigation({
     return () => window.removeEventListener("scroll", updateScrolled);
   }, []);
 
+  const activeNavItem = navItems.find((item) => item.activeFor.includes(active));
+
   const renderLinks = () =>
-    navItems.map(([id, label]) => (
-      <a
-        key={id}
-        className={`nav-link ${active === id ? "active" : ""}`}
-        href={`#${id}`}
-        onClick={onNavigate}
-        aria-current={active === id ? "page" : undefined}
-      >
-        {label}
-      </a>
-    ));
+    navItems.map((item) => {
+      const isActive = activeNavItem?.id === item.id;
+
+      return (
+        <a
+          key={item.id}
+          className={`nav-link ${isActive ? "is-active" : ""}`}
+          href={item.href}
+          onClick={onNavigate}
+          aria-current={isActive ? "page" : undefined}
+        >
+          {item.label}
+        </a>
+      );
+    });
 
   return (
-    <nav className={`nav ${scrolled ? "scrolled" : ""} ${menuOpen ? "menu-open" : ""}`} aria-label="Primary navigation">
+    <header className={`nav ${scrolled ? "scrolled" : ""} ${menuOpen ? "menu-open" : ""}`}>
       <a className="brand" href="#top" onClick={onNavigate} aria-label="6D Address home">
         <img src="/navlogo-320.webp" alt="6D Address" />
       </a>
-      <div className="nav-pill">{renderLinks()}</div>
+      <nav className="nav-pill" aria-label="Primary navigation">{renderLinks()}</nav>
       <div className="nav-actions">
         <span className="method-badge"><span /> Open method</span>
         <LiteButton className="button primary nav-cta" onClick={onFind}>Find my 6D</LiteButton>
@@ -445,11 +500,19 @@ function Navigation({
           <span />
         </button>
       </div>
-      <div className={`mobile-menu ${menuOpen ? "open" : ""}`} id="site-navigation">
+      <nav className={`mobile-menu ${menuOpen ? "open" : ""}`} id="site-navigation" aria-label="Mobile navigation">
         {renderLinks()}
-        <LiteButton className="button primary" onClick={onFind}>Find my 6D Address</LiteButton>
-      </div>
-    </nav>
+        <LiteButton
+          className="button primary"
+          onClick={() => {
+            onNavigate();
+            onFind();
+          }}
+        >
+          Find my 6D Address
+        </LiteButton>
+      </nav>
+    </header>
   );
 }
 
@@ -517,99 +580,120 @@ function HowItWorksSection() {
           </p>
         </header>
 
-        <article className="how-method__board craft-panel craft-panel--blueprint craft-reveal" aria-label="How the six-digit code is formed">
-          <div className="how-method__coordinates">
-            <h3>Coordinate source</h3>
-            <div className="how-method__coordinate-row">
-              <span>Latitude</span>
-              <strong>7.8<span className="digit-pair--red">7</span><span className="digit-pair--green">9</span><span className="digit-pair--blue">2</span>27 N</strong>
+        <div className="how-method__flow craft-reveal" aria-label="How 6D Address works in three steps">
+          <article className="how-method__panel how-method__panel--coordinate">
+            <h3>01 - Coordinate source</h3>
+            <div className="coordinate-pairing" aria-label="Latitude and longitude selected decimal places">
+              <div className="coordinate-row">
+                <span className="coordinate-row__label">Latitude</span>
+                <span className="coordinate-value">
+                  <span>7.8</span>
+                  <span className="coordinate-value__digit digit-pair--red">7</span>
+                  <span className="coordinate-value__digit digit-pair--green">9</span>
+                  <span className="coordinate-value__digit digit-pair--blue">2</span>
+                  <span>27 N</span>
+                </span>
+              </div>
+              <div className="coordinate-row">
+                <span className="coordinate-row__label">Longitude</span>
+                <span className="coordinate-value">
+                  <span>11.3</span>
+                  <span className="coordinate-value__digit digit-pair--red">4</span>
+                  <span className="coordinate-value__digit digit-pair--green">3</span>
+                  <span className="coordinate-value__digit digit-pair--blue">5</span>
+                  <span>55 W</span>
+                </span>
+              </div>
             </div>
-            <div className="how-method__coordinate-row">
-              <span>Longitude</span>
-              <strong>11.3<span className="digit-pair--red">4</span><span className="digit-pair--green">3</span><span className="digit-pair--blue">5</span>55 W</strong>
+
+            <div className="pairing-row" aria-label="Digit pair logic">
+              <div className="pairing-chip">
+                <span className="digit-pair--red">7</span>
+                <span>+</span>
+                <span className="digit-pair--red">4</span>
+                <span>=</span>
+                <strong className="digit-pair--red">74</strong>
+              </div>
+              <div className="pairing-chip">
+                <span className="digit-pair--green">9</span>
+                <span>+</span>
+                <span className="digit-pair--green">3</span>
+                <span>=</span>
+                <strong className="digit-pair--green">93</strong>
+              </div>
+              <div className="pairing-chip">
+                <span className="digit-pair--blue">2</span>
+                <span>+</span>
+                <span className="digit-pair--blue">5</span>
+                <span>=</span>
+                <strong className="digit-pair--blue">25</strong>
+              </div>
             </div>
-          </div>
+          </article>
 
-          <div className="how-method__extraction">
-            <h3>Digit extraction</h3>
-            <table>
-              <thead>
-                <tr>
-                  <th scope="col">Decimal place</th>
-                  <th scope="col">Latitude</th>
-                  <th scope="col">Longitude</th>
-                  <th scope="col">6D pair</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>2nd decimal place</td>
-                  <td><span className="digit-pair--red">7</span></td>
-                  <td><span className="digit-pair--red">4</span></td>
-                  <td><span className="digit-pair--red">74</span></td>
-                </tr>
-                <tr>
-                  <td>3rd decimal place</td>
-                  <td><span className="digit-pair--green">9</span></td>
-                  <td><span className="digit-pair--green">3</span></td>
-                  <td><span className="digit-pair--green">93</span></td>
-                </tr>
-                <tr>
-                  <td>4th decimal place</td>
-                  <td><span className="digit-pair--blue">2</span></td>
-                  <td><span className="digit-pair--blue">5</span></td>
-                  <td><span className="digit-pair--blue">25</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <article className="how-method__panel how-method__panel--locality">
+            <h3>02 - Add locality</h3>
+            <address>
+              <span>Blama</span>
+              <span>Kenema District</span>
+              <span>Sierra Leone</span>
+            </address>
+            <p>
+              Locality provides the place context people already use.
+            </p>
+          </article>
 
-          <div className="how-method__result">
-            <span>Resulting 6D code</span>
+          <article className="how-method__panel how-method__panel--complete">
+            <h3>03 - Complete 6D Address</h3>
             <ColouredCode code="74-93-25" />
-          </div>
-        </article>
+            <address>
+              <span>Blama</span>
+              <span>Kenema District</span>
+              <span>Sierra Leone</span>
+            </address>
+            <p>
+              The six-digit reference and locality together form a usable address.
+            </p>
+          </article>
+        </div>
       </div>
-
-      <div className="how-method__address-strip craft-reveal">
-        <ColouredCode code="74-93-25" />
-        <address>
-          <span>Blama</span>
-          <span>Kenema District</span>
-          <span>Sierra Leone</span>
-        </address>
-      </div>
-
-      <p className="how-method__takeaway craft-reveal">
-        The code gives the positional reference. Locality makes the address usable in the real world.
-      </p>
     </>
   );
 }
 
 function AddressExamplesCarousel() {
   const prefersReducedMotion = usePrefersReducedMotion();
-  const [userPaused, setUserPaused] = useState(false);
   const [interactionPaused, setInteractionPaused] = useState(false);
+  const [manualPaused, setManualPaused] = useState(false);
   const [documentHidden, setDocumentHidden] = useState(() => document.hidden);
   const trackRef = useRef<HTMLDivElement | null>(null);
   const dragStartX = useRef<number | null>(null);
-  const total = addressExamples.length;
-  const [trackIndex, setTrackIndex] = useState(total);
+  const manualPauseTimer = useRef<number | null>(null);
+  const examples = landmarkExamples.map(withCalculatedCode);
+  const total = examples.length;
+  const loopStartIndex = total * 2;
+  const [trackIndex, setTrackIndex] = useState(loopStartIndex);
   const [trackOffset, setTrackOffset] = useState(0);
+  const [rightEdgeOffset, setRightEdgeOffset] = useState(3);
   const [suppressTransition, setSuppressTransition] = useState(true);
   const activeIndex = ((trackIndex % total) + total) % total;
-  const autoplayPaused = prefersReducedMotion || userPaused || interactionPaused || documentHidden;
-  const carouselExamples = [...addressExamples, ...addressExamples, ...addressExamples];
+  const autoplayPaused = prefersReducedMotion || interactionPaused || manualPaused || documentHidden;
+  const carouselExamples = Array.from({ length: 5 }, () => examples).flat();
 
   useEffect(() => {
     if (autoplayPaused || total < 2) return;
     const timer = window.setInterval(() => {
       setTrackIndex((index) => index + 1);
-    }, 5200);
+    }, LANDMARK_AUTOPLAY_DELAY);
 
     return () => window.clearInterval(timer);
   }, [autoplayPaused, total]);
+
+  useEffect(() => {
+    return () => {
+      if (manualPauseTimer.current !== null) window.clearTimeout(manualPauseTimer.current);
+    };
+  }, []);
 
   useEffect(() => {
     const onVisibilityChange = () => setDocumentHidden(document.hidden);
@@ -617,28 +701,34 @@ function AddressExamplesCarousel() {
     return () => document.removeEventListener("visibilitychange", onVisibilityChange);
   }, []);
 
+  const pauseAfterManualAction = () => {
+    setManualPaused(true);
+    if (manualPauseTimer.current !== null) window.clearTimeout(manualPauseTimer.current);
+    manualPauseTimer.current = window.setTimeout(() => setManualPaused(false), LANDMARK_AUTOPLAY_DELAY);
+  };
+
   const goPrevious = () => {
-    setUserPaused(true);
+    pauseAfterManualAction();
     setTrackIndex((index) => index - 1);
   };
   const goNext = () => {
-    setUserPaused(true);
+    pauseAfterManualAction();
     setTrackIndex((index) => index + 1);
   };
 
+  const resetLoopPosition = () => {
+    if (trackIndex >= total * 2 && trackIndex < total * 3) return;
+
+    setSuppressTransition(true);
+    setTrackIndex(activeIndex + loopStartIndex);
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => setSuppressTransition(false));
+    });
+  };
+
   useEffect(() => {
-    if (trackIndex >= total && trackIndex < total * 2) return;
-
-    const timer = window.setTimeout(() => {
-      setSuppressTransition(true);
-      setTrackIndex(activeIndex + total);
-      window.requestAnimationFrame(() => {
-        window.requestAnimationFrame(() => setSuppressTransition(false));
-      });
-    }, prefersReducedMotion ? 0 : 760);
-
-    return () => window.clearTimeout(timer);
-  }, [activeIndex, prefersReducedMotion, total, trackIndex]);
+    if (prefersReducedMotion) resetLoopPosition();
+  });
 
   useEffect(() => {
     const updateOffset = () => {
@@ -648,7 +738,12 @@ function AddressExamplesCarousel() {
 
       const trackStyles = window.getComputedStyle(track);
       const gap = Number.parseFloat(trackStyles.columnGap || trackStyles.gap || "0") || 0;
-      setTrackOffset(trackIndex * (firstCard.getBoundingClientRect().width + gap));
+      const cardWidth = firstCard.getBoundingClientRect().width;
+      const viewportWidth = track.parentElement?.getBoundingClientRect().width ?? cardWidth;
+      const visibleAfterActive = Math.floor((viewportWidth - cardWidth / 2) / (cardWidth + gap));
+
+      setTrackOffset(trackIndex * (cardWidth + gap) - cardWidth / 2);
+      setRightEdgeOffset(Math.max(1, visibleAfterActive));
     };
 
     updateOffset();
@@ -717,8 +812,8 @@ function AddressExamplesCarousel() {
           </div>
           <div className="examples-chapter__intro craft-reveal">
             <p className="craft-lead address-examples__lead">
-              The same format can work with local place names in different countries. Each example combines a six-digit
-              reference with locality information people already use.
+              The same format can identify familiar places around the world. Each example combines a six-digit reference
+              with locality information people already recognise.
             </p>
           </div>
         </div>
@@ -732,6 +827,15 @@ function AddressExamplesCarousel() {
             if (!event.currentTarget.contains(event.relatedTarget)) setInteractionPaused(false);
           }}
         >
+          <button
+            type="button"
+            className="examples-carousel__arrow examples-carousel__arrow--prev"
+            onClick={goPrevious}
+            aria-label="Previous landmark example"
+          >
+            <ChevronIcon direction="previous" />
+          </button>
+
           <div
             className="address-examples__viewport"
             onPointerDown={handlePointerDown}
@@ -745,42 +849,31 @@ function AddressExamplesCarousel() {
             <div
               className={`address-examples__track ${suppressTransition ? "is-resetting" : ""}`}
               ref={trackRef}
+              onTransitionEnd={(event) => {
+                if (event.propertyName === "transform") resetLoopPosition();
+              }}
               style={{ transform: `translate3d(-${trackOffset}px, 0, 0)` }}
             >
               {carouselExamples.map((example, index) => (
                 <AddressExampleCard
                   example={example}
                   isActive={index === trackIndex}
-                  isDuplicate={index < total || index >= total * 2}
-                  key={`${example.country}-${index}`}
+                  isEdge={index === trackIndex - 1 || index === trackIndex + rightEdgeOffset}
+                  isDuplicate={index < total * 2 || index >= total * 3}
+                  key={`${example.id}-${index}`}
                 />
               ))}
             </div>
           </div>
 
-          <div className="examples-chapter__controls address-examples__controls" aria-label="Address example carousel controls">
-            <button type="button" className="craft-button craft-button--light examples-chapter__control" onClick={goPrevious} aria-label="Show previous address example">
-              Previous
-            </button>
-            <span className="examples-chapter__counter" aria-live="polite">
-              {String(activeIndex + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
-            </span>
-            <button
-              type="button"
-              className="craft-button craft-button--light examples-chapter__control carousel-pause"
-              onClick={() => setUserPaused((value) => !value)}
-              aria-pressed={autoplayPaused}
-            >
-              {autoplayPaused ? "Play" : "Pause"}
-            </button>
-            <button type="button" className="craft-button craft-button--light examples-chapter__control" onClick={goNext} aria-label="Show next address example">
-              Next
-            </button>
-          </div>
-        </div>
-
-        <div className="examples-chapter__progress" aria-hidden="true">
-          <span style={{ transform: `scaleX(${(activeIndex + 1) / total})` }} />
+          <button
+            type="button"
+            className="examples-carousel__arrow examples-carousel__arrow--next"
+            onClick={goNext}
+            aria-label="Next landmark example"
+          >
+            <ChevronIcon direction="next" />
+          </button>
         </div>
       </div>
     </section>
@@ -790,37 +883,101 @@ function AddressExamplesCarousel() {
 function AddressExampleCard({
   example,
   isActive,
+  isEdge,
   isDuplicate = false,
 }: {
-  example: AddressExample;
+  example: LandmarkExampleWithCode;
   isActive: boolean;
+  isEdge: boolean;
   isDuplicate?: boolean;
 }) {
-  const { displayLocality, remainingLines } = splitCompleteAddress(example);
-  const countryLine = remainingLines[remainingLines.length - 1] ?? example.country;
-  const regionLines = remainingLines.slice(0, -1);
-
   return (
-    <article className={`address-example-card ${isActive ? "is-active" : ""}`} aria-hidden={isDuplicate}>
-      <div className="address-example-card__placeholder" aria-hidden="true">
-        <span className="address-example-card__placeholder-logo">6D</span>
-        <span className="address-example-card__road address-example-card__road--one" />
-        <span className="address-example-card__road address-example-card__road--two" />
-        <span className="address-example-card__placeholder-pin" />
+    <article
+      className={`address-example-card ${isActive ? "is-active" : ""} ${isEdge ? "is-edge" : ""}`}
+      aria-hidden={isDuplicate}
+    >
+      <div className="address-example-card__body">
+        <span className="address-example-card__label-kicker">Landmark example</span>
+        <ColouredCode code={example.code} className="address-example-card__code" />
+        <h3 className="address-example-card__title">{example.name}</h3>
+        <div className="address-example-card__meta" aria-label={`${example.name} locality details`}>
+          <div className="address-example-card__meta-row">
+            <MapPinIcon className="address-example-card__meta-icon" />
+            <span>{example.siteLine}</span>
+          </div>
+          <div className="address-example-card__meta-row">
+            <GlobeIcon className="address-example-card__meta-icon" />
+            <span>{example.cityCountryLine}</span>
+          </div>
+        </div>
       </div>
 
-      <div className="address-example-card__label">
-        <span className="address-example-card__label-kicker">Format example</span>
-        <ColouredCode code={example.code} className="address-example-card__code" />
-        <h3 className="address-example-card__locality">{displayLocality}</h3>
-        <span className="address-example-card__support-lines">
-          {regionLines.map((line) => (
-            <span className="address-example-card__region" key={line}>{line}</span>
-          ))}
-          <span className="address-example-card__country">{countryLine}</span>
+      <div className="address-example-card__media">
+        <img src={example.imagePath} alt={`${example.name} landmark`} loading="lazy" decoding="async" />
+        <span className="address-example-card__photo-ring" aria-hidden="true" />
+        <span className="address-example-card__photo-pin" aria-hidden="true">
+          <span className="address-example-card__photo-pin-dot" />
         </span>
       </div>
     </article>
+  );
+}
+
+function ChevronIcon({ direction }: { direction: "previous" | "next" }) {
+  const path = direction === "previous" ? "M15 18 9 12 15 6" : "M9 18 15 12 9 6";
+
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+      <path
+        d={path}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function MapPinIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg className={className} aria-hidden="true" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M12 21s6-5.23 6-11a6 6 0 0 0-12 0c0 5.77 6 11 6 11Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12 12.35a2.25 2.25 0 1 0 0-4.5 2.25 2.25 0 0 0 0 4.5Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function GlobeIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg className={className} aria-hidden="true" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M3.6 9h16.8M3.6 15h16.8M12 3c2.2 2.36 3.26 5.36 3.26 9S14.2 18.64 12 21c-2.2-2.36-3.26-5.36-3.26-9S9.8 5.36 12 3Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 

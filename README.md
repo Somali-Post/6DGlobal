@@ -25,7 +25,13 @@ VITE_GOOGLE_MAPS_API_KEY=your_google_maps_key_here
 
 The key is read by Vite at build/dev time. Do not commit `.env` or `.env.local`.
 
-For clean sharing, use `git archive` from a committed state rather than zipping the working folder directly. Do not include `.env.local`, `.git`, `node_modules`, `dist`, or `tsconfig.tsbuildinfo` in shared archives.
+## Clean Sharing
+
+Use `git archive` to create a clean ZIP. Do not manually zip the working folder because it may include `.env.local`, `.git`, build cache files or local artifacts.
+
+```bash
+git archive --format=zip --output=../6daddressDan-clean.zip HEAD
+```
 
 ## Map Provider
 
