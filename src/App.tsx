@@ -1,4 +1,4 @@
-import { lazy, MouseEvent, PointerEvent, ReactNode, Suspense, TouchEvent, useEffect, useRef, useState } from "react";
+import { lazy, MouseEvent, PointerEvent, ReactNode, Suspense, TouchEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 import CursorGrid from "./components/CursorGrid";
 import { AddressingProblemSection } from "./components/sections/AddressingProblemSection";
 import { LandmarkExampleWithCode, landmarkExamples, withCalculatedCode } from "./data/landmarkExamples";
@@ -636,7 +636,6 @@ function HowItWorksSection() {
             <address>
               <span>Blama</span>
               <span>Kenema District</span>
-              <span>Sierra Leone</span>
             </address>
             <p>
               Locality provides the place context people already use.
@@ -673,12 +672,14 @@ function AddressExamplesCarousel() {
   const total = examples.length;
   const loopStartIndex = total * 2;
   const [trackIndex, setTrackIndex] = useState(loopStartIndex);
-  const [trackOffset, setTrackOffset] = useState(0);
-  const [rightEdgeOffset, setRightEdgeOffset] = useState(3);
+  const [slideMetrics, setSlideMetrics] = useState({ cardWidth: 0, step: 0, rightEdgeOffset: 3 });
   const [suppressTransition, setSuppressTransition] = useState(true);
   const activeIndex = ((trackIndex % total) + total) % total;
   const autoplayPaused = prefersReducedMotion || interactionPaused || manualPaused || documentHidden;
   const carouselExamples = Array.from({ length: 5 }, () => examples).flat();
+  const trackOffset = slideMetrics.step > 0
+    ? trackIndex * slideMetrics.step - slideMetrics.cardWidth / 2
+    : 0;
 
   useEffect(() => {
     if (autoplayPaused || total < 2) return;
@@ -730,7 +731,7 @@ function AddressExamplesCarousel() {
     if (prefersReducedMotion) resetLoopPosition();
   });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const updateOffset = () => {
       const track = trackRef.current;
       const firstCard = track?.querySelector<HTMLElement>(".address-example-card");
@@ -742,8 +743,11 @@ function AddressExamplesCarousel() {
       const viewportWidth = track.parentElement?.getBoundingClientRect().width ?? cardWidth;
       const visibleAfterActive = Math.floor((viewportWidth - cardWidth / 2) / (cardWidth + gap));
 
-      setTrackOffset(trackIndex * (cardWidth + gap) - cardWidth / 2);
-      setRightEdgeOffset(Math.max(1, visibleAfterActive));
+      setSlideMetrics({
+        cardWidth,
+        step: cardWidth + gap,
+        rightEdgeOffset: Math.max(1, visibleAfterActive),
+      });
     };
 
     updateOffset();
@@ -831,7 +835,7 @@ function AddressExamplesCarousel() {
             type="button"
             className="examples-carousel__arrow examples-carousel__arrow--prev"
             onClick={goPrevious}
-            aria-label="Previous landmark example"
+            aria-label="Previous example"
           >
             <ChevronIcon direction="previous" />
           </button>
@@ -858,7 +862,7 @@ function AddressExamplesCarousel() {
                 <AddressExampleCard
                   example={example}
                   isActive={index === trackIndex}
-                  isEdge={index === trackIndex - 1 || index === trackIndex + rightEdgeOffset}
+                  isEdge={index === trackIndex - 1 || index === trackIndex + slideMetrics.rightEdgeOffset}
                   isDuplicate={index < total * 2 || index >= total * 3}
                   key={`${example.id}-${index}`}
                 />
@@ -870,7 +874,7 @@ function AddressExamplesCarousel() {
             type="button"
             className="examples-carousel__arrow examples-carousel__arrow--next"
             onClick={goNext}
-            aria-label="Next landmark example"
+            aria-label="Next example"
           >
             <ChevronIcon direction="next" />
           </button>
@@ -897,7 +901,6 @@ function AddressExampleCard({
       aria-hidden={isDuplicate}
     >
       <div className="address-example-card__body">
-        <span className="address-example-card__label-kicker">Landmark example</span>
         <ColouredCode code={example.code} className="address-example-card__code" />
         <h3 className="address-example-card__title">{example.name}</h3>
         <div className="address-example-card__meta" aria-label={`${example.name} locality details`}>
@@ -1090,7 +1093,7 @@ function SomaliaUseCaseSection() {
             <article className="somalia-address-slip somalia-address-slip--street">
               <span className="somalia-address-slip__label">Example with street context</span>
               <SomaliaAddressLines
-                lines={["Isbarbardhig Road", "35-12-12 Halane", "Mogadishu", "Wadajir", "Banaadir", "Somalia"]}
+                lines={["Isbarbardhig Road", "35-12-12 Halane", "Wadajir", "Mogadishu", "Banaadir", "Somalia"]}
               />
             </article>
 
