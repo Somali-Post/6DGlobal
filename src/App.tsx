@@ -1,7 +1,7 @@
-import { lazy, MouseEvent, PointerEvent, ReactNode, Suspense, TouchEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { lazy, MouseEvent, ReactNode, Suspense, useEffect, useRef, useState } from "react";
 import CursorGrid from "./components/CursorGrid";
 import { AddressingProblemSection } from "./components/sections/AddressingProblemSection";
-import { LandmarkExampleWithCode, landmarkExamples, withCalculatedCode } from "./data/landmarkExamples";
+import { ExamplesSection } from "./components/sections/ExamplesSection";
 import { localityMattersExample } from "./data/localityMattersExample";
 
 const FindPage = lazy(() => import("./pages/FindPage"));
@@ -58,8 +58,6 @@ const observedSectionIds = [
   "faq",
   "contact",
 ];
-
-const LANDMARK_AUTOPLAY_DELAY = 4200;
 
 const faqGroups = [
   {
@@ -193,21 +191,21 @@ const applicationGroups = [
 const teamMembers = [
   {
     initials: "GL",
-    image: "/images/team/GL.jpeg",
+    image: "/images/team/gl-360.webp",
     name: "Graeme Lee",
     role: "Addressing and postal development",
     bio: "Graeme developed the original 6D Address concept from his experience in postal-sector development and addressing challenges in countries where conventional addressing is incomplete.",
   },
   {
     initials: "AG",
-    image: "/images/team/AG.jpeg",
+    image: "/images/team/ag-360.webp",
     name: "Abdiaziz Ga'al",
     role: "Software implementation and product development",
     bio: "Abdiaziz brought the 6D Address concept to life through software development, map-based demonstrations and practical testing of the user experience.",
   },
   {
     initials: "SH",
-    image: "/images/team/SH.jpeg",
+    image: "/images/team/sh-360.webp",
     name: "Said Hassan",
     role: "Postal operations and Somalia use case",
     bio: "Said supports the Somalia use case through his role in the Somali National Postal Service Department, helping connect the concept to practical postal and addressing needs.",
@@ -390,13 +388,13 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
 
       <AddressingProblemSection />
 
-      <section className="craft-section craft-section--blueprint craft-grid-bg how-method" id="how-it-works">
+      <section className="craft-section craft-section--blueprint craft-grid-bg how-created" id="how-it-works">
         <div className="craft-container">
           <HowItWorksSection />
         </div>
       </section>
 
-      <AddressExamplesCarousel />
+      <ExamplesSection />
 
       <LocalityMattersSection />
 
@@ -414,7 +412,6 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
         <div className="craft-container">
           <div className="contact-chapter__grid">
             <header className="contact-chapter__header craft-reveal">
-              <p className="chapter-label">CONTACT</p>
               <h2 className="display-section">Start a 6D Address conversation</h2>
               <p className="craft-lead">
                 For postal operators, public-sector teams, developers or service providers interested in the method,
@@ -567,420 +564,62 @@ function GlobeHeroVisual() {
 
 function HowItWorksSection() {
   return (
-    <>
-      <div className="how-method__layout">
-        <header className="how-method__intro craft-reveal">
-          <p className="chapter-label">HOW IT WORKS</p>
-          <h2 className="display-section">How 6D Address works</h2>
-          <p className="craft-lead">
-            Latitude and longitude provide the six digits. Locality turns those digits into a clear address people can use.
-          </p>
-          <p className="how-method__helper">
-            6D Address uses the 2nd, 3rd and 4th decimal places of latitude and longitude.
-          </p>
-        </header>
+    <div className="how-created__layout">
+      <header className="how-created__copy craft-reveal">
+        <h2 className="display-section">How 6D Address is created</h2>
+        <p>
+          6D Address uses the 2nd, 3rd and 4th decimal places of latitude and longitude.
+        </p>
+        <p>
+          Once the 6D Address is created it is integrated with all available address information to provide a comprehensive address based on national standards
+        </p>
+      </header>
 
-        <div className="how-method__flow craft-reveal" aria-label="How 6D Address works in three steps">
-          <article className="how-method__panel how-method__panel--coordinate">
-            <h3>01 - Coordinate source</h3>
-            <div className="coordinate-pairing" aria-label="Latitude and longitude selected decimal places">
-              <div className="coordinate-row">
-                <span className="coordinate-row__label">Latitude</span>
-                <span className="coordinate-value">
-                  <span>7.8</span>
-                  <span className="coordinate-value__digit digit-pair--red">7</span>
-                  <span className="coordinate-value__digit digit-pair--green">9</span>
-                  <span className="coordinate-value__digit digit-pair--blue">2</span>
-                  <span>27 N</span>
-                </span>
-              </div>
-              <div className="coordinate-row">
-                <span className="coordinate-row__label">Longitude</span>
-                <span className="coordinate-value">
-                  <span>11.3</span>
-                  <span className="coordinate-value__digit digit-pair--red">4</span>
-                  <span className="coordinate-value__digit digit-pair--green">3</span>
-                  <span className="coordinate-value__digit digit-pair--blue">5</span>
-                  <span>55 W</span>
-                </span>
-              </div>
-            </div>
+      <div className="how-created__diagram craft-reveal" aria-label="How 6D Address is created">
+        <article className="how-created__coordinate-box">
+          <div className="how-created__coordinate-row">
+            <span className="how-created__coordinate-label">Latitude:</span>
+            <span className="how-created__coordinate-value" aria-label="7.879227 N">
+              <span>7.8</span>
+              <span className="digit-red">7</span>
+              <span className="digit-green">9</span>
+              <span className="digit-blue">2</span>
+              <span>27 N</span>
+            </span>
+          </div>
 
-            <div className="pairing-row" aria-label="Digit pair logic">
-              <div className="pairing-chip">
-                <span className="digit-pair--red">7</span>
-                <span>+</span>
-                <span className="digit-pair--red">4</span>
-                <span>=</span>
-                <strong className="digit-pair--red">74</strong>
-              </div>
-              <div className="pairing-chip">
-                <span className="digit-pair--green">9</span>
-                <span>+</span>
-                <span className="digit-pair--green">3</span>
-                <span>=</span>
-                <strong className="digit-pair--green">93</strong>
-              </div>
-              <div className="pairing-chip">
-                <span className="digit-pair--blue">2</span>
-                <span>+</span>
-                <span className="digit-pair--blue">5</span>
-                <span>=</span>
-                <strong className="digit-pair--blue">25</strong>
-              </div>
-            </div>
-          </article>
+          <div className="how-created__coordinate-row">
+            <span className="how-created__coordinate-label">Longitude:</span>
+            <span className="how-created__coordinate-value" aria-label="11.343555 W">
+              <span>11.3</span>
+              <span className="digit-red">4</span>
+              <span className="digit-green">3</span>
+              <span className="digit-blue">5</span>
+              <span>55 W</span>
+            </span>
+          </div>
 
-          <article className="how-method__panel how-method__panel--locality">
-            <h3>02 - Add locality</h3>
-            <address>
-              <span>Blama</span>
-              <span>Kenema District</span>
-            </address>
-            <p>
-              Locality provides the place context people already use.
-            </p>
-          </article>
-
-          <article className="how-method__panel how-method__panel--complete">
-            <h3>03 - Complete 6D Address</h3>
+          <div className="how-created__generated-code" aria-label="The coloured selected digits create: 74-93-25">
+            <span>The coloured selected digits create:</span>
             <ColouredCode code="74-93-25" />
-            <address>
-              <span>Blama</span>
-              <span>Kenema District</span>
-              <span>Sierra Leone</span>
-            </address>
-            <p>
-              The six-digit reference and locality together form a usable address.
-            </p>
-          </article>
-        </div>
+          </div>
+        </article>
+
+        <p className="how-created__join-text">
+          The red, blue and green coordinates are combined to create the 6D Address
+        </p>
+
+        <article className="how-created__address-box">
+          <ColouredCode code="74-93-25" />
+          <address>
+            <span>Ghebenderu</span>
+            <span>Kenema District</span>
+            <span>Eastern Province</span>
+            <span>Sierra Leone</span>
+          </address>
+        </article>
       </div>
-    </>
-  );
-}
-
-function AddressExamplesCarousel() {
-  const prefersReducedMotion = usePrefersReducedMotion();
-  const [interactionPaused, setInteractionPaused] = useState(false);
-  const [manualPaused, setManualPaused] = useState(false);
-  const [documentHidden, setDocumentHidden] = useState(() => document.hidden);
-  const trackRef = useRef<HTMLDivElement | null>(null);
-  const dragStartX = useRef<number | null>(null);
-  const manualPauseTimer = useRef<number | null>(null);
-  const examples = landmarkExamples.map(withCalculatedCode);
-  const total = examples.length;
-  const loopStartIndex = total * 2;
-  const [trackIndex, setTrackIndex] = useState(loopStartIndex);
-  const [slideMetrics, setSlideMetrics] = useState({ cardWidth: 0, step: 0, rightEdgeOffset: 3 });
-  const [suppressTransition, setSuppressTransition] = useState(true);
-  const activeIndex = ((trackIndex % total) + total) % total;
-  const autoplayPaused = prefersReducedMotion || interactionPaused || manualPaused || documentHidden;
-  const carouselExamples = Array.from({ length: 5 }, () => examples).flat();
-  const trackOffset = slideMetrics.step > 0
-    ? trackIndex * slideMetrics.step - slideMetrics.cardWidth / 2
-    : 0;
-
-  useEffect(() => {
-    if (autoplayPaused || total < 2) return;
-    const timer = window.setInterval(() => {
-      setTrackIndex((index) => index + 1);
-    }, LANDMARK_AUTOPLAY_DELAY);
-
-    return () => window.clearInterval(timer);
-  }, [autoplayPaused, total]);
-
-  useEffect(() => {
-    return () => {
-      if (manualPauseTimer.current !== null) window.clearTimeout(manualPauseTimer.current);
-    };
-  }, []);
-
-  useEffect(() => {
-    const onVisibilityChange = () => setDocumentHidden(document.hidden);
-    document.addEventListener("visibilitychange", onVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
-  }, []);
-
-  const pauseAfterManualAction = () => {
-    setManualPaused(true);
-    if (manualPauseTimer.current !== null) window.clearTimeout(manualPauseTimer.current);
-    manualPauseTimer.current = window.setTimeout(() => setManualPaused(false), LANDMARK_AUTOPLAY_DELAY);
-  };
-
-  const goPrevious = () => {
-    pauseAfterManualAction();
-    setTrackIndex((index) => index - 1);
-  };
-  const goNext = () => {
-    pauseAfterManualAction();
-    setTrackIndex((index) => index + 1);
-  };
-
-  const resetLoopPosition = () => {
-    if (trackIndex >= total * 2 && trackIndex < total * 3) return;
-
-    setSuppressTransition(true);
-    setTrackIndex(activeIndex + loopStartIndex);
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => setSuppressTransition(false));
-    });
-  };
-
-  useEffect(() => {
-    if (prefersReducedMotion) resetLoopPosition();
-  });
-
-  useLayoutEffect(() => {
-    const updateOffset = () => {
-      const track = trackRef.current;
-      const firstCard = track?.querySelector<HTMLElement>(".address-example-card");
-      if (!track || !firstCard) return;
-
-      const trackStyles = window.getComputedStyle(track);
-      const gap = Number.parseFloat(trackStyles.columnGap || trackStyles.gap || "0") || 0;
-      const cardWidth = firstCard.getBoundingClientRect().width;
-      const viewportWidth = track.parentElement?.getBoundingClientRect().width ?? cardWidth;
-      const visibleAfterActive = Math.floor((viewportWidth - cardWidth / 2) / (cardWidth + gap));
-
-      setSlideMetrics({
-        cardWidth,
-        step: cardWidth + gap,
-        rightEdgeOffset: Math.max(1, visibleAfterActive),
-      });
-    };
-
-    updateOffset();
-
-    const track = trackRef.current;
-    if (!track) return;
-
-    const observer = new ResizeObserver(updateOffset);
-    observer.observe(track);
-    window.addEventListener("resize", updateOffset);
-    window.requestAnimationFrame(() => setSuppressTransition(false));
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("resize", updateOffset);
-    };
-  }, [trackIndex]);
-
-  const finishDrag = (clientX: number) => {
-    if (dragStartX.current === null) return;
-    const distance = clientX - dragStartX.current;
-    dragStartX.current = null;
-
-    if (Math.abs(distance) < 42) return;
-    if (distance < 0) goNext();
-    else goPrevious();
-  };
-
-  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
-    if (event.pointerType === "mouse") return;
-    dragStartX.current = event.clientX;
-    try {
-      event.currentTarget.setPointerCapture(event.pointerId);
-    } catch {
-      // Some synthetic touch checks do not create an active pointer capture target.
-    }
-  };
-
-  const handlePointerUp = (event: PointerEvent<HTMLDivElement>) => {
-    finishDrag(event.clientX);
-
-    try {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    } catch {
-      // Capture may already be released if the browser handled the gesture natively.
-    }
-  };
-
-  const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
-    dragStartX.current = event.touches[0]?.clientX ?? null;
-  };
-
-  const handleTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
-    const touch = event.changedTouches[0];
-    if (!touch) return;
-    finishDrag(touch.clientX);
-  };
-
-  return (
-    <section className="craft-section craft-section--light examples-chapter address-examples" id="examples">
-      <div className="craft-container address-examples__inner">
-        <div className="examples-chapter__header craft-grid address-examples__header">
-          <div className="examples-chapter__title craft-reveal">
-            <p className="chapter-label">EXAMPLES FROM AROUND THE WORLD</p>
-            <h2 className="display-section">6D Address in action</h2>
-          </div>
-          <div className="examples-chapter__intro craft-reveal">
-            <p className="craft-lead address-examples__lead">
-              The same format can identify familiar places around the world. Each example combines a six-digit reference
-              with locality information people already recognise.
-            </p>
-          </div>
-        </div>
-
-        <div
-          className="address-examples__carousel"
-          onMouseEnter={() => setInteractionPaused(true)}
-          onMouseLeave={() => setInteractionPaused(false)}
-          onFocusCapture={() => setInteractionPaused(true)}
-          onBlurCapture={(event) => {
-            if (!event.currentTarget.contains(event.relatedTarget)) setInteractionPaused(false);
-          }}
-        >
-          <button
-            type="button"
-            className="examples-carousel__arrow examples-carousel__arrow--prev"
-            onClick={goPrevious}
-            aria-label="Previous example"
-          >
-            <ChevronIcon direction="previous" />
-          </button>
-
-          <div
-            className="address-examples__viewport"
-            onPointerDown={handlePointerDown}
-            onPointerUp={handlePointerUp}
-            onPointerCancel={() => {
-              dragStartX.current = null;
-            }}
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
-          >
-            <div
-              className={`address-examples__track ${suppressTransition ? "is-resetting" : ""}`}
-              ref={trackRef}
-              onTransitionEnd={(event) => {
-                if (event.propertyName === "transform") resetLoopPosition();
-              }}
-              style={{ transform: `translate3d(-${trackOffset}px, 0, 0)` }}
-            >
-              {carouselExamples.map((example, index) => (
-                <AddressExampleCard
-                  example={example}
-                  isActive={index === trackIndex}
-                  isEdge={index === trackIndex - 1 || index === trackIndex + slideMetrics.rightEdgeOffset}
-                  isDuplicate={index < total * 2 || index >= total * 3}
-                  key={`${example.id}-${index}`}
-                />
-              ))}
-            </div>
-          </div>
-
-          <button
-            type="button"
-            className="examples-carousel__arrow examples-carousel__arrow--next"
-            onClick={goNext}
-            aria-label="Next example"
-          >
-            <ChevronIcon direction="next" />
-          </button>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function AddressExampleCard({
-  example,
-  isActive,
-  isEdge,
-  isDuplicate = false,
-}: {
-  example: LandmarkExampleWithCode;
-  isActive: boolean;
-  isEdge: boolean;
-  isDuplicate?: boolean;
-}) {
-  return (
-    <article
-      className={`address-example-card ${isActive ? "is-active" : ""} ${isEdge ? "is-edge" : ""}`}
-      aria-hidden={isDuplicate}
-    >
-      <div className="address-example-card__body">
-        <ColouredCode code={example.code} className="address-example-card__code" />
-        <h3 className="address-example-card__title">{example.name}</h3>
-        <div className="address-example-card__meta" aria-label={`${example.name} locality details`}>
-          <div className="address-example-card__meta-row">
-            <MapPinIcon className="address-example-card__meta-icon" />
-            <span>{example.siteLine}</span>
-          </div>
-          <div className="address-example-card__meta-row">
-            <GlobeIcon className="address-example-card__meta-icon" />
-            <span>{example.cityCountryLine}</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="address-example-card__media">
-        <img src={example.imagePath} alt={`${example.name} landmark`} loading="lazy" decoding="async" />
-        <span className="address-example-card__photo-ring" aria-hidden="true" />
-        <span className="address-example-card__photo-pin" aria-hidden="true">
-          <span className="address-example-card__photo-pin-dot" />
-        </span>
-      </div>
-    </article>
-  );
-}
-
-function ChevronIcon({ direction }: { direction: "previous" | "next" }) {
-  const path = direction === "previous" ? "M15 18 9 12 15 6" : "M9 18 15 12 9 6";
-
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
-      <path
-        d={path}
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function MapPinIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} aria-hidden="true" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M12 21s6-5.23 6-11a6 6 0 0 0-12 0c0 5.77 6 11 6 11Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M12 12.35a2.25 2.25 0 1 0 0-4.5 2.25 2.25 0 0 0 0 4.5Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function GlobeIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} aria-hidden="true" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M3.6 9h16.8M3.6 15h16.8M12 3c2.2 2.36 3.26 5.36 3.26 9S14.2 18.64 12 21c-2.2-2.36-3.26-5.36-3.26-9S9.8 5.36 12 3Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    </div>
   );
 }
 
@@ -1006,7 +645,6 @@ function LocalityMattersSection() {
       <div className="craft-container">
         <div className="locality-proof__grid">
           <header className="locality-proof__header craft-reveal">
-            <p className="chapter-label">WHY LOCALITY MATTERS</p>
             <h2 className="display-section">Same code. Different localities.</h2>
             <p className="craft-lead">
               A 6D code is a reference, not a complete address on its own. The same six digits can appear in different
@@ -1068,7 +706,6 @@ function SomaliaUseCaseSection() {
       <div className="craft-container">
         <div className="somalia-case__grid">
           <header className="somalia-case__header craft-reveal">
-            <p className="chapter-label">SOMALIA USE CASE</p>
             <h2 className="display-section">Somalia use case</h2>
             <p className="craft-lead">
             Somalia provides a practical example of how 6D Address can work with existing locality information. In areas
@@ -1147,7 +784,6 @@ function PracticalApplicationsSection() {
       <div className="craft-container">
         <div className="applications-index__grid">
           <header className="applications-index__header craft-reveal">
-            <p className="chapter-label">PRACTICAL APPLICATIONS</p>
             <h2 className="display-section">Where 6D can help</h2>
             <p className="craft-lead">
             6D Address can support services that need a simple, shareable location reference where formal addressing is
@@ -1194,7 +830,6 @@ function PropositionSection() {
       <div className="craft-container">
         <div className="proposition-chapter__grid">
           <header className="proposition-chapter__header craft-reveal">
-            <p className="chapter-label">OUR PROPOSITION</p>
             <h2 className="display-section">An open addressing method, supported by practical implementation tools.</h2>
             <p className="craft-lead">
             6D Address provides a simple way to create a short location reference from latitude and longitude, then
@@ -1241,7 +876,6 @@ function TeamSection() {
       <div className="craft-container">
         <div className="team-editorial__grid">
           <header className="team-editorial__header craft-reveal">
-            <p className="chapter-label">THE TEAM</p>
             <h2 className="display-section">Our 6D Address team</h2>
             <p className="craft-lead">
             6D Address is being developed by a small founding team with experience in postal development, software
@@ -1297,7 +931,6 @@ function FAQSection() {
       <div className="craft-container">
         <div className="faq-chapter__grid">
           <header className="faq-chapter__header craft-reveal">
-            <p className="chapter-label">FAQ</p>
             <h2 className="display-section">Frequently asked questions</h2>
             <p className="craft-lead">
               6D Address only becomes unique when the locality is present. 6D Address is a reconfiguration of latitude

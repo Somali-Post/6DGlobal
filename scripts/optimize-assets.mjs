@@ -17,67 +17,66 @@ const exists = async (file) => {
   }
 };
 
-const imageJobs = [
-  {
-    input: "public/textures/earth-blue-marble-december-5400.jpg",
-    outputDir: "public/images/globe",
-    name: "earth-day",
-    widths: [1024, 1536, 2048],
-    quality: 78,
-  },
-  {
-    input: "public/textures/earth-night-lights-2012-3600.jpg",
-    outputDir: "public/images/globe",
-    name: "earth-night",
-    widths: [1024, 1536, 2048],
-    quality: 76,
-  },
-];
-
-const logoJobs = [
-  {
-    input: "public/logo.png",
-    output: "public/images/logo-compact.png",
-    width: 256,
-  },
-  {
-    input: "public/images/logo.png",
-    output: "public/images/logo-compact.png",
-    width: 256,
-  },
-];
-
-await ensureDir("public/images/globe");
-
-for (const job of imageJobs) {
-  if (!(await exists(job.input))) {
-    console.warn(`Skipping missing source: ${job.input}`);
-    continue;
+async function optimizeTeamImage(input, output) {
+  if (!(await exists(input))) {
+    console.warn(`Skipping missing team source: ${input}`);
+    return;
   }
 
-  await ensureDir(job.outputDir);
+  await ensureDir(path.dirname(output));
 
-  for (const width of job.widths) {
-    const out = `${job.outputDir}/${job.name}-${width}.webp`;
+  await sharp(path.join(root, input))
+    .resize({ width: 360, height: 360, fit: "cover", position: "center" })
+    .webp({ quality: 80, effort: 6 })
+    .toFile(path.join(root, output));
+
+  console.log(`Created ${output}`);
+}
+
+async function optimizeLogo() {
+  const logoJobs = [
+    {
+      input: "public/logo.png",
+      output: "public/images/logo-compact.png",
+      width: 256,
+    },
+    {
+      input: "public/images/logo.png",
+      output: "public/images/logo-compact.png",
+      width: 256,
+    },
+  ];
+
+  for (const job of logoJobs) {
+    if (!(await exists(job.input))) continue;
+
+    await ensureDir(path.dirname(job.output));
+
     await sharp(path.join(root, job.input))
-      .resize({ width, withoutEnlargement: true })
-      .webp({ quality: job.quality, effort: 6 })
-      .toFile(path.join(root, out));
+      .resize({ width: job.width, withoutEnlargement: true })
+      .png({ compressionLevel: 9, adaptiveFiltering: true })
+      .toFile(path.join(root, job.output));
 
-    console.log(`Created ${out}`);
+    console.log(`Created ${job.output}`);
+    return;
   }
+
+  console.warn("No logo source found for compact logo generation.");
 }
 
-for (const job of logoJobs) {
-  if (!(await exists(job.input))) continue;
+await optimizeTeamImage(
+  "source-assets/team/GL.jpeg",
+  "public/images/team/gl-360.webp",
+);
+await optimizeTeamImage(
+  "source-assets/team/AG.jpeg",
+  "public/images/team/ag-360.webp",
+);
+await optimizeTeamImage(
+  "source-assets/team/SH.jpeg",
+  "public/images/team/sh-360.webp",
+);
 
-  await ensureDir(path.dirname(job.output));
+await optimizeLogo();
 
-  await sharp(path.join(root, job.input))
-    .resize({ width: job.width, withoutEnlargement: true })
-    .png({ compressionLevel: 9, adaptiveFiltering: true })
-    .toFile(path.join(root, job.output));
-
-  console.log(`Created ${job.output}`);
-  break;
-}
+console.log("Asset optimization complete.");
