@@ -580,8 +580,8 @@ function HowItWorksSection() {
         </p>
       </header>
 
-      <div className="how-created-process" aria-label="How 6D Address is created">
-        <article className="process-card process-card--source craft-reveal">
+      <div className="how-created-process craft-reveal" aria-label="How 6D Address is created">
+        <article className="process-card process-card--source">
           <span className="process-step">01 — Create the 6D code</span>
 
           <div className="process-coordinate-grid" aria-label="Latitude and longitude selected decimal places">
@@ -614,7 +614,7 @@ function HowItWorksSection() {
           </div>
         </article>
 
-        <div className="process-connector craft-reveal">
+        <div className="process-connector">
           <span className="process-connector__line" aria-hidden="true" />
           <span className="process-connector__arrow" aria-hidden="true">↓</span>
           <p>
@@ -622,7 +622,7 @@ function HowItWorksSection() {
           </p>
         </div>
 
-        <article className="process-card process-card--result craft-reveal">
+        <article className="process-card process-card--result">
           <span className="process-step">02 — Add available address information</span>
           <div className="process-address-block">
             <div className="process-address-content">
