@@ -32,10 +32,21 @@ export function AddressingProblemSection() {
         <div className="problem-chapter__story">
           <header className="problem-chapter__header craft-reveal">
             <h2 className="display-section">Addressing the problem</h2>
-            <p className="craft-lead">
-              A large portion of the world lives without formal addressing, leaving them unable to access basic civic,
-              financial and emergency services. Adding <NoWrap6D /> to existing locality information bridges the addressing gap.
-            </p>
+            <div className="problem-chapter__subtitle-row">
+              <p className="craft-lead">
+                A large portion of the world lives without formal addressing, leaving them unable to access basic civic,
+                financial and emergency services. Adding <NoWrap6D /> to existing locality information bridges the addressing gap.
+              </p>
+              <div className="problem-s42-block">
+                <img
+                  src="/images/s42badge.png"
+                  alt="S42 compatible badge"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <p>6D as part of a complete address</p>
+              </div>
+            </div>
           </header>
 
           <div className="problem-bridge craft-reveal" aria-label="Addressing gap and 6D Address solution">
@@ -85,15 +96,6 @@ export function AddressingProblemSection() {
                   <NoWrap6D /> replaces the missing
                   <strong>property number and street name</strong>
                 </p>
-                <div className="problem-s42-block">
-                  <img
-                    src="/images/s42badge.png"
-                    alt="S42 compatible badge"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  <p>6D as part of a complete address</p>
-                </div>
               </div>
             </article>
           </div>
