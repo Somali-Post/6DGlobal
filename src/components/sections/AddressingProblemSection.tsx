@@ -1,3 +1,5 @@
+import { NoWrap6D } from "../NoWrap6D";
+
 const availableLocalityItems = ["Halane", "Mogadishu", "Wajadir", "Somalia"];
 
 function ColouredCode({ code }: { code: string }) {
@@ -32,7 +34,7 @@ export function AddressingProblemSection() {
             <h2 className="display-section">Addressing the problem</h2>
             <p className="craft-lead">
               A large portion of the world lives without formal addressing, leaving them unable to access basic civic,
-              financial and emergency services. Adding 6D Address to existing locality information bridges the addressing gap.
+              financial and emergency services. Adding <NoWrap6D /> to existing locality information bridges the addressing gap.
             </p>
           </header>
 
@@ -80,7 +82,7 @@ export function AddressingProblemSection() {
               </ul>
               <div className="problem-bridge__solution-footer">
                 <p className="problem-bridge__footer">
-                  6D Address replaces the missing
+                  <NoWrap6D /> replaces the missing
                   <strong>property number and street name</strong>
                 </p>
                 <div className="problem-s42-block">
@@ -98,7 +100,7 @@ export function AddressingProblemSection() {
 
           <p className="problem-bridge__closing">
             <span>In developing countries like Somalia, it will take many years to adopt property numbers and street names</span>
-            <span>6D Address immediately fills the gap and is compatible with future address solutions</span>
+            <span><NoWrap6D /> immediately fills the gap and is compatible with future address solutions</span>
           </p>
         </div>
       </div>

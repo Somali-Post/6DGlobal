@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { NoWrap6D, renderNoWrap6D } from "../components/NoWrap6D";
 import { Coordinate, generate6DCode } from "../lib/sixd";
 import { createGoogleMapsAdapter, MapAdapter, MapAddress } from "../map/googleMapsAdapter";
 
@@ -32,7 +33,7 @@ type PanelState = {
 export default function FindPage() {
   const mapRef = useRef<HTMLDivElement>(null);
   const adapter = useRef<MapAdapter | null>(null);
-  const requestedInitialLocateRef = useRef(false);
+  const requestedInitialActionRef = useRef(false);
   const latestCode = useRef<FormattedCode | null>(null);
   const latestSuffix = useRef("");
   const [mapLoadState, setMapLoadState] = useState<MapLoadState>("loading");
@@ -127,9 +128,25 @@ export default function FindPage() {
 
   useEffect(() => {
     if (mapLoadState !== "ready") return;
-    if (requestedInitialLocateRef.current || !autoLocate) return;
+    if (requestedInitialActionRef.current || !adapter.current) return;
 
-    requestedInitialLocateRef.current = true;
+    const params = new URLSearchParams(window.location.search);
+    const lat = Number(params.get("lat"));
+    const lng = Number(params.get("lng"));
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
+
+    requestedInitialActionRef.current = true;
+    setLocationState("idle");
+    adapter.current.setPin({ lat, lng }, 18);
+  }, [mapLoadState]);
+
+  useEffect(() => {
+    if (mapLoadState !== "ready") return;
+    if (requestedInitialActionRef.current || !autoLocate) return;
+
+    requestedInitialActionRef.current = true;
     handleLocate();
   }, [autoLocate, handleLocate, mapLoadState]);
 
@@ -257,7 +274,7 @@ function FindInfoPanel({
     >
       {result ? (
         <>
-          <p className="find-map-page__panel-label">6D Address</p>
+          <p className="find-map-page__panel-label"><NoWrap6D /></p>
           <FindCode code={result.code} />
           <address className="find-map-page__address-lines">
             <span>{result.address.line1}</span>
@@ -267,14 +284,14 @@ function FindInfoPanel({
         </>
       ) : pendingCode ? (
         <>
-          <p className="find-map-page__panel-label">6D Address</p>
+          <p className="find-map-page__panel-label"><NoWrap6D /></p>
           <FindCode code={pendingCode} />
           <p className="find-map-page__panel-body">Resolving locality information for the selected point.</p>
         </>
       ) : (
         <>
           <p className="find-map-page__panel-title">{panelState?.title}</p>
-          <p className="find-map-page__panel-body">{panelState?.body}</p>
+          <p className="find-map-page__panel-body">{panelState?.body ? renderNoWrap6D(panelState.body) : null}</p>
         </>
       )}
     </section>

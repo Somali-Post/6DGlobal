@@ -1,5 +1,6 @@
 import { lazy, MouseEvent, ReactNode, Suspense, useEffect, useRef, useState } from "react";
 import CursorGrid from "./components/CursorGrid";
+import { NoWrap6D, renderNoWrap6D } from "./components/NoWrap6D";
 import { AddressingProblemSection } from "./components/sections/AddressingProblemSection";
 import { ExamplesSection } from "./components/sections/ExamplesSection";
 import { localityMattersExample } from "./data/localityMattersExample";
@@ -359,7 +360,7 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
         <div className="hero-shell">
           <div className="hero-copy hero-content reveal">
             <h1 className="hero-title">
-              <span className="hero-title-primary">6D Address</span>
+              <span className="hero-title-primary nowrap-6d">6D Address</span>
               <span className="hero-title-secondary">Addressing the world</span>
               <span className="hero-title-secondary">in six digits</span>
             </h1>
@@ -378,7 +379,7 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
               </span>
             </div>
             <div className="actions hero-actions">
-              <LiteButton className="button hero-cta hero-cta--primary" onClick={() => onFind(true)}>Find my 6D Address</LiteButton>
+              <LiteButton className="button hero-cta hero-cta--primary" onClick={() => onFind(true)}>Find my <NoWrap6D /></LiteButton>
               <LiteButton className="button hero-cta hero-cta--secondary" href="#how-it-works">See how it works</LiteButton>
             </div>
           </div>
@@ -388,7 +389,7 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
 
       <AddressingProblemSection />
 
-      <section className="craft-section craft-section--blueprint craft-grid-bg how-created" id="how-it-works">
+      <section className="craft-section craft-section--blueprint craft-grid-bg how-created-section" id="how-it-works">
         <div className="craft-container">
           <HowItWorksSection />
         </div>
@@ -412,7 +413,7 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
         <div className="craft-container">
           <div className="contact-chapter__grid">
             <header className="contact-chapter__header craft-reveal">
-              <h2 className="display-section">Start a 6D Address conversation</h2>
+              <h2 className="display-section">Start a <NoWrap6D /> conversation</h2>
               <p className="craft-lead">
                 For postal operators, public-sector teams, developers or service providers interested in the method,
                 pilot design or implementation support.
@@ -506,7 +507,7 @@ function Navigation({
             onFind();
           }}
         >
-          Find my 6D Address
+          Find my <NoWrap6D />
         </LiteButton>
       </nav>
     </header>
@@ -564,59 +565,83 @@ function GlobeHeroVisual() {
 
 function HowItWorksSection() {
   return (
-    <div className="how-created__layout">
-      <header className="how-created__copy craft-reveal">
-        <h2 className="display-section">How 6D Address is created</h2>
+    <div className="how-created-layout">
+      <header className="how-created-copy craft-reveal">
+        <h2 className="display-section">
+          <span className="display-line">How <NoWrap6D /></span>
+          {" "}
+          <span className="display-line">is created</span>
+        </h2>
         <p>
-          6D Address uses the 2nd, 3rd and 4th decimal places of latitude and longitude.
+          <NoWrap6D /> uses the 2nd, 3rd and 4th decimal places of latitude and longitude.
         </p>
         <p>
-          Once the 6D Address is created it is integrated with all available address information to provide a comprehensive address based on national standards
+          Once the <NoWrap6D /> is created it is integrated with all available address information to provide a comprehensive address based on national standards
         </p>
       </header>
 
-      <div className="how-created__diagram craft-reveal" aria-label="How 6D Address is created">
-        <article className="how-created__coordinate-box">
-          <div className="how-created__coordinate-row">
-            <span className="how-created__coordinate-label">Latitude:</span>
-            <span className="how-created__coordinate-value" aria-label="7.879227 N">
-              <span>7.8</span>
-              <span className="digit-red">7</span>
-              <span className="digit-green">9</span>
-              <span className="digit-blue">2</span>
-              <span>27 N</span>
-            </span>
+      <div className="how-created-process craft-reveal" aria-label="How 6D Address is created">
+        <article className="process-card process-card--source">
+          <span className="process-step">01 — Create the 6D code</span>
+
+          <div className="process-coordinate-grid" aria-label="Latitude and longitude selected decimal places">
+            <div className="process-coordinate-row">
+              <span className="process-coordinate-label">Latitude:</span>
+              <span className="process-coordinate-value" aria-label="7.879227 N">
+                <span>7.8</span>
+                <span className="digit-red">7</span>
+                <span className="digit-green">9</span>
+                <span className="digit-blue">2</span>
+                <span>27 N</span>
+              </span>
+            </div>
+
+            <div className="process-coordinate-row">
+              <span className="process-coordinate-label">Longitude:</span>
+              <span className="process-coordinate-value" aria-label="11.343555 W">
+                <span>11.3</span>
+                <span className="digit-red">4</span>
+                <span className="digit-green">3</span>
+                <span className="digit-blue">5</span>
+                <span>55 W</span>
+              </span>
+            </div>
           </div>
 
-          <div className="how-created__coordinate-row">
-            <span className="how-created__coordinate-label">Longitude:</span>
-            <span className="how-created__coordinate-value" aria-label="11.343555 W">
-              <span>11.3</span>
-              <span className="digit-red">4</span>
-              <span className="digit-green">3</span>
-              <span className="digit-blue">5</span>
-              <span>55 W</span>
-            </span>
-          </div>
-
-          <div className="how-created__generated-code" aria-label="The coloured selected digits create: 74-93-25">
-            <span>The coloured selected digits create:</span>
+          <div className="process-output" aria-label="The coloured selected digits create: 74-93-25">
+            <span className="process-output__label">The coloured selected digits create:</span>
             <ColouredCode code="74-93-25" />
           </div>
         </article>
 
-        <p className="how-created__join-text">
-          The red, blue and green coordinates are combined to create the 6D Address
-        </p>
+        <div className="process-connector">
+          <span className="process-connector__line" aria-hidden="true" />
+          <span className="process-connector__arrow" aria-hidden="true">↓</span>
+          <p>
+            The red, green and blue coordinates are combined to create the <NoWrap6D />
+          </p>
+        </div>
 
-        <article className="how-created__address-box">
-          <ColouredCode code="74-93-25" />
-          <address>
-            <span>Ghebenderu</span>
-            <span>Kenema District</span>
-            <span>Eastern Province</span>
-            <span>Sierra Leone</span>
-          </address>
+        <article className="process-card process-card--result">
+          <span className="process-step">02 — Add available address information</span>
+          <div className="process-address-block">
+            <div className="process-address-content">
+              <ColouredCode code="74-93-25" />
+              <address>
+                <span>Ghebenderu</span>
+                <span>Kenema District</span>
+                <span>Eastern Province</span>
+                <span>Sierra Leone</span>
+              </address>
+            </div>
+
+            <div className="process-map-illustration" role="img" aria-label="Map illustration with buildings and one building labelled 74-93-25">
+              <img src="/images/process-map-6d-address.webp" alt="" loading="lazy" decoding="async" />
+              <div className="process-map-illustration__callout" aria-hidden="true">
+                <ColouredCode code="74-93-25" className="coloured-code--compact" />
+              </div>
+            </div>
+          </div>
         </article>
       </div>
     </div>
@@ -708,7 +733,7 @@ function SomaliaUseCaseSection() {
           <header className="somalia-case__header craft-reveal">
             <h2 className="display-section">Somalia use case</h2>
             <p className="craft-lead">
-            Somalia provides a practical example of how 6D Address can work with existing locality information. In areas
+            Somalia provides a practical example of how <NoWrap6D /> can work with existing locality information. In areas
             where property numbers or named streets are incomplete, a 6D reference can help provide a clearer last-mile
             location when combined with district, town, city and regional information.
           </p>
@@ -719,7 +744,7 @@ function SomaliaUseCaseSection() {
             <h3 id="somalia-format-title">A complete address can combine local context with 6D</h3>
             <ol className="somalia-case__format-list">
               <li>Property number and street name</li>
-              <li>6D Address and locality</li>
+              <li><NoWrap6D /> and locality</li>
               <li>District / town / city</li>
               <li>Region</li>
               <li>Country</li>
@@ -744,7 +769,7 @@ function SomaliaUseCaseSection() {
 
           <div className="somalia-case__note craft-reveal">
             <p>
-              Where full property and street addressing is not yet available, 6D Address can provide a practical location
+              Where full property and street addressing is not yet available, <NoWrap6D /> can provide a practical location
               reference that works with existing locality information.
             </p>
             <small>
@@ -786,7 +811,7 @@ function PracticalApplicationsSection() {
           <header className="applications-index__header craft-reveal">
             <h2 className="display-section">Where 6D can help</h2>
             <p className="craft-lead">
-            6D Address can support services that need a simple, shareable location reference where formal addressing is
+            <NoWrap6D /> can support services that need a simple, shareable location reference where formal addressing is
             incomplete. The strongest applications are those that work with existing locality information rather than
             replacing it.
           </p>
@@ -832,7 +857,7 @@ function PropositionSection() {
           <header className="proposition-chapter__header craft-reveal">
             <h2 className="display-section">An open addressing method, supported by practical implementation tools.</h2>
             <p className="craft-lead">
-            6D Address provides a simple way to create a short location reference from latitude and longitude, then
+            <NoWrap6D /> provides a simple way to create a short location reference from latitude and longitude, then
             combine it with the locality information people already use. The method can support postal, civic, delivery
             and digital services in places where formal property addressing is incomplete.
           </p>
@@ -876,9 +901,9 @@ function TeamSection() {
       <div className="craft-container">
         <div className="team-editorial__grid">
           <header className="team-editorial__header craft-reveal">
-            <h2 className="display-section">Our 6D Address team</h2>
+            <h2 className="display-section">Our <NoWrap6D /> team</h2>
             <p className="craft-lead">
-            6D Address is being developed by a small founding team with experience in postal development, software
+            <NoWrap6D /> is being developed by a small founding team with experience in postal development, software
             implementation and addressing systems. The team is working to document the method, test practical use cases
             and engage partners who can help develop compatible implementations.
           </p>
@@ -894,7 +919,7 @@ function TeamSection() {
                 <span className="team-editorial__index">{String(index + 1).padStart(2, "0")}</span>
                 <h3>{member.name}</h3>
                 <p className="team-editorial__role">{member.role}</p>
-                <p className="team-editorial__bio">{member.bio}</p>
+                <p className="team-editorial__bio">{renderNoWrap6D(member.bio)}</p>
               </div>
             </article>
           ))}
@@ -933,7 +958,7 @@ function FAQSection() {
           <header className="faq-chapter__header craft-reveal">
             <h2 className="display-section">Frequently asked questions</h2>
             <p className="craft-lead">
-              6D Address only becomes unique when the locality is present. 6D Address is a reconfiguration of latitude
+              <NoWrap6D /> only becomes unique when the locality is present. <NoWrap6D /> is a reconfiguration of latitude
               and longitude coordinates and repeats many times across a territory. But it never repeats across a locality.
             </p>
 
@@ -972,11 +997,11 @@ function FAQSection() {
                   aria-controls={answerId}
                   onClick={() => toggleFaqItem(activeFaqGroup, itemIndex)}
                 >
-                  <span>{item.question}</span>
+                  <span>{renderNoWrap6D(item.question)}</span>
                   <span className="faq-item__indicator" aria-hidden="true">{isOpen ? "-" : "+"}</span>
                 </button>
                 <div className="faq-item__answer" id={answerId} role="region" aria-labelledby={buttonId} hidden={!isOpen}>
-                  <p>{item.answer}</p>
+                  <p>{renderNoWrap6D(item.answer)}</p>
                 </div>
               </article>
             );
@@ -1028,8 +1053,8 @@ function Footer() {
     <footer className="site-footer">
       <div className="craft-container site-footer__inner">
         <div className="site-footer__brand">
-          <a href="#" className="site-footer__logo" aria-label="6D Address home">6D Address</a>
-          <p>6D Address is being documented as an open addressing method.</p>
+          <a href="#" className="site-footer__logo" aria-label="6D Address home"><NoWrap6D /></a>
+          <p><NoWrap6D /> is being documented as an open addressing method.</p>
         </div>
 
         <nav className="site-footer__nav" aria-label="Footer navigation">
@@ -1042,7 +1067,7 @@ function Footer() {
         </nav>
 
         <div className="site-footer__meta">
-          <span>© {new Date().getFullYear()} 6D Address</span>
+          <span>© {new Date().getFullYear()} <NoWrap6D /></span>
           <span>Open method under documentation</span>
         </div>
       </div>

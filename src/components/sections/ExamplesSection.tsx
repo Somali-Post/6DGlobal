@@ -1,7 +1,10 @@
-import { PointerEvent, TouchEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { MouseEvent, PointerEvent, TouchEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { NoWrap6D } from "../NoWrap6D";
 import { LandmarkExampleWithCode, landmarkExamples, withCalculatedCode } from "../../data/landmarkExamples";
 
-const LANDMARK_AUTOPLAY_DELAY = 4200;
+const LANDMARK_AUTOPLAY_DELAY = 5400;
+const CARD_CLICK_DRAG_THRESHOLD = 6;
+const SLIDE_DRAG_THRESHOLD = 42;
 
 function usePrefersReducedMotion() {
   const getInitialValue = () =>
@@ -57,6 +60,27 @@ function MapPinIcon({ className = "" }: { className?: string }) {
   );
 }
 
+function LocalityIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg className={className} aria-hidden="true" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M4.5 8.25 9 5.75l6 2.5 4.5-2.5v10L15 18.25l-6-2.5-4.5 2.5v-10Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9 5.75v10M15 8.25v10"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function GlobeIcon({ className = "" }: { className?: string }) {
   return (
     <svg className={className} aria-hidden="true" viewBox="0 0 24 24" fill="none">
@@ -99,18 +123,27 @@ function AddressExampleCard({
   isActive,
   isEdge,
   isDuplicate = false,
+  onCardClick,
 }: {
   example: LandmarkExampleWithCode;
   isActive: boolean;
   isEdge: boolean;
   isDuplicate?: boolean;
+  onCardClick: (event: MouseEvent<HTMLAnchorElement>) => void;
 }) {
+  const href = `/find?lat=${example.lat}&lng=${example.lng}&label=${encodeURIComponent(example.name)}`;
+
   return (
-    <article
+    <a
       className={`address-example-card ${isActive ? "is-active" : ""} ${isEdge ? "is-edge" : ""}`}
+      href={href}
+      aria-label={`Open ${example.name} on the 6D map`}
       aria-hidden={isDuplicate}
+      tabIndex={isDuplicate ? -1 : 0}
+      onClick={onCardClick}
     >
       <div className="address-example-card__body">
+        <span className="address-example-card__eyebrow">Landmark example</span>
         <ColouredCode code={example.code} className="address-example-card__code" />
         <h3 className="address-example-card__title">{example.name}</h3>
         <div className="address-example-card__meta" aria-label={`${example.name} locality details`}>
@@ -119,42 +152,54 @@ function AddressExampleCard({
             <span>{example.siteLine}</span>
           </div>
           <div className="address-example-card__meta-row">
+            <LocalityIcon className="address-example-card__meta-icon" />
+            <span>{example.localityLine}</span>
+          </div>
+          <div className="address-example-card__meta-row">
             <GlobeIcon className="address-example-card__meta-icon" />
-            <span>{example.cityCountryLine}</span>
+            <span>{example.countryLine}</span>
           </div>
         </div>
       </div>
 
       <div className="address-example-card__media">
-        <img src={example.imagePath} alt={`${example.name} landmark`} loading="lazy" decoding="async" />
+        <img
+          src={example.imagePath}
+          alt={`${example.name} landmark`}
+          loading={isActive ? "eager" : "lazy"}
+          decoding="async"
+          style={example.imagePosition ? { objectPosition: example.imagePosition } : undefined}
+        />
         <span className="address-example-card__photo-ring" aria-hidden="true" />
         <span className="address-example-card__photo-pin" aria-hidden="true">
           <span className="address-example-card__photo-pin-dot" />
         </span>
       </div>
-    </article>
+    </a>
   );
 }
 
 export function ExamplesSection() {
   const prefersReducedMotion = usePrefersReducedMotion();
   const [interactionPaused, setInteractionPaused] = useState(false);
-  const [manualPaused, setManualPaused] = useState(false);
+  const [temporaryPaused, setTemporaryPaused] = useState(false);
+  const [userPaused, setUserPaused] = useState(false);
   const [documentHidden, setDocumentHidden] = useState(() => document.hidden);
   const trackRef = useRef<HTMLDivElement | null>(null);
   const dragStartX = useRef<number | null>(null);
+  const suppressCardClickRef = useRef(false);
   const manualPauseTimer = useRef<number | null>(null);
   const examples = landmarkExamples.map(withCalculatedCode);
   const total = examples.length;
-  const loopStartIndex = total * 2;
+  const loopStartIndex = total * 3;
   const [trackIndex, setTrackIndex] = useState(loopStartIndex);
   const [slideMetrics, setSlideMetrics] = useState({ cardWidth: 0, step: 0, viewportWidth: 0, rightEdgeOffset: 3 });
   const [suppressTransition, setSuppressTransition] = useState(true);
   const activeIndex = ((trackIndex % total) + total) % total;
-  const autoplayPaused = prefersReducedMotion || interactionPaused || manualPaused || documentHidden;
-  const carouselExamples = Array.from({ length: 5 }, () => examples).flat();
+  const autoplayPaused = prefersReducedMotion || interactionPaused || temporaryPaused || userPaused || documentHidden;
+  const carouselExamples = Array.from({ length: 7 }, () => examples).flat();
   const trackOffset = slideMetrics.step > 0
-    ? trackIndex * slideMetrics.step - Math.max(0, (slideMetrics.viewportWidth - slideMetrics.cardWidth) / 2)
+    ? trackIndex * slideMetrics.step - Math.max(0, (slideMetrics.viewportWidth - slideMetrics.cardWidth * 2 - (slideMetrics.step - slideMetrics.cardWidth)) / 2)
     : 0;
 
   useEffect(() => {
@@ -179,9 +224,9 @@ export function ExamplesSection() {
   }, []);
 
   const pauseAfterManualAction = () => {
-    setManualPaused(true);
+    setTemporaryPaused(true);
     if (manualPauseTimer.current !== null) window.clearTimeout(manualPauseTimer.current);
-    manualPauseTimer.current = window.setTimeout(() => setManualPaused(false), LANDMARK_AUTOPLAY_DELAY);
+    manualPauseTimer.current = window.setTimeout(() => setTemporaryPaused(false), LANDMARK_AUTOPLAY_DELAY);
   };
 
   const goPrevious = () => {
@@ -195,7 +240,7 @@ export function ExamplesSection() {
   };
 
   const resetLoopPosition = () => {
-    if (trackIndex >= total * 2 && trackIndex < total * 3) return;
+    if (trackIndex >= total * 2 && trackIndex < total * 5) return;
 
     setSuppressTransition(true);
     setTrackIndex(activeIndex + loopStartIndex);
@@ -218,7 +263,7 @@ export function ExamplesSection() {
       const gap = Number.parseFloat(trackStyles.columnGap || trackStyles.gap || "0") || 0;
       const cardWidth = firstCard.getBoundingClientRect().width;
       const viewportWidth = track.parentElement?.getBoundingClientRect().width ?? cardWidth;
-      const visibleAfterActive = Math.floor((viewportWidth - cardWidth / 2) / (cardWidth + gap));
+      const visibleAfterActive = Math.ceil((viewportWidth - cardWidth) / (cardWidth + gap));
 
       setSlideMetrics({
         cardWidth,
@@ -242,40 +287,52 @@ export function ExamplesSection() {
       observer.disconnect();
       window.removeEventListener("resize", updateOffset);
     };
-  }, [trackIndex]);
+  }, []);
+
+  const markDragDistance = (clientX: number) => {
+    if (dragStartX.current === null) return;
+    const distance = clientX - dragStartX.current;
+    if (Math.abs(distance) > CARD_CLICK_DRAG_THRESHOLD) suppressCardClickRef.current = true;
+  };
 
   const finishDrag = (clientX: number) => {
     if (dragStartX.current === null) return;
     const distance = clientX - dragStartX.current;
     dragStartX.current = null;
 
-    if (Math.abs(distance) < 42) return;
+    if (Math.abs(distance) <= CARD_CLICK_DRAG_THRESHOLD) {
+      suppressCardClickRef.current = false;
+      return;
+    }
+
+    suppressCardClickRef.current = true;
+    if (Math.abs(distance) < SLIDE_DRAG_THRESHOLD) return;
     if (distance < 0) goNext();
     else goPrevious();
   };
 
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
-    if (event.pointerType === "mouse") return;
     dragStartX.current = event.clientX;
-    try {
-      event.currentTarget.setPointerCapture(event.pointerId);
-    } catch {
-      // Some synthetic touch checks do not create an active pointer capture target.
-    }
+    suppressCardClickRef.current = false;
+  };
+
+  const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    markDragDistance(event.clientX);
   };
 
   const handlePointerUp = (event: PointerEvent<HTMLDivElement>) => {
     finishDrag(event.clientX);
-
-    try {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    } catch {
-      // Capture may already be released if the browser handled the gesture natively.
-    }
   };
 
   const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
     dragStartX.current = event.touches[0]?.clientX ?? null;
+    suppressCardClickRef.current = false;
+  };
+
+  const handleTouchMove = (event: TouchEvent<HTMLDivElement>) => {
+    const touch = event.touches[0];
+    if (!touch) return;
+    markDragDistance(touch.clientX);
   };
 
   const handleTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
@@ -284,12 +341,20 @@ export function ExamplesSection() {
     finishDrag(touch.clientX);
   };
 
+  const handleCardClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (!suppressCardClickRef.current) return;
+    event.preventDefault();
+    window.setTimeout(() => {
+      suppressCardClickRef.current = false;
+    }, 0);
+  };
+
   return (
     <section className="craft-section craft-section--light examples-chapter address-examples" id="examples">
       <div className="craft-container address-examples__inner">
         <div className="examples-chapter__header craft-grid address-examples__header">
           <div className="examples-chapter__title craft-reveal">
-            <h2 className="display-section">6D Address in action</h2>
+            <h2 className="display-section"><NoWrap6D /> in action</h2>
           </div>
           <div className="examples-chapter__intro craft-reveal">
             <p className="craft-lead address-examples__lead">
@@ -320,11 +385,14 @@ export function ExamplesSection() {
           <div
             className="address-examples__viewport"
             onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onPointerCancel={() => {
               dragStartX.current = null;
+              suppressCardClickRef.current = false;
             }}
             onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
           >
             <div
@@ -340,7 +408,8 @@ export function ExamplesSection() {
                   example={example}
                   isActive={index === trackIndex}
                   isEdge={index === trackIndex - 1 || index === trackIndex + slideMetrics.rightEdgeOffset}
-                  isDuplicate={index < total * 2 || index >= total * 3}
+                  isDuplicate={index < trackIndex - 1 || index > trackIndex + slideMetrics.rightEdgeOffset}
+                  onCardClick={handleCardClick}
                   key={`${example.id}-${index}`}
                 />
               ))}
@@ -355,6 +424,28 @@ export function ExamplesSection() {
           >
             <ChevronIcon direction="next" />
           </button>
+
+          <div className="examples-carousel__controls" aria-label="Carousel controls">
+            <button type="button" className="examples-carousel__control" onClick={goPrevious}>
+              <ChevronIcon direction="previous" />
+              <span>Previous</span>
+            </button>
+            <span className="examples-carousel__status" aria-live="polite">
+              {String(activeIndex + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
+            </span>
+            <button
+              type="button"
+              className="examples-carousel__control"
+              onClick={() => setUserPaused((paused) => !paused)}
+              aria-pressed={userPaused}
+            >
+              {userPaused ? "Play" : "Pause"}
+            </button>
+            <button type="button" className="examples-carousel__control" onClick={goNext}>
+              <span>Next</span>
+              <ChevronIcon direction="next" />
+            </button>
+          </div>
         </div>
       </div>
     </section>
