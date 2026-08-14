@@ -93,7 +93,7 @@ export function AddressingProblemSection() {
               </ul>
               <div className="problem-bridge__solution-footer">
                 <p className="problem-bridge__footer">
-                  <NoWrap6D /> replaces the missing
+                  <span className="problem-bridge__footer-line"><NoWrap6D /> replaces the missing</span>
                   <strong>property number and street name</strong>
                 </p>
               </div>

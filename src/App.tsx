@@ -566,18 +566,20 @@ function GlobeHeroVisual() {
 function HowItWorksSection() {
   return (
     <div className="how-created-layout">
-      <header className="how-created-copy craft-reveal">
-        <h2 className="display-section">
+      <header className="how-created-copy">
+        <h2 className="display-section craft-reveal">
           <span className="display-line">How <NoWrap6D /></span>
           {" "}
           <span className="display-line">is created</span>
         </h2>
-        <p>
-          <NoWrap6D /> uses the 2nd, 3rd and 4th decimal places of latitude and longitude.
-        </p>
-        <p>
-          Once the <NoWrap6D /> is created it is integrated with all available address information to provide a comprehensive address based on national standards
-        </p>
+        <div className="how-created-copy__body craft-reveal">
+          <p>
+            <NoWrap6D /> uses the 2nd, 3rd and 4th decimal places of latitude and longitude.
+          </p>
+          <p>
+            Once the <NoWrap6D /> is created it is integrated with all available address information to provide a comprehensive address based on national standards
+          </p>
+        </div>
       </header>
 
       <div className="how-created-process craft-reveal" aria-label="How 6D Address is created">
