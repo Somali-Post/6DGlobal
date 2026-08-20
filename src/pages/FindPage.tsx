@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { MapLoadingScreen } from "../components/MapLoadingScreen";
 import { NoWrap6D, renderNoWrap6D } from "../components/NoWrap6D";
 import { Coordinate, generate6DCode } from "../lib/sixd";
 import { createGoogleMapsAdapter, MapAdapter, MapAddress } from "../map/googleMapsAdapter";
 
 const INITIAL_MAP_CENTER: Coordinate = { lat: 51.5074, lng: -0.1278 };
+const MAP_LOADER_MINIMUM_MS = 800;
+const MAP_LOADER_FADE_MS = 320;
 
 type MapLoadState = "loading" | "ready" | "missing-key" | "error";
 type LocationState = "idle" | "locating" | "denied" | "unavailable" | "error";
@@ -30,13 +33,33 @@ type PanelState = {
   body: string;
 };
 
+function parseUrlCoordinate(params: URLSearchParams): Coordinate | null {
+  if (!params.has("lat") || !params.has("lng")) return null;
+
+  const latValue = params.get("lat");
+  const lngValue = params.get("lng");
+
+  if (!latValue || !lngValue) return null;
+
+  const lat = Number(latValue);
+  const lng = Number(lngValue);
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+
+  return { lat, lng };
+}
+
 export default function FindPage() {
   const mapRef = useRef<HTMLDivElement>(null);
   const adapter = useRef<MapAdapter | null>(null);
   const requestedInitialActionRef = useRef(false);
   const latestCode = useRef<FormattedCode | null>(null);
   const latestSuffix = useRef("");
+  const loaderStartedAt = useRef(performance.now());
   const [mapLoadState, setMapLoadState] = useState<MapLoadState>("loading");
+  const [showMapLoader, setShowMapLoader] = useState(true);
+  const [mapLoaderExiting, setMapLoaderExiting] = useState(false);
   const [locationState, setLocationState] = useState<LocationState>("idle");
   const [result, setResult] = useState<FinderResult | null>(null);
   const [pendingCode, setPendingCode] = useState<FormattedCode | null>(null);
@@ -127,19 +150,34 @@ export default function FindPage() {
   }, []);
 
   useEffect(() => {
+    if (mapLoadState === "loading") return;
+
+    const elapsed = performance.now() - loaderStartedAt.current;
+    const remaining = Math.max(0, MAP_LOADER_MINIMUM_MS - elapsed);
+    let hideTimer = 0;
+    const exitTimer = window.setTimeout(() => {
+      setMapLoaderExiting(true);
+      hideTimer = window.setTimeout(() => setShowMapLoader(false), MAP_LOADER_FADE_MS);
+    }, remaining);
+
+    return () => {
+      window.clearTimeout(exitTimer);
+      window.clearTimeout(hideTimer);
+    };
+  }, [mapLoadState]);
+
+  useEffect(() => {
     if (mapLoadState !== "ready") return;
     if (requestedInitialActionRef.current || !adapter.current) return;
 
     const params = new URLSearchParams(window.location.search);
-    const lat = Number(params.get("lat"));
-    const lng = Number(params.get("lng"));
+    const coordinate = parseUrlCoordinate(params);
 
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
-    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
+    if (!coordinate) return;
 
     requestedInitialActionRef.current = true;
     setLocationState("idle");
-    adapter.current.setPin({ lat, lng }, 18);
+    adapter.current.setPin(coordinate, 18);
   }, [mapLoadState]);
 
   useEffect(() => {
@@ -168,6 +206,8 @@ export default function FindPage() {
         className={`find-map-page__map ${mapLoadState === "ready" ? "is-ready" : ""}`}
         aria-hidden={mapLoadState !== "ready"}
       />
+
+      {showMapLoader && <MapLoadingScreen isExiting={mapLoaderExiting} />}
 
       <a className="find-map-page__logo" href="/" aria-label="6D Address home">
         <img src="/images/logo-compact.png" alt="" />

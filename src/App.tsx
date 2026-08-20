@@ -1,5 +1,6 @@
 import { lazy, MouseEvent, ReactNode, Suspense, useEffect, useRef, useState } from "react";
 import CursorGrid from "./components/CursorGrid";
+import { MapLoadingScreen } from "./components/MapLoadingScreen";
 import { NoWrap6D, renderNoWrap6D } from "./components/NoWrap6D";
 import { AddressingProblemSection } from "./components/sections/AddressingProblemSection";
 import { ExamplesSection } from "./components/sections/ExamplesSection";
@@ -254,7 +255,7 @@ function App() {
   };
 
   return route === "/find" || route === "/map" ? (
-    <Suspense fallback={null}>
+    <Suspense fallback={<MapLoadingScreen />}>
       <FindPage />
     </Suspense>
   ) : (
@@ -565,85 +566,59 @@ function GlobeHeroVisual() {
 
 function HowItWorksSection() {
   return (
-    <div className="how-created-layout">
-      <header className="how-created-copy">
+    <div className="how-created__layout">
+      <div className="how-created__copy">
         <h2 className="display-section craft-reveal">
-          <span className="display-line">How <NoWrap6D /></span>
-          {" "}
-          <span className="display-line">is created</span>
+          How <NoWrap6D /> is created
         </h2>
-        <div className="how-created-copy__body craft-reveal">
-          <p>
-            <NoWrap6D /> uses the 2nd, 3rd and 4th decimal places of latitude and longitude.
-          </p>
-          <p>
-            Once the <NoWrap6D /> is created it is integrated with all available address information to provide a comprehensive address based on national standards
-          </p>
-        </div>
-      </header>
 
-      <div className="how-created-process craft-reveal" aria-label="How 6D Address is created">
-        <article className="process-card process-card--source">
-          <span className="process-step">01 — Create the 6D code</span>
+        <p className="how-created__colour-note craft-reveal">
+          The <span className="digit-red">red</span>, <span className="digit-green">green</span> and{" "}
+          <span className="digit-blue">blue</span> coordinates are combined to create the <NoWrap6D />
+        </p>
 
-          <div className="process-coordinate-grid" aria-label="Latitude and longitude selected decimal places">
-            <div className="process-coordinate-row">
-              <span className="process-coordinate-label">Latitude:</span>
-              <span className="process-coordinate-value" aria-label="7.879227 N">
-                <span>7.8</span>
-                <span className="digit-red">7</span>
-                <span className="digit-green">9</span>
-                <span className="digit-blue">2</span>
-                <span>27 N</span>
-              </span>
-            </div>
+        <p className="how-created__standards-note craft-reveal">
+          Once the <NoWrap6D /> is created it is integrated with all available address information to provide a comprehensive address based on national standards
+        </p>
+      </div>
 
-            <div className="process-coordinate-row">
-              <span className="process-coordinate-label">Longitude:</span>
-              <span className="process-coordinate-value" aria-label="11.343555 W">
-                <span>11.3</span>
-                <span className="digit-red">4</span>
-                <span className="digit-green">3</span>
-                <span className="digit-blue">5</span>
-                <span>55 W</span>
-              </span>
-            </div>
+      <div className="how-created__right craft-reveal" aria-label="How 6D Address is created">
+        <p className="how-created__right-intro">
+          <NoWrap6D /> uses the 2nd, 3rd and 4th decimal places of latitude and longitude.
+        </p>
+
+        <div className="how-created__coordinate-box" aria-label="Latitude and longitude selected decimal places">
+          <div className="how-created__coordinate-row">
+            <span className="how-created__coordinate-label">Latitude:</span>
+            <span className="how-created__coordinate-value" aria-label="7.879227 N">
+              <span>7.8</span>
+              <span className="digit-red">7</span>
+              <span className="digit-green">9</span>
+              <span className="digit-blue">2</span>
+              <span>27 N</span>
+            </span>
           </div>
 
-          <div className="process-output" aria-label="The coloured selected digits create: 74-93-25">
-            <span className="process-output__label">The coloured selected digits create:</span>
-            <ColouredCode code="74-93-25" />
+          <div className="how-created__coordinate-row">
+            <span className="how-created__coordinate-label">Longitude:</span>
+            <span className="how-created__coordinate-value" aria-label="11.343555 W">
+              <span>11.3</span>
+              <span className="digit-red">4</span>
+              <span className="digit-green">3</span>
+              <span className="digit-blue">5</span>
+              <span>55 W</span>
+            </span>
           </div>
-        </article>
-
-        <div className="process-connector">
-          <span className="process-connector__line" aria-hidden="true" />
-          <span className="process-connector__arrow" aria-hidden="true">↓</span>
-          <p>
-            The red, green and blue coordinates are combined to create the <NoWrap6D />
-          </p>
         </div>
 
-        <article className="process-card process-card--result">
-          <span className="process-step">02 — Add available address information</span>
-          <div className="process-address-block">
-            <div className="process-address-content">
-              <ColouredCode code="74-93-25" />
-              <address>
-                <span>Ghebenderu</span>
-                <span>Kenema District</span>
-                <span>Eastern Province</span>
-                <span>Sierra Leone</span>
-              </address>
-            </div>
-
-            <div className="process-map-illustration" role="img" aria-label="Map illustration with buildings and one building labelled 74-93-25">
-              <img src="/images/process-map-6d-address.webp" alt="" loading="lazy" decoding="async" />
-              <div className="process-map-illustration__callout" aria-hidden="true">
-                <ColouredCode code="74-93-25" className="coloured-code--compact" />
-              </div>
-            </div>
-          </div>
+        <article className="how-created__address-box" aria-label="Completed 6D Address">
+          <ColouredCode code="74-93-25" />
+          <address>
+            <span>Ghebenderu</span>
+            <span>Kenema District</span>
+            <span>Eastern Province</span>
+            <span>Sierra Leone</span>
+          </address>
         </article>
       </div>
     </div>
@@ -665,14 +640,22 @@ function ColouredCode({ code, className = "" }: { code: string; className?: stri
 }
 
 function LocalityMattersSection() {
-  const { city, code, image, mobileImage, places } = localityMattersExample;
+  const { city, code, places } = localityMattersExample;
+  const mapBounds = { north: 51.57, south: 51.42, west: -0.39, east: -0.02 };
+  const markerPosition = (latitude: number, longitude: number) => ({
+    left: `${((longitude - mapBounds.west) / (mapBounds.east - mapBounds.west)) * 100}%`,
+    top: `${((mapBounds.north - latitude) / (mapBounds.north - mapBounds.south)) * 100}%`,
+  });
 
   return (
     <section id="locality" className="craft-section craft-section--dark craft-grid-bg craft-grid-bg--dark locality-proof">
       <div className="craft-container">
         <div className="locality-proof__grid">
           <header className="locality-proof__header craft-reveal">
-            <h2 className="display-section">Same code. Different localities.</h2>
+            <h2 className="display-section">
+              <span className="display-line">Same code.</span>
+              <span className="display-line">Different localities.</span>
+            </h2>
             <p className="craft-lead">
               A 6D code is a reference, not a complete address on its own. The same six digits can appear in different
               places. Locality is what makes the intended address clear.
@@ -680,47 +663,55 @@ function LocalityMattersSection() {
           </header>
 
           <figure className="locality-proof__visual craft-reveal">
-            <div className="locality-proof__map">
-              <picture>
-                <source media="(max-width: 560px)" srcSet={mobileImage} />
-                <img
-                  src={image}
-                  alt={`Map-style illustration showing the same 6D code appearing in ${places.map((place) => place.locality).join(", ")}.`}
-                />
-              </picture>
+            <div
+              className="locality-map"
+              role="group"
+              aria-label={`London map showing ${places.map((place) => place.locality).join(", ")} sharing code ${code}`}
+            >
+              <div className="locality-map__header">
+                <span>One shared reference across London</span>
+                <ColouredCode code={code} />
+              </div>
+
+              <div className="locality-map__canvas">
+                <svg className="locality-map__basemap" viewBox="0 0 1000 580" preserveAspectRatio="none" aria-hidden="true">
+                  <path className="locality-map__boundary" d="M54 84 196 34 390 58 528 24 718 54 928 112 964 254 926 430 772 528 568 548 382 516 186 542 62 438 34 268Z" />
+                  <g className="locality-map__roads">
+                    <path d="M44 182C214 224 346 198 500 112S792 112 958 176" />
+                    <path d="M22 384C190 306 344 314 496 390S776 486 980 414" />
+                    <path d="M148 18C236 150 304 284 302 560" />
+                    <path d="M510 8C486 150 520 306 566 572" />
+                    <path d="M818 48C738 202 724 346 776 554" />
+                    <path d="M92 506 902 74" />
+                    <path d="M88 82 924 506" />
+                  </g>
+                  <path className="locality-map__ring-road" d="M174 286C174 144 326 78 496 82S826 158 828 292 688 500 504 498 174 426 174 286Z" />
+                  <path className="locality-map__river" d="M-30 354C92 300 174 398 286 356S470 292 564 350 702 422 790 378 910 310 1030 354" />
+                </svg>
+                <span className="locality-map__city-label" aria-hidden="true">London</span>
+
+                {places.map((place) => (
+                  <div
+                    className={`locality-map__marker is-${place.labelPosition} is-${place.labelAlign}`}
+                    style={markerPosition(place.latitude, place.longitude)}
+                    key={place.locality}
+                  >
+                    <span className="locality-map__pin" aria-hidden="true" />
+                    <span className="locality-map__callout">
+                      <strong>{place.locality}</strong>
+                      <span aria-hidden="true">
+                        <ColouredCode code={code} className="coloured-code--compact" />
+                      </span>
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
             <figcaption>
               Example locations in {city} sharing the same reference.
             </figcaption>
           </figure>
 
-          <div className="locality-proof__rows craft-reveal">
-            <div className="locality-proof__shared-code">
-              <span>One shared 6D reference</span>
-              <ColouredCode code={code} />
-              <small>Every locality below uses this same code.</small>
-            </div>
-
-            <div className="locality-proof__rows-header">
-              <span>No.</span>
-              <span>Same code</span>
-              <span>Locality</span>
-              <span>City</span>
-            </div>
-
-            {places.map((place, index) => (
-              <article className="locality-proof__row" key={place.locality}>
-                <span className="locality-proof__index">{String(index + 1).padStart(2, "0")}</span>
-                <ColouredCode code={code} className="locality-proof__code coloured-code--inline" />
-                <span className="locality-proof__place">{place.locality}</span>
-                <span className="locality-proof__city">{place.city}</span>
-              </article>
-            ))}
-          </div>
-
-          <p className="locality-proof__note craft-reveal">
-            The code repeats across the wider area. The locality tells you which matching place is intended.
-          </p>
         </div>
       </div>
     </section>
@@ -731,53 +722,48 @@ function SomaliaUseCaseSection() {
   return (
     <section id="somalia-use-case" className="craft-section craft-section--warm somalia-case">
       <div className="craft-container">
-        <div className="somalia-case__grid">
-          <header className="somalia-case__header craft-reveal">
-            <h2 className="display-section">Somalia use case</h2>
-            <p className="craft-lead">
-            Somalia provides a practical example of how <NoWrap6D /> can work with existing locality information. In areas
-            where property numbers or named streets are incomplete, a 6D reference can help provide a clearer last-mile
-            location when combined with district, town, city and regional information.
-          </p>
+        <div className="somalia-case__layout">
+          <header className="somalia-case__copy craft-reveal">
+            <h2 className="display-section">Somalia Use Case</h2>
+            <div className="somalia-case__narrative">
+              <p>
+                Somalia provides a practical example of how <NoWrap6D /> can be incorporated into an address format as the
+                second line of the address.
+              </p>
+              <p>
+                With or without a property number and street name, <NoWrap6D /> can provide a precise last-mile location
+                reference when combined with existing locality information.
+              </p>
+            </div>
           </header>
 
-          <article className="somalia-case__format craft-panel craft-reveal" aria-labelledby="somalia-format-title">
-            <span className="somalia-case__meta">Address format</span>
-            <h3 id="somalia-format-title">A complete address can combine local context with 6D</h3>
-            <ol className="somalia-case__format-list">
-              <li>Property number and street name</li>
-              <li><NoWrap6D /> and locality</li>
-              <li>District / town / city</li>
-              <li>Region</li>
-              <li>Country</li>
-            </ol>
-          </article>
-
-          <div className="somalia-case__examples craft-reveal" aria-label="Somalia address format examples">
-            <article className="somalia-address-slip somalia-address-slip--street">
-              <span className="somalia-address-slip__label">Example with street context</span>
-              <SomaliaAddressLines
-                lines={["Isbarbardhig Road", "35-12-12 Halane", "Wadajir", "Mogadishu", "Banaadir", "Somalia"]}
-              />
+          <div className="somalia-case__right craft-reveal">
+            <article className="somalia-case__format-panel" aria-labelledby="somalia-format-title">
+              <h3 id="somalia-format-title">The <NoWrap6D /> code is incorporated into existing address details</h3>
+              <ul className="somalia-case__format-list">
+                <li><span>Property number and street name</span></li>
+                <li><span><NoWrap6D /> and locality</span></li>
+                <li><span>District / town / city</span></li>
+                <li><span>Region</span></li>
+                <li><span>Country</span></li>
+              </ul>
             </article>
 
-            <article className="somalia-address-slip somalia-address-slip--local">
-              <span className="somalia-address-slip__label">Example without full street context</span>
-              <SomaliaAddressLines
-                lines={["Unnamed local road", "87-67-21 Bargaal", "Bargaal", "Bari", "Puntland", "Somalia"]}
-              />
-            </article>
-          </div>
+            <div className="somalia-case__example-grid" aria-label="Somalia address format examples">
+              <article className="somalia-case__example-card">
+                <h3>Example with street context</h3>
+                <SomaliaAddressLines
+                  lines={["24 Isbarbardhig Road", "35-12-12 Halane", "Mogadishu", "Banaadir", "Somalia"]}
+                />
+              </article>
 
-          <div className="somalia-case__note craft-reveal">
-            <p>
-              Where full property and street addressing is not yet available, <NoWrap6D /> can provide a practical location
-              reference that works with existing locality information.
-            </p>
-            <small>
-              Examples are provided to illustrate the address format and should be verified against the selected coordinate
-              before operational use.
-            </small>
+              <article className="somalia-case__example-card">
+                <h3>Example without street context</h3>
+                <SomaliaAddressLines
+                  lines={["Un-named street", "35-12-12 Halane", "Mogadishu", "Banaadir", "Somalia"]}
+                />
+              </article>
+            </div>
           </div>
         </div>
       </div>
@@ -787,11 +773,11 @@ function SomaliaUseCaseSection() {
 
 function SomaliaAddressLines({ lines }: { lines: string[] }) {
   return (
-    <address className="somalia-address-lines">
+    <address className="somalia-case__address">
       {lines.map((line) => {
         const match = line.match(/^(\d{2}-\d{2}-\d{2})\s+(.+)$/);
         return (
-          <span className={match ? "somalia-address-slip__code-line" : undefined} key={line}>
+          <span className={match ? "somalia-case__code-line" : undefined} key={line}>
             {match ? (
               <>
                 <ColouredCode code={match[1]} className="coloured-code--compact" />

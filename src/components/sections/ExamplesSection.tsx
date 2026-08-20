@@ -1,6 +1,6 @@
 import { MouseEvent, PointerEvent, TouchEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { NoWrap6D } from "../NoWrap6D";
-import { LandmarkExampleWithCode, landmarkExamples, withCalculatedCode } from "../../data/landmarkExamples";
+import { LandmarkExample, landmarkExamples } from "../../data/landmarkExamples";
 
 const LANDMARK_AUTOPLAY_DELAY = 5400;
 const CARD_CLICK_DRAG_THRESHOLD = 6;
@@ -39,69 +39,6 @@ function ColouredCode({ code, className = "" }: { code: string; className?: stri
   );
 }
 
-function MapPinIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} aria-hidden="true" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M12 21s6-5.23 6-11a6 6 0 0 0-12 0c0 5.77 6 11 6 11Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M12 12.35a2.25 2.25 0 1 0 0-4.5 2.25 2.25 0 0 0 0 4.5Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function LocalityIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} aria-hidden="true" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M4.5 8.25 9 5.75l6 2.5 4.5-2.5v10L15 18.25l-6-2.5-4.5 2.5v-10Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M9 5.75v10M15 8.25v10"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function GlobeIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} aria-hidden="true" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M3.6 9h16.8M3.6 15h16.8M12 3c2.2 2.36 3.26 5.36 3.26 9S14.2 18.64 12 21c-2.2-2.36-3.26-5.36-3.26-9S9.8 5.36 12 3Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 function ChevronIcon({ direction }: { direction: "previous" | "next" }) {
   const path = direction === "previous" ? "M15 18 9 12 15 6" : "M9 18 15 12 9 6";
 
@@ -125,7 +62,7 @@ function AddressExampleCard({
   isDuplicate = false,
   onCardClick,
 }: {
-  example: LandmarkExampleWithCode;
+  example: LandmarkExample;
   isActive: boolean;
   isEdge: boolean;
   isDuplicate?: boolean;
@@ -143,23 +80,16 @@ function AddressExampleCard({
       onClick={onCardClick}
     >
       <div className="address-example-card__body">
-        <span className="address-example-card__eyebrow">Landmark example</span>
-        <ColouredCode code={example.code} className="address-example-card__code" />
         <h3 className="address-example-card__title">{example.name}</h3>
-        <div className="address-example-card__meta" aria-label={`${example.name} locality details`}>
-          <div className="address-example-card__meta-row">
-            <MapPinIcon className="address-example-card__meta-icon" />
-            <span>{example.siteLine}</span>
-          </div>
-          <div className="address-example-card__meta-row">
-            <LocalityIcon className="address-example-card__meta-icon" />
-            <span>{example.localityLine}</span>
-          </div>
-          <div className="address-example-card__meta-row">
-            <GlobeIcon className="address-example-card__meta-icon" />
-            <span>{example.countryLine}</span>
-          </div>
-        </div>
+        <address className="address-example-card__address" aria-label={`${example.name} address`}>
+          <span>{example.addressLine1}</span>
+          <span className="address-example-card__code-line">
+            <ColouredCode code={example.code} className="address-example-card__inline-code" />
+            <span>{example.locality}</span>
+          </span>
+          {example.addressLine3 ? <span>{example.addressLine3}</span> : null}
+          <span>{example.country}</span>
+        </address>
       </div>
 
       <div className="address-example-card__media">
@@ -189,7 +119,7 @@ export function ExamplesSection() {
   const dragStartX = useRef<number | null>(null);
   const suppressCardClickRef = useRef(false);
   const manualPauseTimer = useRef<number | null>(null);
-  const examples = landmarkExamples.map(withCalculatedCode);
+  const examples = landmarkExamples;
   const total = examples.length;
   const loopStartIndex = total * 3;
   const [trackIndex, setTrackIndex] = useState(loopStartIndex);
@@ -358,8 +288,7 @@ export function ExamplesSection() {
           </div>
           <div className="examples-chapter__intro craft-reveal">
             <p className="craft-lead address-examples__lead">
-              The same format can identify familiar places around the world. Each example combines a six-digit reference
-              with locality information people already recognise.
+              <NoWrap6D /> can address existing landmarks using existing locality information people already recognise
             </p>
           </div>
         </div>

@@ -3,43 +3,83 @@ export type LocalityMattersPlace = {
   city: string;
   latitude: number;
   longitude: number;
+  labelPosition: "above" | "below";
+  labelAlign: "left" | "center" | "right";
 };
 
+// These fixed London grid points were reverse-geocoded against OpenStreetMap data on 2026-08-20.
+// Every coordinate is independently verified with calculateSixDCode to produce 45-52-87.
 export const localityMattersExample = {
   city: "London",
-  code: "88-55-00",
-  image: "/images/why-locality-matters-map.webp",
-  mobileImage: "/images/why-locality-matters-map-mobile.webp",
+  code: "45-52-87",
   places: [
     {
-      locality: "Hampstead Garden Suburb",
+      locality: "Greenford",
       city: "London",
-      latitude: 51.58505,
-      longitude: -0.18505,
+      latitude: 51.54585,
+      longitude: -0.35275,
+      labelPosition: "below",
+      labelAlign: "left",
     },
     {
-      locality: "South Tottenham",
+      locality: "Dollis Hill",
       city: "London",
-      latitude: 51.58505,
-      longitude: -0.08505,
+      latitude: 51.54585,
+      longitude: -0.25275,
+      labelPosition: "below",
+      labelAlign: "center",
     },
     {
-      locality: "Bermondsey Village",
+      locality: "Chalk Farm",
       city: "London",
-      latitude: 51.48505,
-      longitude: -0.08505,
+      latitude: 51.54585,
+      longitude: -0.15275,
+      labelPosition: "below",
+      labelAlign: "center",
     },
     {
-      locality: "Selhurst",
+      locality: "Clapton",
       city: "London",
-      latitude: 51.38505,
-      longitude: -0.08505,
+      latitude: 51.54585,
+      longitude: -0.05275,
+      labelPosition: "below",
+      labelAlign: "right",
+    },
+    {
+      locality: "Whitton",
+      city: "London",
+      latitude: 51.44585,
+      longitude: -0.35275,
+      labelPosition: "above",
+      labelAlign: "left",
+    },
+    {
+      locality: "East Sheen",
+      city: "London",
+      latitude: 51.44585,
+      longitude: -0.25275,
+      labelPosition: "above",
+      labelAlign: "center",
+    },
+    {
+      locality: "Balham",
+      city: "London",
+      latitude: 51.44585,
+      longitude: -0.15275,
+      labelPosition: "above",
+      labelAlign: "center",
+    },
+    {
+      locality: "Forest Hill",
+      city: "London",
+      latitude: 51.44585,
+      longitude: -0.05275,
+      labelPosition: "above",
+      labelAlign: "right",
     },
   ],
 } satisfies {
   city: string;
   code: string;
-  image: string;
-  mobileImage: string;
   places: LocalityMattersPlace[];
 };

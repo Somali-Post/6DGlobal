@@ -1,6 +1,6 @@
 import { NoWrap6D } from "../NoWrap6D";
 
-const availableLocalityItems = ["Halane", "Mogadishu", "Wajadir", "Somalia"];
+const solutionLocalityItems = ["Halane", "Wajadir", "Mogadishu", "Somalia"];
 
 function ColouredCode({ code }: { code: string }) {
   const [red, green, blue] = code.split("-");
@@ -30,53 +30,41 @@ export function AddressingProblemSection() {
     <section className="craft-section craft-section--dark craft-grid-bg craft-grid-bg--dark problem-chapter" id="problem">
       <div className="craft-container">
         <div className="problem-chapter__story">
-          <header className="problem-chapter__header craft-reveal">
-            <h2 className="display-section">Addressing the problem</h2>
-            <div className="problem-chapter__subtitle-row">
-              <p className="craft-lead">
-                A large portion of the world lives without formal addressing, leaving them unable to access basic civic,
-                financial and emergency services. Adding <NoWrap6D /> to existing locality information bridges the addressing gap.
-              </p>
-              <div className="problem-s42-block">
-                <img
-                  src="/images/s42badge.png"
-                  alt="S42 compatible badge"
-                  loading="lazy"
-                  decoding="async"
-                />
-                <p>6D as part of a complete address</p>
+          <div className="problem-chapter__top craft-reveal">
+            <header className="problem-chapter__header">
+              <h2 className="display-section">Addressing the problem</h2>
+              <div className="problem-chapter__intro">
+                <p>Conventional address elements exist everywhere in the world:</p>
+                <p>
+                  Except the <strong>property number</strong> and <strong>street name</strong>
+                </p>
               </div>
+            </header>
+            <div className="problem-s42-block problem-s42-block--header">
+              <img
+                src="/images/s42badge.png"
+                alt="S42 compatible badge"
+                loading="lazy"
+                decoding="async"
+              />
+              <p>6D as part of a complete address</p>
             </div>
-          </header>
+          </div>
 
-          <div className="problem-bridge craft-reveal" aria-label="Addressing gap and 6D Address solution">
+          <div className="problem-bridge problem-bridge--two-panel craft-reveal" aria-label="Addressing gap and 6D Address solution">
             <article className="problem-bridge__panel problem-bridge__panel--problem">
               <h3>The problem</h3>
               <ul className="problem-bridge__list">
                 <ProblemItem status="missing">Property number</ProblemItem>
                 <ProblemItem status="missing">Street name</ProblemItem>
                 <ProblemItem status="available">Village/Neighborhood</ProblemItem>
-                <ProblemItem status="available">Town or City</ProblemItem>
                 <ProblemItem status="available">District or County</ProblemItem>
+                <ProblemItem status="available">Town or City</ProblemItem>
                 <ProblemItem status="available">Region/Country</ProblemItem>
               </ul>
               <p className="problem-bridge__footer">
-                All address elements exist except:
-                <strong>property number and street name</strong>
-              </p>
-            </article>
-
-            <article className="problem-bridge__panel problem-bridge__panel--current">
-              <h3>Current situation</h3>
-              <ul className="problem-bridge__list">
-                <ProblemItem status="missing">No property number</ProblemItem>
-                <ProblemItem status="missing">Un-named street</ProblemItem>
-                {availableLocalityItems.map((item) => (
-                  <ProblemItem status="available" key={item}>{item}</ProblemItem>
-                ))}
-              </ul>
-              <p className="problem-bridge__footer">
-                All countries in the world have defined villages and neighborhoods
+                <span>Every country in the world has defined</span>
+                <span>localities, towns, cities and regions</span>
               </p>
             </article>
 
@@ -87,22 +75,24 @@ export function AddressingProblemSection() {
                 <ColouredCode code="35-12-12" />
               </div>
               <ul className="problem-bridge__list">
-                {availableLocalityItems.map((item) => (
+                {solutionLocalityItems.map((item) => (
                   <ProblemItem status="available" key={item}>{item}</ProblemItem>
                 ))}
               </ul>
-              <div className="problem-bridge__solution-footer">
-                <p className="problem-bridge__footer">
-                  <span className="problem-bridge__footer-line"><NoWrap6D /> replaces the missing</span>
-                  <strong>property number and street name</strong>
-                </p>
-              </div>
+              <p className="problem-bridge__footer">
+                <span><NoWrap6D /> replaces the missing</span>
+                <strong>property number and street name</strong>
+              </p>
             </article>
           </div>
 
           <p className="problem-bridge__closing">
-            <span>In developing countries like Somalia, it will take many years to adopt property numbers and street names</span>
-            <span><NoWrap6D /> immediately fills the gap and is compatible with future address solutions</span>
+            <span className="problem-bridge__closing-line">
+              In developing countries like Somalia, it will take many years to adopt property numbers and street names
+            </span>
+            <span className="problem-bridge__closing-line">
+              <NoWrap6D /> immediately fills the gap and is compatible with future address solutions
+            </span>
           </p>
         </div>
       </div>
