@@ -5105,6 +5105,428 @@ body,
 
 /* Carousel edge blur and corrected landmark map marker */
 
+/* Applications showcase carousel */
+.applications-carousel {
+  --carousel-gap: clamp(1rem, 1.55vw, 1.5rem);
+  background:
+    radial-gradient(circle at 50% 42%, oklch(0.78 0.11 247 / .13), transparent 34%),
+    linear-gradient(180deg, oklch(0.992 0.006 245), var(--blueprint-50));
+}
+
+.applications-carousel::after {
+  position: absolute;
+  z-index: -1;
+  inset: 25% 0 auto;
+  height: 54%;
+  background: linear-gradient(90deg, transparent, oklch(0.73 0.12 247 / .07) 50%, transparent);
+  content: "";
+  pointer-events: none;
+}
+
+.applications-carousel__container {
+  display: grid;
+  gap: clamp(2.25rem, 4.5vw, 4.5rem);
+}
+
+.applications-carousel__header {
+  width: min(810px, 100%);
+  margin-inline: auto;
+  text-align: center;
+}
+
+.applications-carousel__header .display-section {
+  margin-bottom: clamp(.9rem, 1.5vw, 1.25rem);
+}
+
+.applications-carousel__header .craft-lead {
+  max-width: 760px;
+  margin-inline: auto;
+  text-wrap: balance;
+}
+
+.applications-carousel__stage {
+  position: relative;
+  min-width: 0;
+}
+
+.applications-carousel__viewport {
+  position: relative;
+  overflow-x: auto;
+  padding: 1.5rem .25rem 2.25rem;
+  cursor: grab;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: .25rem;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.applications-carousel__viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.applications-carousel__viewport:focus-visible {
+  outline: 2px solid var(--brand-blue);
+  outline-offset: 7px;
+}
+
+.applications-carousel__viewport.is-dragging {
+  cursor: grabbing;
+  scroll-behavior: auto;
+  scroll-snap-type: none;
+  user-select: none;
+}
+
+.applications-carousel__track {
+  display: flex;
+  gap: var(--carousel-gap);
+  width: max-content;
+  padding-right: max(4vw, 4rem);
+}
+
+.applications-carousel__card {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(210px, .95fr) auto;
+  flex: 0 0 calc((min(100vw - (var(--container-pad) * 2), var(--container-max)) - (var(--carousel-gap) * 2)) / 3.18);
+  width: calc((min(100vw - (var(--container-pad) * 2), var(--container-max)) - (var(--carousel-gap) * 2)) / 3.18);
+  min-width: 300px;
+  min-height: 510px;
+  overflow: hidden;
+  border: 1px solid oklch(0.75 0.04 247 / .66);
+  border-radius: 18px;
+  background: oklch(1 0 0 / .92);
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / .8) inset,
+    0 18px 42px oklch(0.29 0.08 250 / .10);
+  scroll-snap-align: start;
+  transition:
+    border-color 300ms var(--ease-out-craft),
+    box-shadow 300ms var(--ease-out-craft),
+    transform 300ms var(--ease-out-craft);
+}
+
+.applications-carousel__card::before {
+  position: absolute;
+  z-index: 2;
+  inset: 0 auto auto;
+  width: 42%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--application-accent), color-mix(in oklch, var(--application-accent), transparent 75%));
+  content: "";
+}
+
+.applications-carousel__card::after {
+  position: absolute;
+  z-index: 0;
+  inset: -28% -25% auto auto;
+  width: 210px;
+  aspect-ratio: 1;
+  border: 1px solid color-mix(in oklch, var(--application-accent), transparent 80%);
+  border-radius: 50%;
+  box-shadow: 0 0 0 25px color-mix(in oklch, var(--application-accent), transparent 94%);
+  content: "";
+  pointer-events: none;
+}
+
+.applications-carousel__card:hover {
+  border-color: color-mix(in oklch, var(--application-accent), transparent 50%);
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / .9) inset,
+    0 26px 58px oklch(0.29 0.08 250 / .16);
+  transform: translateY(-8px);
+}
+
+.applications-carousel__illustration {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  min-height: 230px;
+  overflow: hidden;
+  place-items: center;
+  padding: 0;
+  border-bottom: 1px solid oklch(0.80 0.026 247 / .55);
+  background: oklch(0.985 0.008 245);
+}
+
+.applications-carousel__illustration img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 380ms var(--ease-out-craft);
+}
+
+.applications-carousel__card:hover .applications-carousel__illustration img {
+  transform: scale(1.035);
+}
+
+.applications-carousel__card-copy {
+  position: relative;
+  z-index: 1;
+  padding: clamp(1.45rem, 2vw, 2rem);
+}
+
+.applications-carousel__card-index {
+  display: inline-grid;
+  width: 2.45rem;
+  height: 2.45rem;
+  margin-bottom: 1.15rem;
+  border: 1px solid color-mix(in oklch, var(--application-accent), transparent 67%);
+  border-radius: 50%;
+  place-items: center;
+  color: color-mix(in oklch, var(--application-accent), var(--ink-900) 22%);
+  background: color-mix(in oklch, var(--application-accent), white 90%);
+  font-family: var(--font-mono);
+  font-size: .72rem;
+  font-weight: 700;
+}
+
+.applications-carousel__card h3 {
+  margin: 0 0 .65rem;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: clamp(1.32rem, 1.65vw, 1.72rem);
+  letter-spacing: -.035em;
+  line-height: 1.08;
+}
+
+.applications-carousel__card p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: clamp(.94rem, 1.05vw, 1.02rem);
+  line-height: 1.58;
+}
+
+.applications-carousel__arrow {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  display: grid;
+  width: 3.45rem;
+  height: 3.45rem;
+  padding: 0;
+  border: 1px solid oklch(0.74 0.035 247 / .75);
+  border-radius: 50%;
+  place-items: center;
+  color: var(--ink-950);
+  background: oklch(1 0 0 / .94);
+  box-shadow: 0 12px 28px oklch(0.20 0.06 250 / .16);
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: transform 180ms var(--ease-out-craft), opacity 180ms ease, border-color 180ms ease;
+}
+
+.applications-carousel__arrow svg {
+  width: 1.25rem;
+}
+
+.applications-carousel__arrow path {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.applications-carousel__arrow:hover:not(:disabled) {
+  border-color: var(--brand-blue);
+  transform: translateY(-50%) scale(1.06);
+}
+
+.applications-carousel__arrow:focus-visible {
+  outline: 2px solid var(--brand-blue);
+  outline-offset: 3px;
+}
+
+.applications-carousel__arrow:disabled {
+  opacity: .34;
+  cursor: default;
+}
+
+.applications-carousel__arrow--previous {
+  left: -1.45rem;
+}
+
+.applications-carousel__arrow--next {
+  right: -1.45rem;
+}
+
+.applications-carousel__footer {
+  display: grid;
+  grid-template-columns: minmax(100px, 180px) 1fr auto;
+  gap: clamp(1rem, 2.5vw, 2.5rem);
+  align-items: center;
+  margin-top: clamp(-2.8rem, -3vw, -1.5rem);
+}
+
+.applications-carousel__progress {
+  height: 3px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: oklch(0.76 0.035 247 / .42);
+}
+
+.applications-carousel__progress span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--sixd-red), var(--sixd-green), var(--sixd-blue));
+  transform-origin: left;
+  transition: transform 300ms var(--ease-out-craft);
+}
+
+.applications-carousel__dots {
+  display: flex;
+  justify-content: center;
+  gap: .42rem;
+}
+
+.applications-carousel__dots button {
+  width: 1.55rem;
+  height: 1.55rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.applications-carousel__dots button::before {
+  display: block;
+  width: .34rem;
+  height: .34rem;
+  margin: auto;
+  border-radius: 99px;
+  background: oklch(0.67 0.035 247 / .52);
+  content: "";
+  transition: width 220ms var(--ease-out-craft), background 220ms ease;
+}
+
+.applications-carousel__dots button.is-active::before {
+  width: 1.1rem;
+  background: var(--brand-blue);
+}
+
+.applications-carousel__dots button:focus-visible {
+  outline: 2px solid var(--brand-blue);
+  outline-offset: 1px;
+}
+
+.applications-carousel__count {
+  display: flex;
+  gap: .35rem;
+  align-items: baseline;
+  min-width: 4.5rem;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.applications-carousel__count strong {
+  color: var(--brand-blue-deep);
+  font-size: 1.08rem;
+}
+
+.applications-carousel__count span {
+  color: var(--text-muted);
+  font-size: .78rem;
+}
+
+@media (max-width: 1080px) {
+  .applications-carousel__card {
+    flex-basis: calc((100vw - (var(--container-pad) * 2) - var(--carousel-gap)) / 2.16);
+    width: calc((100vw - (var(--container-pad) * 2) - var(--carousel-gap)) / 2.16);
+  }
+}
+
+@media (max-width: 720px) {
+  .applications-carousel {
+    --carousel-gap: .9rem;
+  }
+
+  .applications-carousel__container {
+    gap: 1.75rem;
+  }
+
+  .applications-carousel__header {
+    text-align: left;
+  }
+
+  .applications-carousel__header .craft-lead {
+    margin-inline: 0;
+  }
+
+  .applications-carousel__viewport {
+    margin-right: calc(var(--container-pad) * -1);
+    padding-top: .75rem;
+    padding-right: var(--container-pad);
+  }
+
+  .applications-carousel__track {
+    padding-right: calc(var(--container-pad) + 1rem);
+  }
+
+  .applications-carousel__card {
+    grid-template-rows: 190px auto;
+    flex-basis: min(82vw, 340px);
+    width: min(82vw, 340px);
+    min-width: min(82vw, 340px);
+    min-height: 455px;
+    border-radius: 15px;
+  }
+
+  .applications-carousel__illustration {
+    min-height: 190px;
+  }
+
+  .applications-carousel__card-copy {
+    padding: 1.25rem;
+  }
+
+  .applications-carousel__arrow {
+    display: none;
+  }
+
+  .applications-carousel__footer {
+    grid-template-columns: minmax(80px, 1fr) auto;
+    gap: 1rem;
+    margin-top: -1.5rem;
+  }
+
+  .applications-carousel__dots {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .applications-carousel__card {
+    flex-basis: 84vw;
+    width: 84vw;
+    min-width: 84vw;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .applications-carousel__viewport {
+    scroll-behavior: auto;
+  }
+
+  .applications-carousel__card,
+  .applications-carousel__illustration img,
+  .applications-carousel__progress span,
+  .applications-carousel__dots button::before {
+    transition: none;
+  }
+
+  .applications-carousel__card:hover,
+  .applications-carousel__card:hover .applications-carousel__illustration img {
+    transform: none;
+  }
+}
+
 /* Final photo marker correction: vertical pin, not rotated badge */
 
 /* Final carousel loop and content polish */

@@ -64,6 +64,41 @@ async function optimizeLogo() {
   console.warn("No logo source found for compact logo generation.");
 }
 
+async function optimizeApplicationImages() {
+  const filenames = [
+    "national-address",
+    "digital-address",
+    "financial-inclusion",
+    "refugee-camps",
+    "utility-addressing",
+    "disaster-relief",
+    "id-cards",
+    "informal-settlements",
+    "emergency-response",
+    "marketing-areas",
+    "opt-in-database",
+    "leisure-address",
+  ];
+
+  await ensureDir("public/images/applications");
+
+  for (const filename of filenames) {
+    const input = `source-assets/applications/${filename}.png`;
+    const output = `public/images/applications/${filename}.webp`;
+    if (!(await exists(input))) {
+      console.warn(`Skipping missing application source: ${input}`);
+      continue;
+    }
+
+    await sharp(path.join(root, input))
+      .resize({ width: 960, height: 600, fit: "cover", position: "center" })
+      .webp({ quality: 84, effort: 6 })
+      .toFile(path.join(root, output));
+
+    console.log(`Created ${output}`);
+  }
+}
+
 await optimizeTeamImage(
   "source-assets/team/GL.jpeg",
   "public/images/team/gl-360.webp",
@@ -78,5 +113,6 @@ await optimizeTeamImage(
 );
 
 await optimizeLogo();
+await optimizeApplicationImages();
 
 console.log("Asset optimization complete.");

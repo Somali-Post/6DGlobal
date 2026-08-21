@@ -3,8 +3,9 @@ import CursorGrid from "./components/CursorGrid";
 import { MapLoadingScreen } from "./components/MapLoadingScreen";
 import { NoWrap6D, renderNoWrap6D } from "./components/NoWrap6D";
 import { AddressingProblemSection } from "./components/sections/AddressingProblemSection";
+import { ApplicationsCarouselSection } from "./components/sections/ApplicationsCarouselSection";
 import { ExamplesSection } from "./components/sections/ExamplesSection";
-import { localityMattersExample } from "./data/localityMattersExample";
+import { LocalityMapIllustration } from "./components/sections/LocalityMapIllustration";
 
 const FindPage = lazy(() => import("./pages/FindPage"));
 
@@ -139,52 +140,6 @@ const faqGroups = [
       {
         question: "Who governs the method or system?",
         answer: "Governance should be clear, documented and practical enough for public-sector, developer and community use.",
-      },
-    ],
-  },
-];
-
-const applicationGroups = [
-  {
-    label: "Public infrastructure",
-    items: [
-      {
-        title: "National addressing support",
-        body: "6D can support national addressing programmes by providing a practical location reference in areas where property numbers or named streets are incomplete.",
-      },
-      {
-        title: "Public registries and ID systems",
-        body: "Government systems may use 6D as an additional location reference for service delivery or registration, where appropriate governance, privacy and verification rules are in place.",
-      },
-    ],
-  },
-  {
-    label: "Service delivery",
-    items: [
-      {
-        title: "Utility services",
-        body: "Utility providers can use 6D-style location references to identify service points, assets or customer locations where conventional addresses are unavailable.",
-      },
-      {
-        title: "Humanitarian and disaster response",
-        body: "In humanitarian or disaster-response settings, 6D can help identify agreed locations for service delivery, aid distribution or field coordination when used with verified local context.",
-      },
-    ],
-  },
-  {
-    label: "Digital access",
-    items: [
-      {
-        title: "Digital address services",
-        body: "6D can help create a simple digital address that works with existing locality information and can be shared through mobile or web services.",
-      },
-      {
-        title: "Financial inclusion",
-        body: "Banks, mobile-money providers and financial institutions may use location references to support customer registration, service access and location verification, subject to local rules and safeguards.",
-      },
-      {
-        title: "Underserved settlements",
-        body: "6D can support addressability in informal or underserved settlements where residents use local names and landmarks but formal property addressing is incomplete.",
       },
     ],
   },
@@ -402,7 +357,7 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
 
       <SomaliaUseCaseSection />
 
-      <PracticalApplicationsSection />
+      <ApplicationsCarouselSection />
 
       <PropositionSection />
 
@@ -640,13 +595,6 @@ function ColouredCode({ code, className = "" }: { code: string; className?: stri
 }
 
 function LocalityMattersSection() {
-  const { city, code, places } = localityMattersExample;
-  const mapBounds = { north: 51.57, south: 51.42, west: -0.39, east: -0.02 };
-  const markerPosition = (latitude: number, longitude: number) => ({
-    left: `${((longitude - mapBounds.west) / (mapBounds.east - mapBounds.west)) * 100}%`,
-    top: `${((mapBounds.north - latitude) / (mapBounds.north - mapBounds.south)) * 100}%`,
-  });
-
   return (
     <section id="locality" className="craft-section craft-section--dark craft-grid-bg craft-grid-bg--dark locality-proof">
       <div className="craft-container">
@@ -662,55 +610,7 @@ function LocalityMattersSection() {
             </p>
           </header>
 
-          <figure className="locality-proof__visual craft-reveal">
-            <div
-              className="locality-map"
-              role="group"
-              aria-label={`London map showing ${places.map((place) => place.locality).join(", ")} sharing code ${code}`}
-            >
-              <div className="locality-map__header">
-                <span>One shared reference across London</span>
-                <ColouredCode code={code} />
-              </div>
-
-              <div className="locality-map__canvas">
-                <svg className="locality-map__basemap" viewBox="0 0 1000 580" preserveAspectRatio="none" aria-hidden="true">
-                  <path className="locality-map__boundary" d="M54 84 196 34 390 58 528 24 718 54 928 112 964 254 926 430 772 528 568 548 382 516 186 542 62 438 34 268Z" />
-                  <g className="locality-map__roads">
-                    <path d="M44 182C214 224 346 198 500 112S792 112 958 176" />
-                    <path d="M22 384C190 306 344 314 496 390S776 486 980 414" />
-                    <path d="M148 18C236 150 304 284 302 560" />
-                    <path d="M510 8C486 150 520 306 566 572" />
-                    <path d="M818 48C738 202 724 346 776 554" />
-                    <path d="M92 506 902 74" />
-                    <path d="M88 82 924 506" />
-                  </g>
-                  <path className="locality-map__ring-road" d="M174 286C174 144 326 78 496 82S826 158 828 292 688 500 504 498 174 426 174 286Z" />
-                  <path className="locality-map__river" d="M-30 354C92 300 174 398 286 356S470 292 564 350 702 422 790 378 910 310 1030 354" />
-                </svg>
-                <span className="locality-map__city-label" aria-hidden="true">London</span>
-
-                {places.map((place) => (
-                  <div
-                    className={`locality-map__marker is-${place.labelPosition} is-${place.labelAlign}`}
-                    style={markerPosition(place.latitude, place.longitude)}
-                    key={place.locality}
-                  >
-                    <span className="locality-map__pin" aria-hidden="true" />
-                    <span className="locality-map__callout">
-                      <strong>{place.locality}</strong>
-                      <span aria-hidden="true">
-                        <ColouredCode code={code} className="coloured-code--compact" />
-                      </span>
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <figcaption>
-              Example locations in {city} sharing the same reference.
-            </figcaption>
-          </figure>
+          <LocalityMapIllustration />
 
         </div>
       </div>
@@ -788,52 +688,6 @@ function SomaliaAddressLines({ lines }: { lines: string[] }) {
         );
       })}
     </address>
-  );
-}
-
-function PracticalApplicationsSection() {
-  return (
-    <section id="applications" className="craft-section craft-section--blueprint craft-grid-bg applications-index">
-      <div className="craft-container">
-        <div className="applications-index__grid">
-          <header className="applications-index__header craft-reveal">
-            <h2 className="display-section">Where 6D can help</h2>
-            <p className="craft-lead">
-            <NoWrap6D /> can support services that need a simple, shareable location reference where formal addressing is
-            incomplete. The strongest applications are those that work with existing locality information rather than
-            replacing it.
-          </p>
-          </header>
-
-          <div className="applications-index__matrix craft-reveal">
-            {applicationGroups.map((group, groupIndex) => (
-              <section className="application-group" key={group.label} aria-labelledby={`application-group-${groupIndex}`}>
-                <h3 id={`application-group-${groupIndex}`}>{group.label}</h3>
-
-                <div className="application-group__items">
-                  {group.items.map((item, itemIndex) => (
-                    <article className="application-row" key={item.title}>
-                      <span className="application-row__number">
-                        {String(groupIndex + 1).padStart(2, "0")}.{String(itemIndex + 1).padStart(2, "0")}
-                      </span>
-                      <div className="application-row__content">
-                        <h4>{item.title}</h4>
-                        <p>{item.body}</p>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              </section>
-            ))}
-          </div>
-
-          <p className="applications-index__note craft-reveal">
-          Each use case requires local validation, data governance and clear institutional ownership before operational
-          deployment.
-        </p>
-        </div>
-      </div>
-    </section>
   );
 }
 
