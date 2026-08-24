@@ -8,7 +8,7 @@ const mapDescription = `OpenStreetMap of London showing ${localityExample.places
 export function LocalityMapIllustration() {
   return (
     <figure className="locality-map-export craft-reveal">
-      <div className="locality-map-export__viewport" tabIndex={0} aria-label="Scrollable map of verified London localities">
+      <div className="locality-map-export__viewport">
         <img
           src="/images/locality/london-shared-code-map.webp"
           alt={mapDescription}

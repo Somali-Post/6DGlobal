@@ -578,7 +578,8 @@ function LocalityMattersSection() {
           <header className="locality-proof__header craft-reveal">
             <h2 className="display-section">
               <span className="display-line">Same code</span>
-              <span className="display-line">Different localities</span>
+              <span className="display-line">Different</span>
+              <span className="display-line">localities</span>
             </h2>
             <div className="locality-proof__message">
               <p>A 6D code is not a complete address</p>

@@ -118,7 +118,7 @@ async function main() {
       ${labels}
       <g>
         <rect x="1110" y="855" width="270" height="29" rx="5" fill="#ffffff" fill-opacity="0.9"/>
-        <text x="1245" y="875" text-anchor="middle" fill="#334a63" font-family="Arial, sans-serif" font-size="14">© OpenStreetMap contributors</text>
+        <text x="1245" y="875" text-anchor="middle" fill="#334a63" font-family="Arial, sans-serif" font-size="14">&#169; OpenStreetMap contributors</text>
       </g>
     </svg>`);
 

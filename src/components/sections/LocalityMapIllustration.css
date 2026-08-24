@@ -4,8 +4,7 @@
 }
 
 .locality-map-export__viewport {
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: hidden;
   border: 1px solid oklch(0.72 0.06 247 / 0.62);
   border-radius: 8px;
   background: #e7ecef;
@@ -22,26 +21,14 @@
 .locality-map-export img {
   display: block;
   width: 100%;
-  min-width: 860px;
+  max-width: 100%;
   height: auto;
   aspect-ratio: 14 / 9;
+  object-fit: contain;
 }
 
 @media (max-width: 1080px) {
   .locality-map-export {
     width: 100%;
-  }
-}
-
-@media (max-width: 680px) {
-  .locality-map-export__viewport {
-    overflow-x: auto;
-    scrollbar-color: oklch(0.58 0.09 247 / 0.45) transparent;
-    scrollbar-width: thin;
-  }
-
-  .locality-map-export img {
-    width: 860px;
-    max-width: none;
   }
 }

@@ -13,7 +13,7 @@ type LocalityCandidate = Omit<LocalityExample, "code">;
 
 const EXPECTED_SHARED_CODE = "45-52-87";
 
-// These points were reverse-geocoded against OpenStreetMap data on 2026-08-20.
+// These points were reverse-geocoded against OpenStreetMap data on 2026-08-24.
 // The code is always derived below with the project's current 6D calculation.
 const candidates: LocalityCandidate[] = localityMapPoints;
 
