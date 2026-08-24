@@ -832,7 +832,7 @@ kbd,
 }
 .hero-code-rhythm__label {
   color: rgba(248, 251, 255, 0.9);
-  font-size: clamp(1.2rem, 1.55vw, 1.65rem);
+  font-size: clamp(1.35rem, 1.75vw, 1.85rem);
   font-weight: 750;
   letter-spacing: -0.02em;
 }
@@ -846,7 +846,7 @@ kbd,
   color: rgba(248, 251, 255, 0.9);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   font-variant-numeric: tabular-nums;
-  font-size: clamp(1.2rem, 1.55vw, 1.65rem);
+  font-size: clamp(1.35rem, 1.75vw, 1.85rem);
   font-weight: 800;
   letter-spacing: -0.04em;
   background: rgba(6, 12, 20, 0.72);
@@ -2291,17 +2291,20 @@ kbd,
 
 .somalia-case {
   isolation: isolate;
+  background-color: #f8fbff;
 }
 .somalia-case::before {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-    linear-gradient(90deg, oklch(0.72 0.08 247 / .08) 1px, transparent 1px),
-    linear-gradient(oklch(0.72 0.08 247 / .06) 1px, transparent 1px);
-  background-size: 96px 96px;
-  mask-image: linear-gradient(180deg, transparent 0%, black 18%, black 84%, transparent 100%);
+  background-image: url("/images/somalia-use-case-bg.png");
+  background-position: 75% center;
+  background-repeat: no-repeat;
+  background-size: 135% auto;
+  filter: saturate(2.5);
+  mix-blend-mode: multiply;
+  opacity: .76;
 }
 .somalia-case .craft-container,
 .applications-index .craft-container {
@@ -2355,7 +2358,7 @@ kbd,
 .somalia-case__example-card {
   min-width: 0;
   border: 1px solid var(--border-light-strong);
-  background: oklch(0.995 0.006 88 / .88);
+  background: oklch(0.995 0.006 88 / .9);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .74), 0 16px 38px rgba(22, 53, 92, .055);
 }
 .somalia-case__format-panel {
@@ -2471,6 +2474,12 @@ kbd,
 }
 
 @media (max-width: 1080px) {
+  .somalia-case::before {
+    background-position: 68% center;
+    background-size: auto 100%;
+    opacity: .68;
+  }
+
   .somalia-case .somalia-case__layout {
     grid-template-columns: 1fr;
     grid-template-areas:
@@ -2490,6 +2499,12 @@ kbd,
 }
 
 @media (max-width: 680px) {
+  .somalia-case::before {
+    background-position: 62% center;
+    background-size: auto 92%;
+    opacity: .56;
+  }
+
   .somalia-case .somalia-case__example-grid {
     grid-template-columns: 1fr;
   }
@@ -3188,10 +3203,10 @@ kbd,
     padding: 0.34rem 0.5rem 0.34rem 0;
   }
   .hero-code-rhythm__label {
-    font-size: 1.18rem;
+    font-size: 1.3rem;
   }
   .hero-code-rhythm__code {
-    font-size: 1.18rem;
+    font-size: 1.3rem;
     padding: 0.3rem 0.46rem;
   }
   .actions {

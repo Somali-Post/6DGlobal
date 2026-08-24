@@ -1,6 +1,5 @@
 import { ReactNode } from "react";
 import { renderNoWrap6D } from "../NoWrap6D";
-import { PropositionGlobe } from "../illustrations/PropositionGlobe";
 import "./PropositionSection.css";
 
 type IconName = "location" | "access" | "connect" | "growth" | "tools" | "partner" | "network" | "license";
@@ -37,15 +36,15 @@ function PropositionColumn({ title, items, side }: { title: string; items: { cop
   return (
     <div className={`proposition-column proposition-column--${side}`}>
       <div className="proposition-column__heading">
-        <span aria-hidden="true">0{side === "left" ? "1" : "2"}</span>
         <h2>{title}</h2>
+        <span aria-hidden="true" />
       </div>
       <div className="proposition-column__cards">
         {items.map((item, index) => (
           <article className="proposition-card" key={item.copy}>
+            <span className="proposition-card__number" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
             <span className="proposition-card__icon"><TechnicalIcon name={item.icon} /></span>
             <p>{renderNoWrap6D(item.copy)}</p>
-            <span className="proposition-card__number" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
           </article>
         ))}
       </div>
@@ -55,12 +54,21 @@ function PropositionColumn({ title, items, side }: { title: string; items: { cop
 
 export function PropositionSection() {
   return (
-    <section id="proposition" className="craft-section craft-section--dark craft-grid-bg craft-grid-bg--dark proposition-section">
+    <section id="proposition" className="craft-section proposition-section">
       <div className="craft-container proposition-section__inner">
-        <p className="proposition-section__eyebrow"><span>Global vision</span><span>Practical rollout</span></p>
         <div className="proposition-section__composition">
           <PropositionColumn title="Our Dreams" items={dreams} side="left" />
-          <div className="proposition-section__artwork" aria-label="Global 6D addressing and partnership network"><PropositionGlobe /></div>
+          <div className="proposition-section__artwork" aria-label="Global 6D addressing and partnership network">
+            <span className="proposition-orbit-icon proposition-orbit-icon--location"><TechnicalIcon name="location" /></span>
+            <span className="proposition-orbit-icon proposition-orbit-icon--tools"><TechnicalIcon name="tools" /></span>
+            <span className="proposition-orbit-icon proposition-orbit-icon--growth"><TechnicalIcon name="growth" /></span>
+            <span className="proposition-orbit-icon proposition-orbit-icon--partner"><TechnicalIcon name="partner" /></span>
+            <span className="proposition-section__badge" aria-hidden="true">
+              <span className="proposition-section__badge-logo-crop">
+                <img src="/logo-256.webp" alt="" />
+              </span>
+            </span>
+          </div>
           <PropositionColumn title="Our Proposition" items={propositions} side="right" />
         </div>
         <a className="proposition-section__cta" href="#contact">
