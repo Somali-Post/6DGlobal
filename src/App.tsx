@@ -6,6 +6,7 @@ import { AddressingProblemSection } from "./components/sections/AddressingProble
 import { ApplicationsCarouselSection } from "./components/sections/ApplicationsCarouselSection";
 import { ExamplesSection } from "./components/sections/ExamplesSection";
 import { LocalityMapIllustration } from "./components/sections/LocalityMapIllustration";
+import { PropositionSection } from "./components/sections/PropositionSection";
 
 const FindPage = lazy(() => import("./pages/FindPage"));
 
@@ -169,31 +170,6 @@ const teamMembers = [
   },
 ];
 
-const propositionPillars = [
-  {
-    title: "The method",
-    body: "A clear 6D format based on coordinate-derived digits and locality context. The method is being documented so compatible tools can implement it consistently.",
-  },
-  {
-    title: "The tools",
-    body: "A working map-based demonstration allows users to generate a 6D address, understand the format and see how locality completes the address.",
-  },
-  {
-    title: "Implementation support",
-    body: "Governments, postal operators and service providers can pilot 6D in a defined area before wider rollout, with support for address format design, testing, training and integration.",
-  },
-];
-
-const partnerDeliverables = [
-  "6D method explanation and technical specification",
-  "Pilot area design",
-  "Address format guidance",
-  "Map/demo configuration",
-  "Staff and stakeholder training",
-  "Integration planning for postal, delivery or civic services",
-  "Data governance and operational recommendations",
-];
-
 function App() {
   const [route, setRoute] = useState(() => window.location.pathname);
 
@@ -336,7 +312,6 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
             </div>
             <div className="actions hero-actions">
               <LiteButton className="button hero-cta hero-cta--primary" onClick={() => onFind(true)}>Find my <NoWrap6D /></LiteButton>
-              <LiteButton className="button hero-cta hero-cta--secondary" href="#how-it-works">See how it works</LiteButton>
             </div>
           </div>
           <GlobeHeroVisual />
@@ -545,34 +520,35 @@ function HowItWorksSection() {
         <div className="how-created__coordinate-box" aria-label="Latitude and longitude selected decimal places">
           <div className="how-created__coordinate-row">
             <span className="how-created__coordinate-label">Latitude:</span>
-            <span className="how-created__coordinate-value" aria-label="7.879227 N">
-              <span>7.8</span>
+            <span className="how-created__coordinate-value" aria-label="11.275278 N">
+              <span>11.2</span>
               <span className="digit-red">7</span>
-              <span className="digit-green">9</span>
+              <span className="digit-green">5</span>
               <span className="digit-blue">2</span>
-              <span>27 N</span>
+              <span>78 N</span>
             </span>
           </div>
 
           <div className="how-created__coordinate-row">
             <span className="how-created__coordinate-label">Longitude:</span>
-            <span className="how-created__coordinate-value" aria-label="11.343555 W">
-              <span>11.3</span>
+            <span className="how-created__coordinate-value" aria-label="49.141389 E">
+              <span>49.1</span>
               <span className="digit-red">4</span>
-              <span className="digit-green">3</span>
-              <span className="digit-blue">5</span>
-              <span>55 W</span>
+              <span className="digit-green">1</span>
+              <span className="digit-blue">3</span>
+              <span>89 E</span>
             </span>
           </div>
         </div>
 
         <article className="how-created__address-box" aria-label="Completed 6D Address">
-          <ColouredCode code="74-93-25" />
+          <ColouredCode code="74-51-23" />
           <address>
-            <span>Ghebenderu</span>
-            <span>Kenema District</span>
-            <span>Eastern Province</span>
-            <span>Sierra Leone</span>
+            <span>Bender Qassim International Airport</span>
+            <span>Bosaso</span>
+            <span>Bari</span>
+            <span>Puntland</span>
+            <span>Somalia</span>
           </address>
         </article>
       </div>
@@ -601,13 +577,14 @@ function LocalityMattersSection() {
         <div className="locality-proof__grid">
           <header className="locality-proof__header craft-reveal">
             <h2 className="display-section">
-              <span className="display-line">Same code.</span>
-              <span className="display-line">Different localities.</span>
+              <span className="display-line">Same code</span>
+              <span className="display-line">Different localities</span>
             </h2>
-            <p className="craft-lead">
-              A 6D code is a reference, not a complete address on its own. The same six digits can appear in different
-              places. Locality is what makes the intended address clear.
-            </p>
+            <div className="locality-proof__message">
+              <p>A 6D code is not a complete address</p>
+              <p>The same 6D code appears multiple times</p>
+              <p>Locality makes the <NoWrap6D /> unique</p>
+            </div>
           </header>
 
           <LocalityMapIllustration />
@@ -625,45 +602,44 @@ function SomaliaUseCaseSection() {
         <div className="somalia-case__layout">
           <header className="somalia-case__copy craft-reveal">
             <h2 className="display-section">Somalia Use Case</h2>
-            <div className="somalia-case__narrative">
-              <p>
-                Somalia provides a practical example of how <NoWrap6D /> can be incorporated into an address format as the
-                second line of the address.
-              </p>
-              <p>
-                With or without a property number and street name, <NoWrap6D /> can provide a precise last-mile location
-                reference when combined with existing locality information.
-              </p>
-            </div>
+            <p>
+              Somalia provides a practical example of how <NoWrap6D /> can be incorporated into an address format as the
+              second line of the address.
+            </p>
           </header>
 
-          <div className="somalia-case__right craft-reveal">
-            <article className="somalia-case__format-panel" aria-labelledby="somalia-format-title">
-              <h3 id="somalia-format-title">The <NoWrap6D /> code is incorporated into existing address details</h3>
-              <ul className="somalia-case__format-list">
-                <li><span>Property number and street name</span></li>
-                <li><span><NoWrap6D /> and locality</span></li>
-                <li><span>District / town / city</span></li>
-                <li><span>Region</span></li>
-                <li><span>Country</span></li>
-              </ul>
+          <article className="somalia-case__format-panel craft-reveal" aria-labelledby="somalia-format-title">
+            <h3 id="somalia-format-title">The <NoWrap6D /> code is incorporated into existing address details</h3>
+            <ul className="somalia-case__format-list">
+              <li><span>Property number and street name</span></li>
+              <li><span><NoWrap6D /> and locality</span></li>
+              <li><span>District / town / city</span></li>
+              <li><span>Region</span></li>
+              <li><span>Country</span></li>
+            </ul>
+          </article>
+
+          <div className="somalia-case__support craft-reveal">
+            <p>
+              With or without a property number and street name, <NoWrap6D /> can provide a precise last-mile location
+              reference when combined with existing locality information.
+            </p>
+          </div>
+
+          <div className="somalia-case__example-grid craft-reveal" aria-label="Somalia address format examples">
+            <article className="somalia-case__example-card">
+              <h3>Example with street context</h3>
+              <SomaliaAddressLines
+                lines={["24 Isbarbardhig Road", "35-12-12 Halane", "Mogadishu", "Banaadir", "Somalia"]}
+              />
             </article>
 
-            <div className="somalia-case__example-grid" aria-label="Somalia address format examples">
-              <article className="somalia-case__example-card">
-                <h3>Example with street context</h3>
-                <SomaliaAddressLines
-                  lines={["24 Isbarbardhig Road", "35-12-12 Halane", "Mogadishu", "Banaadir", "Somalia"]}
-                />
-              </article>
-
-              <article className="somalia-case__example-card">
-                <h3>Example without street context</h3>
-                <SomaliaAddressLines
-                  lines={["Un-named street", "35-12-12 Halane", "Mogadishu", "Banaadir", "Somalia"]}
-                />
-              </article>
-            </div>
+            <article className="somalia-case__example-card">
+              <h3>Example without street context</h3>
+              <SomaliaAddressLines
+                lines={["Un-named street", "35-12-12 Halane", "Mogadishu", "Banaadir", "Somalia"]}
+              />
+            </article>
           </div>
         </div>
       </div>
@@ -688,52 +664,6 @@ function SomaliaAddressLines({ lines }: { lines: string[] }) {
         );
       })}
     </address>
-  );
-}
-
-function PropositionSection() {
-  return (
-    <section id="proposition" className="craft-section craft-section--dark craft-grid-bg craft-grid-bg--dark proposition-chapter">
-      <div className="craft-container">
-        <div className="proposition-chapter__grid">
-          <header className="proposition-chapter__header craft-reveal">
-            <h2 className="display-section">An open addressing method, supported by practical implementation tools.</h2>
-            <p className="craft-lead">
-            <NoWrap6D /> provides a simple way to create a short location reference from latitude and longitude, then
-            combine it with the locality information people already use. The method can support postal, civic, delivery
-            and digital services in places where formal property addressing is incomplete.
-          </p>
-          </header>
-
-          <aside className="proposition-chapter__partner craft-panel craft-panel--dark craft-reveal" aria-labelledby="partner-receive-title">
-            <span className="proposition-chapter__meta">Partner package</span>
-            <h3 id="partner-receive-title">What partners can receive</h3>
-            <ul>
-              {partnerDeliverables.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </aside>
-
-          <div className="proposition-chapter__pillars craft-reveal" aria-label="6D proposition pillars">
-            {propositionPillars.map((pillar, index) => (
-              <article className="proposition-pillar" key={pillar.title}>
-                <span className="proposition-pillar__number">{String(index + 1).padStart(2, "0")}</span>
-                <div>
-                  <h3>{pillar.title}</h3>
-                  <p>{pillar.body}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          <div className="proposition-chapter__close craft-reveal">
-            <p>The aim is not to replace local addressing systems. It is to make them easier to complete, share and use.</p>
-            <a className="craft-button craft-button--primary" href="#contact">Discuss a pilot</a>
-          </div>
-        </div>
-      </div>
-    </section>
   );
 }
 

@@ -40,15 +40,6 @@ export function AddressingProblemSection() {
                 </p>
               </div>
             </header>
-            <div className="problem-s42-block problem-s42-block--header">
-              <img
-                src="/images/s42badge.png"
-                alt="S42 compatible badge"
-                loading="lazy"
-                decoding="async"
-              />
-              <p>6D as part of a complete address</p>
-            </div>
           </div>
 
           <div className="problem-bridge problem-bridge--two-panel craft-reveal" aria-label="Addressing gap and 6D Address solution">
@@ -94,6 +85,15 @@ export function AddressingProblemSection() {
               <NoWrap6D /> immediately fills the gap and is compatible with future address solutions
             </span>
           </p>
+
+          <div className="problem-s42-block problem-s42-block--closing">
+            <img
+              src="/images/s42badge.png"
+              alt="S42 compatible badge"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
         </div>
       </div>
     </section>

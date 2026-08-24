@@ -1,6 +1,6 @@
 import { MouseEvent, PointerEvent, TouchEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { NoWrap6D } from "../NoWrap6D";
-import { LandmarkExample, landmarkExamples } from "../../data/landmarkExamples";
+import { LandmarkExample, visibleLandmarkExamples } from "../../data/landmarkExamples";
 
 const LANDMARK_AUTOPLAY_DELAY = 5400;
 const CARD_CLICK_DRAG_THRESHOLD = 6;
@@ -82,20 +82,23 @@ function AddressExampleCard({
       <div className="address-example-card__body">
         <h3 className="address-example-card__title">{example.name}</h3>
         <address className="address-example-card__address" aria-label={`${example.name} address`}>
-          <span>{example.addressLine1}</span>
+          {example.streetLine ? <span>{example.streetLine}</span> : null}
           <span className="address-example-card__code-line">
             <ColouredCode code={example.code} className="address-example-card__inline-code" />
             <span>{example.locality}</span>
           </span>
-          {example.addressLine3 ? <span>{example.addressLine3}</span> : null}
+          {example.cityLine ? <span>{example.cityLine}</span> : null}
           <span>{example.country}</span>
         </address>
+        <span className="address-example-card__map-affordance">
+          View on map <span aria-hidden="true">&rarr;</span>
+        </span>
       </div>
 
       <div className="address-example-card__media">
         <img
-          src={example.imagePath}
-          alt={`${example.name} landmark`}
+          src={example.imageSrc}
+          alt={example.imageAlt}
           loading={isActive ? "eager" : "lazy"}
           decoding="async"
           style={example.imagePosition ? { objectPosition: example.imagePosition } : undefined}
@@ -119,7 +122,7 @@ export function ExamplesSection() {
   const dragStartX = useRef<number | null>(null);
   const suppressCardClickRef = useRef(false);
   const manualPauseTimer = useRef<number | null>(null);
-  const examples = landmarkExamples;
+  const examples = visibleLandmarkExamples;
   const total = examples.length;
   const loopStartIndex = total * 3;
   const [trackIndex, setTrackIndex] = useState(loopStartIndex);

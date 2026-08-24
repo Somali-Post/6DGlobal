@@ -1,216 +1,47 @@
-.locality-sketch-figure {
+.locality-map-export {
   min-width: 0;
   margin: 0;
 }
 
-.locality-sketch-panel {
-  overflow: hidden;
-  border: 1px solid oklch(0.72 0.06 247 / .66);
-  border-radius: 18px;
-  background: oklch(0.976 0.012 245);
+.locality-map-export__viewport {
+  overflow-x: auto;
+  overflow-y: hidden;
+  border: 1px solid oklch(0.72 0.06 247 / 0.62);
+  border-radius: 8px;
+  background: #e7ecef;
   box-shadow:
-    0 1px 0 oklch(1 0 0 / .85) inset,
-    0 28px 80px oklch(0.06 0.035 255 / .42);
+    0 1px 0 oklch(1 0 0 / 0.82) inset,
+    0 24px 64px oklch(0.06 0.035 255 / 0.34);
 }
 
-.locality-sketch-panel:focus-visible {
+.locality-map-export__viewport:focus-visible {
   outline: 2px solid var(--brand-blue-soft);
   outline-offset: 4px;
 }
 
-.locality-sketch-map {
+.locality-map-export img {
+  display: block;
   width: 100%;
+  min-width: 860px;
   height: auto;
-  aspect-ratio: 920 / 560;
-}
-
-.locality-sketch-map__paper {
-  fill: oklch(0.985 0.009 245);
-}
-
-.locality-sketch-map__grid {
-  fill: oklch(0.58 0.12 247 / .28);
-  stroke: oklch(0.60 0.10 247 / .105);
-  stroke-width: 1;
-}
-
-.locality-sketch-map__title-block {
-  paint-order: stroke;
-  stroke: oklch(0.985 0.009 245);
-  stroke-width: 3px;
-  stroke-linejoin: round;
-}
-
-.locality-sketch-map__kicker,
-.locality-sketch-map__coordinates,
-.locality-sketch-map__note,
-.locality-sketch-map__scale {
-  fill: oklch(0.43 0.07 250);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: .13em;
-}
-
-.locality-sketch-map__coordinates {
-  fill: oklch(0.54 0.055 247);
-  font-size: 9px;
-  letter-spacing: .08em;
-}
-
-.locality-sketch-map__shared-code {
-  font-family: var(--font-mono);
-  font-size: 34px;
-  font-weight: 750;
-  letter-spacing: -.05em;
-}
-
-.locality-sketch-map .is-red {
-  fill: var(--sixd-red);
-}
-
-.locality-sketch-map .is-green {
-  fill: var(--sixd-green);
-}
-
-.locality-sketch-map .is-blue {
-  fill: var(--sixd-blue);
-}
-
-.locality-sketch-map .is-separator {
-  fill: oklch(0.42 0.025 257);
-}
-
-.locality-sketch-map__roads {
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.locality-sketch-map__roads--primary {
-  stroke: oklch(0.57 0.095 247 / .36);
-  stroke-width: 2.1;
-}
-
-.locality-sketch-map__roads--secondary {
-  stroke: oklch(0.60 0.075 247 / .22);
-  stroke-dasharray: 2 5;
-  stroke-width: 1.2;
-}
-
-.locality-sketch-map__ring {
-  fill: none;
-  stroke: oklch(0.52 0.11 247 / .34);
-  stroke-dasharray: 8 6;
-  stroke-width: 2;
-}
-
-.locality-sketch-map__river-shadow,
-.locality-sketch-map__river {
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.locality-sketch-map__river-shadow {
-  stroke: oklch(0.69 0.10 238 / .14);
-  stroke-width: 25;
-}
-
-.locality-sketch-map__river {
-  stroke: oklch(0.72 0.12 238 / .63);
-  stroke-width: 12;
-}
-
-.locality-sketch-map__bridges {
-  stroke: oklch(0.47 0.08 247 / .72);
-  stroke-width: 4;
-}
-
-.locality-sketch-map__city {
-  fill: oklch(0.47 0.08 247 / .16);
-  font-family: var(--font-display);
-  font-size: 66px;
-  font-weight: 750;
-  letter-spacing: .13em;
-}
-
-.locality-sketch-map__leader {
-  stroke: oklch(0.46 0.13 249 / .65);
-  stroke-dasharray: 3 3;
-  stroke-width: 1.25;
-}
-
-.locality-sketch-map__marker-ring {
-  fill: oklch(0.96 0.022 245);
-  stroke: var(--brand-blue);
-  stroke-width: 2;
-}
-
-.locality-sketch-map__marker-dot {
-  fill: var(--brand-blue-deep);
-}
-
-.locality-sketch-map__label-card {
-  fill: oklch(1 0 0 / .96);
-  stroke: oklch(0.64 0.08 247 / .42);
-  stroke-width: 1;
-  filter: drop-shadow(0 5px 7px oklch(0.28 0.06 250 / .13));
-}
-
-.locality-sketch-map__locality-name {
-  fill: var(--ink-950);
-  font-family: var(--font-display);
-  font-size: 13.5px;
-  font-weight: 700;
-  letter-spacing: -.015em;
-}
-
-.locality-sketch-map__mini-code {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.locality-sketch-map__note,
-.locality-sketch-map__scale {
-  fill: oklch(0.53 0.045 247);
-  font-size: 8.5px;
-}
-
-.locality-sketch-map__scale-line {
-  stroke: oklch(0.47 0.10 247 / .7);
-  stroke-width: 2;
-}
-
-.locality-sketch-figure figcaption {
-  margin-top: .8rem;
-  color: var(--text-invert-muted);
-  font-family: var(--font-mono);
-  font-size: .72rem;
-  letter-spacing: .045em;
-  text-align: right;
+  aspect-ratio: 14 / 9;
 }
 
 @media (max-width: 1080px) {
-  .locality-sketch-figure {
+  .locality-map-export {
     width: 100%;
   }
 }
 
 @media (max-width: 680px) {
-  .locality-sketch-panel {
+  .locality-map-export__viewport {
     overflow-x: auto;
-    border-radius: 12px;
+    scrollbar-color: oklch(0.58 0.09 247 / 0.45) transparent;
     scrollbar-width: thin;
   }
 
-  .locality-sketch-map {
-    width: 720px;
+  .locality-map-export img {
+    width: 860px;
     max-width: none;
-  }
-
-  .locality-sketch-figure figcaption {
-    text-align: left;
   }
 }

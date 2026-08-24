@@ -1,196 +1,266 @@
 export type LandmarkExample = {
   id: string;
   name: string;
+  streetLine?: string;
   code: string;
-  addressLine1: string;
   locality: string;
-  addressLine3?: string;
+  cityLine?: string;
   country: string;
-  imagePath: string;
-  imagePosition?: string;
   lat: number;
   lng: number;
+  imageSrc: string;
+  imageAlt: string;
+  imagePosition?: string;
+  needsReview?: boolean;
+  reviewNote?: string;
 };
 
-// Coordinates drive the /find link. Address copy and display codes follow the supplied slide content.
+export type LandmarkReviewExample = {
+  id: string;
+  name: string;
+  streetLine?: string;
+  locality?: string;
+  cityLine?: string;
+  country: string;
+  needsReview: true;
+  reviewNote: string;
+};
+
+// Display codes are verified against lat/lng by scripts/verifyLandmarkExamples.ts.
 export const landmarkExamples: LandmarkExample[] = [
   {
     id: "sagrada-familia",
     name: "Sagrada Familia",
+    streetLine: "Carrer de Mallorca 401",
     code: "07-34-63",
-    addressLine1: "Carrer de Mallorca 401",
     locality: "Eixample",
-    addressLine3: "08310 Barcelona",
+    cityLine: "08310 Barcelona",
     country: "Spain",
-    imagePath: "/images/landmarks/sagrada-familia.webp",
     lat: 41.40363,
     lng: 2.174356,
+    imageSrc: "/images/landmarks/sagrada-familia.webp",
+    imageAlt: "Sagrada Familia",
   },
   {
     id: "taj-mahal",
     name: "Taj Mahal",
+    streetLine: "Dharmapuri",
     code: "74-51-09",
-    addressLine1: "Dharmapuri",
     locality: "Agra",
-    addressLine3: "Uttar Pradesh 282001",
+    cityLine: "Uttar Pradesh 282001",
     country: "India",
-    imagePath: "/images/landmarks/taj-mahal.webp",
     lat: 27.175,
     lng: 78.041944,
+    imageSrc: "/images/landmarks/taj-mahal.webp",
+    imageAlt: "Taj Mahal",
   },
   {
     id: "angkor-wat",
     name: "Angkor Wat",
+    streetLine: "Angkor Wat",
     code: "16-27-50",
-    addressLine1: "Angkor Wat",
     locality: "Krong Siem Reap",
     country: "Cambodia",
-    imagePath: "/images/landmarks/angkor-wat.webp",
     lat: 13.4125,
     lng: 103.867,
+    imageSrc: "/images/landmarks/angkor-wat.webp",
+    imageAlt: "Angkor Wat",
   },
   {
     id: "christ-the-redeemer",
     name: "Christ the Redeemer",
+    streetLine: "Estrada do Corcovado",
     code: "51-10-94",
-    addressLine1: "Estrada do Corcovado",
     locality: "Alto do Boa Vista",
-    addressLine3: "Rio de Janeiro",
+    cityLine: "Rio de Janeiro",
     country: "Brazil",
-    imagePath: "/images/landmarks/christ-redeemer.webp",
     lat: -22.951916,
     lng: -43.210464,
+    imageSrc: "/images/landmarks/christ-redeemer.webp",
+    imageAlt: "Christ the Redeemer",
   },
   {
     id: "st-basils-cathedral",
     name: "St Basil's Cathedral",
+    streetLine: "Red Square 7",
     code: "52-23-51",
-    addressLine1: "Red Square 7",
     locality: "Kitay-gorod",
-    addressLine3: "Moscow",
+    cityLine: "Moscow",
     country: "Russia",
-    imagePath: "/images/landmarks/st-basils-cathedral.webp",
     lat: 55.7525,
     lng: 37.6231,
+    imageSrc: "/images/landmarks/st-basils-cathedral.webp",
+    imageAlt: "St Basil's Cathedral",
   },
   {
     id: "10-downing-street",
     name: "10 Downing Street",
+    streetLine: "10 Downing Street",
     code: "02-37-37",
-    addressLine1: "Westminster",
-    locality: "London SW1A 2AA",
+    locality: "Westminster",
+    cityLine: "London SW1A 2AA",
     country: "United Kingdom",
-    imagePath: "/images/landmarks/downing-street.webp",
     lat: 51.503333,
     lng: -0.127778,
+    imageSrc: "/images/landmarks/downing-street.webp",
+    imageAlt: "10 Downing Street",
   },
   {
     id: "white-house",
     name: "The White House",
-    code: "74-51-09",
-    addressLine1: "1600 Pennsylvania Ave",
+    streetLine: "1600 Pennsylvania Ave",
+    code: "93-76-65",
     locality: "Washington",
-    addressLine3: "DC 20500",
+    cityLine: "DC 20500",
     country: "USA",
-    imagePath: "/images/landmarks/white-house.webp",
     lat: 38.897676,
     lng: -77.03653,
-    // TODO: Confirm the slide-supplied code against the existing coordinates before publication.
+    imageSrc: "/images/landmarks/white-house.webp",
+    imageAlt: "The White House",
   },
   {
     id: "petra-treasury",
     name: "Petra Treasury",
+    streetLine: "Petra",
     code: "24-84-54",
-    addressLine1: "Petra",
     locality: "Wadi Musa",
     country: "Jordan",
-    imagePath: "/images/landmarks/petra-treasury.webp",
     lat: 30.3285,
     lng: 35.4444,
+    imageSrc: "/images/landmarks/petra-treasury.webp",
+    imageAlt: "Petra Treasury",
   },
   {
     id: "statue-of-liberty",
     name: "Statue of Liberty",
-    code: "84-94-25",
-    addressLine1: "Liberty Island",
-    locality: "New York",
-    addressLine3: "NY 10004",
+    streetLine: "Liberty Island",
+    code: "84-94-24",
+    locality: "Liberty Island",
+    cityLine: "New York, NY 10004",
     country: "USA",
-    imagePath: "/images/landmarks/statue-liberty.webp",
     lat: 40.689249,
     lng: -74.0445,
+    imageSrc: "/images/landmarks/statue-liberty.webp",
+    imageAlt: "Statue of Liberty",
   },
   {
     id: "machu-picchu",
     name: "Machu Picchu",
+    streetLine: "Machu Picchu",
     code: "64-34-19",
-    addressLine1: "Machu Picchu",
     locality: "Aguas Calientes",
-    addressLine3: "Cusco",
+    cityLine: "Cusco",
     country: "Peru",
-    imagePath: "/images/landmarks/machu-picchu.webp",
     lat: -13.163141,
     lng: -72.544963,
+    imageSrc: "/images/landmarks/machu-picchu.webp",
+    imageAlt: "Machu Picchu",
   },
   {
     id: "leaning-tower-of-pisa",
     name: "Leaning Tower of Pisa",
+    streetLine: "Piazza del Duomo",
     code: "29-26-95",
-    addressLine1: "Piazza del Duomo",
     locality: "Santa Maria",
-    addressLine3: "56126 Pisa",
+    cityLine: "56126 Pisa",
     country: "Italy",
-    imagePath: "/images/landmarks/leaning-tower-pisa.webp",
     lat: 43.722952,
     lng: 10.396597,
+    imageSrc: "/images/landmarks/leaning-tower-pisa.webp",
+    imageAlt: "Leaning Tower of Pisa",
   },
   {
     id: "eiffel-tower",
     name: "Eiffel Tower",
-    code: "59-89-24",
-    addressLine1: "5 Avenue Anatole",
+    streetLine: "5 Avenue Anatole",
+    code: "59-84-24",
     locality: "Champs de Mars",
-    addressLine3: "75007 Paris",
+    cityLine: "75007 Paris",
     country: "France",
-    imagePath: "/images/landmarks/eiffel-tower.webp",
     lat: 48.858297,
     lng: 2.294478,
-    // TODO: Confirm the slide-supplied code against the existing coordinates before publication.
+    imageSrc: "/images/landmarks/eiffel-tower.webp",
+    imageAlt: "Eiffel Tower",
   },
   {
     id: "sydney-opera-house",
     name: "Sydney Opera House",
+    streetLine: "Bennelong Point",
     code: "51-65-72",
-    addressLine1: "Bennelong Point",
     locality: "Sydney CBD",
-    addressLine3: "Sydney NSW 2000",
+    cityLine: "Sydney NSW 2000",
     country: "Australia",
-    imagePath: "/images/landmarks/sydney-opera-house.webp",
     lat: -33.856784,
     lng: 151.215297,
+    imageSrc: "/images/landmarks/sydney-opera-house.webp",
+    imageAlt: "Sydney Opera House",
   },
   {
     id: "great-pyramid-of-giza",
     name: "Great Pyramid of Giza",
+    streetLine: "Al Haram",
     code: "73-94-12",
-    addressLine1: "Al Haram",
     locality: "Giza",
     country: "Egypt",
-    imagePath: "/images/landmarks/giza.webp",
     lat: 29.97915,
     lng: 31.134219,
+    imageSrc: "/images/landmarks/giza.webp",
+    imageAlt: "Great Pyramid of Giza",
   },
   {
     id: "burj-khalifa",
     name: "Burj Khalifa",
-    code: "74-51-09",
-    addressLine1: "Dharmapuri",
-    locality: "Agra",
-    addressLine3: "Dubai",
+    streetLine: "1 Sheikh Mohammed bin Rashid Blvd",
+    code: "97-74-13",
+    locality: "Dubai",
     country: "United Arab Emirates",
-    imagePath: "/images/landmarks/burj-khalifa.webp",
     lat: 25.197197,
     lng: 55.274376,
-    // TODO: Confirm the inconsistent slide-supplied address and code before publication.
+    imageSrc: "/images/landmarks/burj-khalifa.webp",
+    imageAlt: "Burj Khalifa",
+  },
+];
+
+export const visibleLandmarkExamples = landmarkExamples.filter((example) => !example.needsReview);
+
+export const landmarkExamplesNeedingReview: LandmarkReviewExample[] = [
+  {
+    id: "notre-dame-cathedral",
+    name: "Notre Dame Cathedral",
+    streetLine: "7 Parvis Notre Dame",
+    locality: "Île de la Cité",
+    cityLine: "75004 Paris",
+    country: "France",
+    needsReview: true,
+    reviewNote: "Coordinates and a matching image asset are not available in the project.",
+  },
+  {
+    id: "terracotta-army",
+    name: "Terracotta Army",
+    streetLine: "Xianhecun",
+    locality: "Lintong",
+    cityLine: "Xianyang",
+    country: "China",
+    needsReview: true,
+    reviewNote: "Coordinates and a matching image asset are not available in the project.",
+  },
+  {
+    id: "fushimi-inari-taisha",
+    name: "Fushimi Inari Taisha",
+    streetLine: "68 Fukakusa Yabunouchicho",
+    locality: "Fushimi",
+    cityLine: "Kyoto 612-0882",
+    country: "Japan",
+    needsReview: true,
+    reviewNote: "Coordinates and a matching image asset are not available in the project.",
+  },
+  {
+    id: "djingareyber-mosque",
+    name: "Djingareyber Mosque",
+    streetLine: "Askia Mohamed Blvd",
+    locality: "Timbuktu",
+    country: "Mali",
+    needsReview: true,
+    reviewNote: "Coordinates and a matching image asset are not available in the project.",
   },
 ];

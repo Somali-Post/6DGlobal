@@ -5,81 +5,70 @@ type Application = {
   title: string;
   body: string;
   image: string;
-  accent: string;
 };
+
+const applicationAccentCycle = ["var(--sixd-red)", "var(--sixd-green)", "var(--sixd-blue)"] as const;
 
 const applications: Application[] = [
   {
     title: "National Address",
     body: "A cost-effective, rapid way to provide last-mile addresses where property numbers and street names are missing.",
     image: "/images/applications/national-address.webp",
-    accent: "var(--sixd-blue)",
   },
   {
     title: "Digital Address",
     body: "A reliable, guaranteed digital address for places where existing address information cannot be trusted.",
     image: "/images/applications/digital-address.webp",
-    accent: "var(--sixd-green)",
   },
   {
     title: "Financial Inclusion",
     body: "Help financial institutions verify where customers live and extend access to essential services.",
     image: "/images/applications/financial-inclusion.webp",
-    accent: "var(--sixd-red)",
   },
   {
     title: "Refugee Camps",
     body: "Give development agencies precise, practical addresses for people and services in refugee camps.",
     image: "/images/applications/refugee-camps.webp",
-    accent: "var(--sixd-blue)",
   },
   {
     title: "Utility Addressing",
     body: "Identify utility points, meters and network assets that would otherwise have no usable address.",
     image: "/images/applications/utility-addressing.webp",
-    accent: "var(--sixd-green)",
   },
   {
     title: "Disaster Relief",
     body: "Pinpoint aid drops, rescue points and critical locations so disaster relief reaches the right place faster.",
     image: "/images/applications/disaster-relief.webp",
-    accent: "var(--sixd-red)",
   },
   {
     title: "ID Cards",
     body: "Add precise address data to identity cards and help connect each individual to a verified location.",
     image: "/images/applications/id-cards.webp",
-    accent: "var(--sixd-blue)",
   },
   {
     title: "Informal Settlements",
     body: "Provide usable address data for communities that conventional systems cannot formally address.",
     image: "/images/applications/informal-settlements.webp",
-    accent: "var(--sixd-green)",
   },
   {
     title: "Emergency Response",
     body: "Help emergency services locate incidents accurately and reduce the time it takes to respond.",
     image: "/images/applications/emergency-response.webp",
-    accent: "var(--sixd-red)",
   },
   {
     title: "Marketing Areas",
     body: "Create precise geographic areas for planning campaigns, customer coverage and local outreach.",
     image: "/images/applications/marketing-areas.webp",
-    accent: "var(--sixd-blue)",
   },
   {
     title: "Opt-in Database",
     body: "Build consent-led location records that make reliable last-mile services and deliveries possible.",
     image: "/images/applications/opt-in-database.webp",
-    accent: "var(--sixd-green)",
   },
   {
     title: "Leisure Address",
     body: "Share exact meeting points for parks, festivals, events and outdoor leisure activities.",
     image: "/images/applications/leisure-address.webp",
-    accent: "var(--sixd-red)",
   },
 ];
 
@@ -168,7 +157,7 @@ export function ApplicationsCarouselSection() {
               {applications.map((application, index) => (
                 <article
                   className="applications-carousel__card"
-                  style={{ "--application-accent": application.accent } as CSSProperties}
+                  style={{ "--application-accent": applicationAccentCycle[index % applicationAccentCycle.length] } as CSSProperties}
                   key={application.title}
                   aria-label={`${index + 1} of ${applications.length}: ${application.title}`}
                 >

@@ -1,4 +1,5 @@
 import { calculateSixDCode } from "../lib/sixd";
+import localityMapPoints from "./localityMapPoints.json";
 
 export type LocalityExample = {
   id: string;
@@ -10,33 +11,25 @@ export type LocalityExample = {
 
 type LocalityCandidate = Omit<LocalityExample, "code">;
 
+const EXPECTED_SHARED_CODE = "45-52-87";
+
 // These points were reverse-geocoded against OpenStreetMap data on 2026-08-20.
 // The code is always derived below with the project's current 6D calculation.
-const candidates: LocalityCandidate[] = [
-  { id: "greenford", name: "Greenford", lat: 51.54585, lng: -0.35275 },
-  { id: "dollis-hill", name: "Dollis Hill", lat: 51.54585, lng: -0.25275 },
-  { id: "chalk-farm", name: "Chalk Farm", lat: 51.54585, lng: -0.15275 },
-  { id: "clapton", name: "Clapton", lat: 51.54585, lng: -0.05275 },
-  { id: "whitton", name: "Whitton", lat: 51.44585, lng: -0.35275 },
-  { id: "east-sheen", name: "East Sheen", lat: 51.44585, lng: -0.25275 },
-  { id: "balham", name: "Balham", lat: 51.44585, lng: -0.15275 },
-  { id: "forest-hill", name: "Forest Hill", lat: 51.44585, lng: -0.05275 },
-];
+const candidates: LocalityCandidate[] = localityMapPoints;
 
 const calculated = candidates.map((candidate) => ({
   ...candidate,
   code: calculateSixDCode(candidate.lat, candidate.lng),
 }));
 
-const sharedCode = calculated[0]?.code;
-const verifiedLocalities = calculated.filter((candidate) => candidate.code === sharedCode);
+const verifiedLocalities = calculated.filter((candidate) => candidate.code === EXPECTED_SHARED_CODE);
 
-if (!sharedCode || verifiedLocalities.length !== candidates.length) {
-  throw new Error("Locality proof points must all calculate to one shared 6D code.");
+if (verifiedLocalities.length !== candidates.length) {
+  throw new Error(`Locality proof points must all calculate to ${EXPECTED_SHARED_CODE}.`);
 }
 
 export const localityExample = {
   city: "London",
-  code: sharedCode,
+  code: EXPECTED_SHARED_CODE,
   places: verifiedLocalities,
 };

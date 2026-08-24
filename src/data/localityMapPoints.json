@@ -1,0 +1,8 @@
+[
+  { "id": "greenford", "name": "Greenford", "lat": 51.54585, "lng": -0.35275 },
+  { "id": "chalk-farm", "name": "Chalk Farm", "lat": 51.54585, "lng": -0.15275 },
+  { "id": "lower-clapton", "name": "Lower Clapton", "lat": 51.54585, "lng": -0.05275 },
+  { "id": "whitton", "name": "Whitton", "lat": 51.44585, "lng": -0.35275 },
+  { "id": "balham", "name": "Balham", "lat": 51.44585, "lng": -0.15275 },
+  { "id": "forest-hill", "name": "Forest Hill", "lat": 51.44585, "lng": -0.05275 }
+]
