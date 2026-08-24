@@ -2291,7 +2291,7 @@ kbd,
 
 .somalia-case {
   isolation: isolate;
-  background-color: #f8fbff;
+  background: linear-gradient(90deg, #fbfcfb 0%, #f7fbfe 68%, #eef8ff 100%);
 }
 .somalia-case::before {
   content: "";
@@ -2299,9 +2299,9 @@ kbd,
   inset: 0;
   pointer-events: none;
   background-image: url("/images/somalia-use-case-bg.png");
-  background-position: 75% center;
+  background-position: center;
   background-repeat: no-repeat;
-  background-size: 135% auto;
+  background-size: 100% 110%;
   filter: saturate(2.5);
   mix-blend-mode: multiply;
   opacity: .76;
