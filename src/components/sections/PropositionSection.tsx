@@ -2,10 +2,10 @@ import { ReactNode } from "react";
 import { renderNoWrap6D } from "../NoWrap6D";
 import "./PropositionSection.css";
 
-type IconName = "location" | "access" | "connect" | "growth" | "tools" | "partner" | "network" | "license";
+type IconName = "world" | "location" | "access" | "connect" | "growth" | "tools" | "partner" | "network" | "license";
 
 const dreams: { copy: string; icon: IconName }[] = [
-  { copy: "We want 6D Address to become the number one digital address system in the world", icon: "location" },
+  { copy: "We want 6D Address to become the number one digital address system in the world", icon: "world" },
   { copy: "We want 6D Address to address the unaddressed", icon: "access" },
   { copy: "We want 6D Address to connect the disconnected", icon: "connect" },
   { copy: "We want 6D Address to facilitate social and economic development", icon: "growth" },
@@ -20,8 +20,9 @@ const propositions: { copy: string; icon: IconName }[] = [
 
 function TechnicalIcon({ name }: { name: IconName }) {
   const paths: Record<IconName, ReactNode> = {
+    world: <><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 2.5 4.5 5.5 4.5 9S15 18.5 12 21c-3-2.5-4.5-5.5-4.5-9S9 5.5 12 3Z"/></>,
     location: <><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z"/><circle cx="12" cy="10" r="2"/></>,
-    access: <><path d="M4 19V5h16v14M8 19v-5h8v5M7 9h2m2 0h2m2 0h2"/><path d="M2 19h20"/></>,
+    access: <><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z"/><path d="M9 10h6m-3-3v6"/></>,
     connect: <><circle cx="6" cy="12" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="m8.7 10.7 6.6-3.4m-6.6 6 6.6 3.4"/></>,
     growth: <><path d="M4 20V10m6 10V6m6 14V3m4 17H2"/><path d="m4 7 5-3 5 1 6-4"/></>,
     tools: <><path d="m14.5 6.5 3-3a4 4 0 0 1-5 5L5 16l3 3 7.5-7.5a4 4 0 0 1 5-5l-3 3"/><path d="m4 4 4 4"/></>,
@@ -37,12 +38,10 @@ function PropositionColumn({ title, items, side }: { title: string; items: { cop
     <div className={`proposition-column proposition-column--${side}`}>
       <div className="proposition-column__heading">
         <h2>{title}</h2>
-        <span aria-hidden="true" />
       </div>
       <div className="proposition-column__cards">
-        {items.map((item, index) => (
+        {items.map((item) => (
           <article className="proposition-card" key={item.copy}>
-            <span className="proposition-card__number" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
             <span className="proposition-card__icon"><TechnicalIcon name={item.icon} /></span>
             <p>{renderNoWrap6D(item.copy)}</p>
           </article>
@@ -73,7 +72,7 @@ export function PropositionSection() {
         </div>
         <a className="proposition-section__cta" href="#contact">
           <span className="proposition-section__cta-icon" aria-hidden="true"><TechnicalIcon name="partner" /></span>
-          <span>Contact us today to see how we can work together</span>
+          <span>Start a 6D Address conversation</span>
           <span className="proposition-section__cta-arrow" aria-hidden="true">↗</span>
         </a>
       </div>

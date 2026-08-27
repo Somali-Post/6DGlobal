@@ -3481,23 +3481,6 @@ kbd,
   color: var(--text-invert);
 }
 
-.contact-chapter__meta {
-  display: grid;
-  gap: .45rem;
-  margin-top: clamp(1.5rem, 3vw, 2.5rem);
-  border-top: 1px solid var(--border-dark);
-}
-
-.contact-chapter__meta span {
-  padding-block: .72rem;
-  border-bottom: 1px solid var(--border-dark);
-  font-family: var(--font-mono);
-  font-size: .75rem;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  color: var(--text-invert-muted);
-}
-
 .contact-chapter .contact-form {
   grid-column: 7 / span 6;
   width: 100%;
@@ -3514,12 +3497,6 @@ kbd,
 
 .contact-form__hidden {
   display: none;
-}
-
-.contact-form__row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
 }
 
 .contact-chapter .contact-form label {
@@ -3539,7 +3516,6 @@ kbd,
 }
 
 .contact-chapter .contact-form input,
-.contact-chapter .contact-form select,
 .contact-chapter .contact-form textarea {
   width: 100%;
   border: 1px solid var(--border-dark);
@@ -3553,13 +3529,7 @@ kbd,
     background var(--duration-fast) var(--ease-out-craft);
 }
 
-.contact-chapter .contact-form select option {
-  color: var(--text-primary);
-  background: var(--surface-raised);
-}
-
 .contact-chapter .contact-form input:focus,
-.contact-chapter .contact-form select:focus,
 .contact-chapter .contact-form textarea:focus {
   border-color: var(--brand-blue-soft);
   background: oklch(0.13 0.034 260 / .82);
@@ -3708,10 +3678,6 @@ kbd,
 
   .faq-chapter .faq-item__answer {
     padding-right: 0;
-  }
-
-  .contact-form__row {
-    grid-template-columns: 1fr;
   }
 
   .contact-chapter .contact-form {
@@ -3926,22 +3892,12 @@ body,
   }
 
   .contact-chapter .contact-form input,
-  .contact-chapter .contact-form select,
   .contact-chapter .contact-form textarea {
     padding: .72rem .78rem;
   }
 
   .contact-chapter .contact-form textarea {
     min-height: 120px;
-  }
-
-  .contact-chapter__meta {
-    margin-top: 1.25rem;
-  }
-
-  .contact-chapter__meta span {
-    padding-block: .55rem;
-    font-size: .68rem;
   }
 
   .site-footer {
@@ -4536,7 +4492,6 @@ body,
   font-size: max(1rem, 16px);
 }
 
-.contact-chapter__meta span,
 .site-footer__meta,
 .application-row__number,
 .team-editorial__index {
@@ -4652,10 +4607,6 @@ body,
   box-shadow: inset 0 0 0 1px oklch(1 0 0 / .68);
   font-size: 1.05rem;
   font-weight: 800;
-}
-
-.contact-chapter__meta span {
-  line-height: 1.35;
 }
 
 .site-footer__logo {
@@ -5680,7 +5631,6 @@ body,
 .team-editorial__role,
 .faq-chapter__group-button span,
 .faq-chapter__active-label,
-.contact-chapter__meta span,
 .contact-chapter .contact-form label span,
 .site-footer__meta {
   font-size: var(--text-xs);
@@ -5699,7 +5649,6 @@ body,
 .team-editorial__bio,
 .faq-chapter .faq-item__answer p,
 .contact-chapter .contact-form input,
-.contact-chapter .contact-form select,
 .contact-chapter .contact-form textarea {
   font-size: var(--text-base);
 }

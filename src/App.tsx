@@ -345,16 +345,6 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
           <div className="contact-chapter__grid">
             <header className="contact-chapter__header craft-reveal">
               <h2 className="display-section">Start a <NoWrap6D /> conversation</h2>
-              <p className="craft-lead">
-                For postal operators, public-sector teams, developers or service providers interested in the method,
-                pilot design or implementation support.
-              </p>
-
-              <div className="contact-chapter__meta">
-                <span>Open method</span>
-                <span>Practical pilots</span>
-                <span>Implementation support</span>
-              </div>
             </header>
 
             <ContactForm />
@@ -803,18 +793,8 @@ function ContactForm() {
           <input name="bot-field" />
         </label>
       </p>
-      <div className="contact-form__row">
-        <label><span>Name</span><input name="name" type="text" autoComplete="name" required /></label>
-        <label><span>Organisation</span><input name="organisation" type="text" autoComplete="organization" /></label>
-      </div>
+      <label><span>Name</span><input name="name" type="text" autoComplete="name" required /></label>
       <label><span>Email</span><input name="email" type="email" autoComplete="email" required /></label>
-      <label><span>Interest area</span><select name="interest" defaultValue="" required>
-        <option value="" disabled>Select one</option>
-        <option value="Pilot discussion">Pilot discussion</option>
-        <option value="Postal or public-sector use">Postal or public-sector use</option>
-        <option value="Developer / compatible tools">Developer / compatible tools</option>
-        <option value="General enquiry">General enquiry</option>
-      </select></label>
       <label><span>Message</span><textarea name="message" rows={5} required /></label>
       <LiteButton className="craft-button craft-button--primary" type="submit">Send enquiry</LiteButton>
     </form>

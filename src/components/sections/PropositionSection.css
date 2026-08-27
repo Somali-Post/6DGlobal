@@ -36,8 +36,6 @@
 .proposition-column--right { grid-area: proposition; }
 
 .proposition-column__heading {
-  display: grid;
-  gap: 1rem;
   margin: 0 0 clamp(1.5rem, 2vw, 2rem);
 }
 
@@ -45,17 +43,11 @@
   margin: 0;
   color: #082a65;
   font-family: var(--font-display);
-  font-size: clamp(2.35rem, 3.4vw, 4rem);
+  font-size: clamp(2.35rem, 3vw, 3.75rem);
   font-weight: 700;
   letter-spacing: -.055em;
   line-height: .98;
-}
-
-.proposition-column__heading > span {
-  width: 9rem;
-  height: 4px;
-  border-radius: 99px;
-  background: linear-gradient(90deg, #0878ed 0 38%, transparent 38% 45%, rgba(8,120,237,.72) 45% 48%, transparent 48% 54%, rgba(8,120,237,.45) 54% 57%, transparent 57%);
+  white-space: nowrap;
 }
 
 .proposition-column__cards {
@@ -125,27 +117,6 @@
   line-height: 1.42;
 }
 
-.proposition-card__number {
-  position: absolute;
-  top: 50%;
-  z-index: 2;
-  display: grid;
-  width: 2.65rem;
-  aspect-ratio: 1;
-  place-items: center;
-  border: 1.5px solid #0878ed;
-  border-radius: 50%;
-  color: #0759b7;
-  background: #f8fbff;
-  font-family: var(--font-mono);
-  font-size: .72rem;
-  font-weight: 800;
-  transform: translateY(-50%);
-}
-
-.proposition-column--left .proposition-card__number { left: -3.75rem; }
-.proposition-column--right .proposition-card__number { right: -3.75rem; }
-
 .proposition-card:hover {
   border-color: rgba(0, 111, 231, .35);
   box-shadow: 0 15px 35px rgba(24, 78, 142, .17), inset 0 1px 0 #fff;
@@ -187,7 +158,7 @@
   z-index: 1;
   display: block;
   width: 76%;
-  height: 58%;
+  height: 55%;
   overflow: hidden;
 }
 
@@ -215,7 +186,7 @@
 .proposition-section__cta {
   position: relative;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: clamp(3.8rem, 5vw, 5rem) minmax(0, 1fr) clamp(3.8rem, 5vw, 5rem);
   gap: clamp(1rem, 2vw, 1.75rem);
   align-items: center;
   width: calc(100% - clamp(2rem, 7vw, 7rem));
@@ -232,9 +203,9 @@
 }
 
 .proposition-section__cta-icon { width: clamp(3.8rem, 5vw, 5rem); }
-.proposition-section__cta > span:nth-child(2) { font-family: var(--font-display); font-size: clamp(1.35rem, 2.25vw, 2.7rem); font-weight: 560; letter-spacing: -.045em; line-height: 1.08; }
+.proposition-section__cta > span:nth-child(2) { font-family: var(--font-display); font-size: clamp(1.35rem, 2.25vw, 2.7rem); font-weight: 560; letter-spacing: -.045em; line-height: 1.08; text-align: center; }
 .proposition-section__cta > span:nth-child(2)::first-line { font-weight: 700; }
-.proposition-section__cta-arrow { color: #0878ed; font-family: var(--font-mono); font-size: 1.7rem; }
+.proposition-section__cta-arrow { justify-self: end; color: #0878ed; font-family: var(--font-mono); font-size: 1.7rem; }
 .proposition-section__cta:hover { border-color: #0878ed; box-shadow: 0 16px 38px rgba(24, 78, 142, .16), inset 0 1px 0 #fff; transform: translateY(-2px); }
 .proposition-section__cta:focus-visible { outline: 2px solid var(--brand-blue); outline-offset: 4px; }
 
@@ -244,20 +215,19 @@
   .proposition-section__artwork { width: min(620px, 100%); min-height: 510px; margin: -3rem auto -2rem; }
   .proposition-card { grid-template-columns: 3.8rem minmax(0,1fr); }
   .proposition-card__icon { width: 3.8rem; }
-  .proposition-column--left .proposition-card::after, .proposition-column--right .proposition-card::before, .proposition-card__number { display: none; }
+  .proposition-column--left .proposition-card::after, .proposition-column--right .proposition-card::before { display: none; }
 }
 
 @media (max-width: 680px) {
   .proposition-section { background-position: center; background-size: auto 680px; }
   .proposition-section::after { background: rgba(248,251,255,.18); }
   .proposition-section__composition { grid-template-columns: 1fr; grid-template-areas: "dreams" "artwork" "proposition"; gap: 2.5rem; }
-  .proposition-column__heading { gap: .75rem; }
-  .proposition-column__heading h2 { font-size: clamp(2.4rem, 11.5vw, 3.25rem); }
+  .proposition-column__heading h2 { font-size: clamp(2.4rem, 11.5vw, 3.25rem); white-space: normal; }
   .proposition-card { min-height: 6.8rem; border-radius: 14px; }
   .proposition-section__artwork { width: calc(100% + 1.25rem); min-height: 430px; margin: -1rem -.625rem; }
   .proposition-section__badge { width: 5.3rem; }
   .proposition-orbit-icon { width: 4.1rem; }
-  .proposition-section__cta { grid-template-columns: auto minmax(0,1fr); width: 100%; min-height: 6.5rem; border-radius: 18px; }
+  .proposition-section__cta { grid-template-columns: 3.8rem minmax(0,1fr) 3.8rem; gap: .75rem; width: 100%; min-height: 6.5rem; border-radius: 18px; }
   .proposition-section__cta-arrow { display: none; }
   .proposition-section__cta > span:nth-child(2) { font-size: 1.25rem; line-height: 1.2; }
 }
