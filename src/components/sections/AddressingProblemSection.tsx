@@ -1,6 +1,6 @@
 import { NoWrap6D } from "../NoWrap6D";
 
-const solutionLocalityItems = ["Halane", "Wajadir", "Mogadishu", "Somalia"];
+const solutionLocalityItems = ["Halane", "Wadajir", "Mogadishu", "Somalia"];
 
 function ColouredCode({ code }: { code: string }) {
   const [red, green, blue] = code.split("-");
@@ -55,24 +55,30 @@ export function AddressingProblemSection() {
               </ul>
               <p className="problem-bridge__footer">
                 <span>Every country in the world has defined</span>
-                <span>localities, towns, cities and regions</span>
+                <span>
+                  <strong>localities</strong>, <strong>towns</strong>, <strong>cities</strong> and <strong>regions</strong>
+                </span>
               </p>
             </article>
 
             <article className="problem-bridge__panel problem-bridge__panel--solution">
               <h3>The solution</h3>
-              <div className="problem-bridge__solution-code">
-                <span className="problem-bridge__solution-code-mark" aria-hidden="true">✓</span>
-                <ColouredCode code="35-12-12" />
-              </div>
               <ul className="problem-bridge__list">
+                <li className="problem-bridge__item problem-bridge__item--available problem-bridge__item--code">
+                  <span aria-hidden="true">✓</span>
+                  <span className="problem-bridge__code-value">
+                    <ColouredCode code="35-12-12" />
+                  </span>
+                </li>
                 {solutionLocalityItems.map((item) => (
                   <ProblemItem status="available" key={item}>{item}</ProblemItem>
                 ))}
               </ul>
               <p className="problem-bridge__footer">
                 <span><NoWrap6D /> replaces the missing</span>
-                <strong>property number and street name</strong>
+                <span>
+                  <strong>property number</strong> and <strong>street name</strong>
+                </span>
               </p>
             </article>
           </div>

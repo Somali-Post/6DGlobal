@@ -1765,6 +1765,11 @@ kbd,
   font-weight: 850;
 }
 .problem-bridge {
+  --bridge-font-size: clamp(1.15rem, 1.45vw, 1.55rem);
+  --bridge-line-height: 1.55;
+  --bridge-gap: .7rem;
+  --bridge-item-h: calc(var(--bridge-font-size) * var(--bridge-line-height));
+  --bridge-code-h: calc((var(--bridge-item-h) * 2) + var(--bridge-gap));
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   border-block: 1px solid var(--border-dark);
@@ -1798,7 +1803,7 @@ kbd,
 .problem-bridge__list {
   list-style: none;
   display: grid;
-  gap: .7rem;
+  gap: var(--bridge-gap);
   padding: 0;
   margin: 0;
 }
@@ -1807,8 +1812,9 @@ kbd,
   grid-template-columns: 2rem 1fr;
   gap: .75rem;
   align-items: baseline;
-  font-size: clamp(1.15rem, 1.45vw, 1.55rem);
-  line-height: 1.25;
+  font-size: var(--bridge-font-size);
+  line-height: var(--bridge-line-height);
+  min-height: var(--bridge-item-h);
 }
 .problem-bridge__item > span:first-child {
   font-family: var(--font-display);
@@ -1817,6 +1823,7 @@ kbd,
   font-weight: 800;
 }
 .problem-bridge__item--missing {
+  align-items: center;
   color: var(--sixd-red);
 }
 .problem-bridge__item--missing > span:first-child {
@@ -1828,10 +1835,30 @@ kbd,
 .problem-bridge__item--available > span:first-child {
   color: var(--brand-blue-soft);
 }
+.problem-bridge__item--code {
+  height: var(--bridge-code-h);
+  min-height: var(--bridge-code-h);
+  align-items: center;
+}
+.problem-bridge__item--code .problem-bridge__code-value {
+  display: inline-flex;
+  align-items: baseline;
+}
+.problem-bridge__item--code .coloured-code {
+  max-width: 100%;
+  white-space: nowrap;
+  font-size: clamp(2.25rem, 3.4vw, 3.65rem);
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.problem-bridge__item--code .code-sep {
+  margin-inline: 0.12em;
+}
 .problem-bridge__footer {
   display: grid;
   gap: .15rem;
-  margin: auto 0 0;
+  margin: clamp(.55rem, .8vw, .75rem) 0 0;
   padding: clamp(.72rem, .9vw, .88rem) clamp(.85rem, 1.2vw, 1.1rem);
   border-top: 1px solid var(--border-dark);
   border-left: 2px solid oklch(0.72 0.12 78 / .5);
@@ -1848,29 +1875,6 @@ kbd,
 .problem-bridge__footer strong {
   color: var(--text-invert);
   font-weight: 800;
-}
-.problem-bridge__solution-code {
-  display: flex;
-  align-items: baseline;
-  gap: clamp(.45rem, .65vw, .65rem);
-  margin-bottom: clamp(1.15rem, 1.5vw, 1.45rem);
-}
-.problem-bridge__solution-code-mark {
-  display: inline-flex;
-  align-items: baseline;
-  font-family: var(--font-display);
-  font-size: clamp(2.15rem, 2.8vw, 3.1rem);
-  line-height: .92;
-  color: var(--brand-blue-soft);
-}
-.problem-bridge__solution-code .coloured-code {
-  max-width: 100%;
-  white-space: nowrap;
-  font-size: clamp(2.2rem, 2.9vw, 3.2rem);
-  line-height: .92;
-}
-.problem-bridge__panel--solution .problem-bridge__list {
-  margin-bottom: clamp(1.35rem, 2vw, 1.8rem);
 }
 .problem-s42-block {
   display: flex;
@@ -2416,6 +2420,7 @@ kbd,
   display: grid;
   grid-template-rows: auto 1fr;
   align-content: start;
+  min-height: 14rem;
   padding: clamp(1rem, 1.4vw, 1.2rem);
 }
 .somalia-case__example-card::before {
@@ -3759,6 +3764,10 @@ body,
     flex-wrap: wrap;
   }
 
+  .problem-bridge {
+    --bridge-gap: .52rem;
+  }
+
   .problem-bridge__panel {
     padding: 1rem;
   }
@@ -4272,16 +4281,17 @@ body,
   left: max(1rem, env(safe-area-inset-left));
   display: grid;
   place-items: center;
-  width: 76px;
-  min-height: 76px;
+  width: 168px;
+  min-height: 168px;
   border: 1px solid var(--border-light-strong);
   background: oklch(0.995 0.006 88 / .92);
   border-radius: var(--radius-control);
 }
 
 .find-map-page__logo img {
-  max-width: 58px;
-  max-height: 58px;
+  width: 144px;
+  max-width: 144px;
+  max-height: 144px;
   filter: none;
 }
 
@@ -4402,13 +4412,14 @@ body,
 
 @media (max-width: 640px) {
   .find-map-page__logo {
-    width: 58px;
-    min-height: 58px;
+    width: 112px;
+    min-height: 112px;
   }
 
   .find-map-page__logo img {
-    max-width: 44px;
-    max-height: 44px;
+    width: 94px;
+    max-width: 94px;
+    max-height: 94px;
   }
 
   .find-map-page__about {

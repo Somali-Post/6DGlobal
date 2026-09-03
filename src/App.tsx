@@ -5,7 +5,7 @@ import { NoWrap6D, renderNoWrap6D } from "./components/NoWrap6D";
 import { AddressingProblemSection } from "./components/sections/AddressingProblemSection";
 import { ApplicationsCarouselSection } from "./components/sections/ApplicationsCarouselSection";
 import { ExamplesSection } from "./components/sections/ExamplesSection";
-import { LocalityMapIllustration } from "./components/sections/LocalityMapIllustration";
+import LocalityLondonMap from "./components/sections/LocalityLondonMap";
 import { PropositionSection } from "./components/sections/PropositionSection";
 
 const FindPage = lazy(() => import("./pages/FindPage"));
@@ -73,32 +73,28 @@ const faqGroups = [
       },
       {
         question: "Why is locality required?",
-        answer: "6D Address is designed to fit within a conventional addressing system. The 6D Address code effectively replaces the property number and street name elements of a conventional address. Therefore, the locality is a key element of the address.",
-      },
-      {
-        question: "What are latitude and longitude?",
-        answer: "Latitude and longitude have existed for thousands of years as a means of determining a location. 6D Address is simply a reconfiguration of part of the latitude and longitude coordinates, making it far less complex than other digital address systems.",
-      },
-      {
-        question: "Do I need GPS?",
-        answer: "GPS, survey coordinates, or another coordinate source is needed to create the reference. A user can still place a pin manually.",
+        answer: "Locality is key to determining the address. The 6D Address code effectively replaces the property number and street name of a conventional address – the components typically missing in developing countries.",
       },
       {
         question: "Do I need an app?",
-        answer: "No single app should be compulsory. Websites, mobile apps, delivery tools and government systems can implement the method.",
+        answer: "No. 6D Address is designed to sit within existing address structures, which would enable it to be a search function in any mapping tool.",
+      },
+      {
+        question: "What are latitude and longitude?",
+        answer: "Latitude and longitude have existed for thousands of years as a means of determining a location. 6D Address is simply a reconfiguration of their coordinates, making it far less complex than other digital address systems.",
+      },
+      {
+        question: "Do I need GPS?",
+        answer: "The Greek astronomer Hipparchus was using latitude and longitude coordinates over 2,100 years ago to determine location so GPS is only a practical requirement for determining a 6D Address.",
       },
     ],
   },
   {
-    label: "Accuracy and addressing",
+    label: "Accuracy and Format",
     items: [
       {
         question: "How precise is 6D Address?",
-        answer: "The 6D Address is accurate to approximately 10m². In the 6D Address 20-30-40, the 20 is approximately 1km², the 30 is approximately 100m² and the 40 is approximately 10m².",
-      },
-      {
-        question: "Why approximately 10m²?",
-        answer: "Because 6D Address is derived from latitude and longitude, the squares formed by the three sets of two digits are trapeziums, although on a map they may appear square or rectangular in shape. Other systems divide the earth into exact squares, but a globe cannot be created using squares.",
+        answer: "The 6D Address is accurate to an approximate 10m by 10m box. In the 6D Address 20-30-40, the 20 is an approximate 1km by 1km box, the 30 is an approximate 100m by 100m box and the 40 is an approximate 10m by 10m box.",
       },
       {
         question: "How does 6D Address manage vertical addresses?",
@@ -106,41 +102,40 @@ const faqGroups = [
       },
       {
         question: "Can 6D Address be used in uninhabited areas?",
-        answer: "Technically, 6D Address can be used anywhere on earth. However, it needs a locality to provide a unique address. The 1st decimal place from the latitude and longitude coordinates can be used to create a regional code, which extends the scope of the 6D Address to 100km², and the 5th decimal place can be used to increase accuracy to 1m². These would only be required in exceptional circumstances.",
+        answer: "Yes it can, 6D Address can be used anywhere on earth. However, it needs a locality to provide a unique address, which may be an issue in truly uninhabited areas.",
       },
       {
         question: "Why didn't you use the 1st and 5th decimals to create a 10D Address?",
-        answer: "Because it is much more difficult to remember than six digits. In most parts of the world, the existing locality information is detailed enough to ensure there is no duplication of a 6D Address within its boundaries. Current GPS data usually works to around 10m accuracy, so there is limited benefit in being more accurate for normal addressing. For certain applications, 1m² accuracy could be beneficial, such as identifying electricity, gas and water points.",
+        answer: "They are simply not required. The 6D Address and locality provide sufficient information to reach any given point. That said, the 5th decimal could be used for specific solutions such as locating utility access points such as gas and electricity points, fire hydrants and other street and non-street furniture.",
       },
     ],
   },
   {
-    label: "Implementation",
+    label: "Technical",
     items: [
+      {
+        question: "Where does 6D not work well?",
+        answer: "It is weaker in uninhabited regions without meaningful locality names.",
+      },
+      {
+        question: "Can it be used in countries with sophisticated addressing systems?",
+        answer: "Yes it can. It can act as an additional digital code within the existing address, and it can address any location without an official street address.",
+      },
       {
         question: "Can it work offline?",
         answer: "The code can be calculated offline from coordinates. Search, maps and locality datasets may need cached or local data.",
       },
       {
-        question: "Does 6D operate a central database?",
-        answer: "The method does not require one central database to create addresses. Organisations may maintain their own registers for pilots or operations.",
+        question: "Does 6D Address operate from a central database?",
+        answer: "No it does not. Organisations are encouraged to develop their own registers suited to their requirements.",
       },
       {
         question: "Can another company build a compatible app?",
         answer: "Yes. The system is intended for independent compatible implementations.",
       },
-    ],
-  },
-  {
-    label: "Governance and limitations",
-    items: [
       {
-        question: "Where does 6D not work well?",
-        answer: "It is weaker in uninhabited places, areas with no meaningful locality, or situations requiring a globally unique standalone code.",
-      },
-      {
-        question: "Who governs the method or system?",
-        answer: "Governance should be clear, documented and practical enough for public-sector, developer and community use.",
+        question: "Who governs 6D Address?",
+        answer: "6D Address is a registered trademark, for which we request a nominal annual license fee to use.",
       },
     ],
   },
@@ -151,22 +146,22 @@ const teamMembers = [
     initials: "GL",
     image: "/images/team/gl-360.webp",
     name: "Graeme Lee",
-    role: "Addressing and postal development",
-    bio: "Graeme developed the original 6D Address concept from his experience in postal-sector development and addressing challenges in countries where conventional addressing is incomplete.",
+    role: "INTERNATIONAL DEVELOPMENT",
+    bio: "Graeme developed the 6D Address concept from his experience working in countries where conventional addressing is incomplete.",
   },
   {
     initials: "AG",
     image: "/images/team/ag-360.webp",
     name: "Abdiaziz Ga'al",
-    role: "Software implementation and product development",
+    role: "SOFTWARE DEVELOPMENT",
     bio: "Abdiaziz brought the 6D Address concept to life through software development, map-based demonstrations and practical testing of the user experience.",
   },
   {
     initials: "SH",
     image: "/images/team/sh-360.webp",
     name: "Said Hassan",
-    role: "Postal operations and Somalia use case",
-    bio: "Said supports the Somalia use case through his role in the Somali National Postal Service Department, helping connect the concept to practical postal and addressing needs.",
+    role: "SOMALIA USE CASE",
+    bio: "Said is responsible for implementing a national address system for the Government of Somalia and has incorporated 6D Address as a core component of the address format",
   },
 ];
 
@@ -578,7 +573,7 @@ function LocalityMattersSection() {
             </div>
           </header>
 
-          <LocalityMapIllustration />
+          <LocalityLondonMap />
 
         </div>
       </div>
@@ -628,7 +623,7 @@ function SomaliaUseCaseSection() {
             <article className="somalia-case__example-card">
               <h3>Example without street context</h3>
               <SomaliaAddressLines
-                lines={["Un-named street", "35-12-12 Halane", "Mogadishu", "Banaadir", "Somalia"]}
+                lines={["Un-named local road", "36-46-98 Gendershe", "Lower Shabeelle", "Somalia"]}
               />
             </article>
           </div>
@@ -665,11 +660,7 @@ function TeamSection() {
         <div className="team-editorial__grid">
           <header className="team-editorial__header craft-reveal">
             <h2 className="display-section">Our <NoWrap6D /> team</h2>
-            <p className="craft-lead">
-            <NoWrap6D /> is being developed by a small founding team with experience in postal development, software
-            implementation and addressing systems. The team is working to document the method, test practical use cases
-            and engage partners who can help develop compatible implementations.
-          </p>
+            <p className="craft-lead">6D Address is being developed by a small team with experience in international development, software implementation and addressing systems. The team is working to document the method, test practical use cases and engage partners who can develop real world solutions.</p>
           </header>
 
           <div className="team-editorial__list craft-reveal" aria-label="6D Address founding team">
