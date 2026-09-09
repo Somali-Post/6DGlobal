@@ -123,7 +123,7 @@ const faqGroups = [
       },
       {
         question: "Can it work offline?",
-        answer: "The code can be calculated offline from coordinates. Search, maps and locality datasets may need cached or local data.",
+        answer: "The code can be calculated offline from coordinates. Search, maps and locality datasets need to be stored or cached in advance.",
       },
       {
         question: "Does 6D Address operate from a central database?",
@@ -664,13 +664,12 @@ function TeamSection() {
           </header>
 
           <div className="team-editorial__list craft-reveal" aria-label="6D Address founding team">
-          {teamMembers.map((member, index) => (
+          {teamMembers.map((member) => (
             <article className="team-editorial__member" key={member.name}>
               <div className="team-editorial__mark" aria-hidden="true">
                 <img src={member.image} alt="" loading="lazy" />
               </div>
               <div className="team-editorial__content">
-                <span className="team-editorial__index">{String(index + 1).padStart(2, "0")}</span>
                 <h3>{member.name}</h3>
                 <p className="team-editorial__role">{member.role}</p>
                 <p className="team-editorial__bio">{renderNoWrap6D(member.bio)}</p>

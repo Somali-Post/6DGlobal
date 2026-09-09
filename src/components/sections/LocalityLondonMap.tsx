@@ -1,4 +1,6 @@
 import type { CSSProperties } from "react";
+import localityMapPoints from "../../data/localityMapPoints.json";
+import { calculateSixDCode } from "../../lib/sixd";
 
 type LocalityMapPoint = {
   id: string;
@@ -38,50 +40,13 @@ type LocalityLondonMapProps = {
  * East Sheen was intentionally not used because the matching 45-52-87 point
  * near the southwest cluster sits closer to Roehampton/Putney than East Sheen.
  */
-const localityPoints: LocalityMapPoint[] = [
-  {
-    id: "harlesden",
-    name: "Harlesden",
-    lat: 51.545874,
-    lng: -0.252734,
-    labelOffset: { x: -96, y: 116 },
+const localityPoints: LocalityMapPoint[] = localityMapPoints.map((point, index) => ({
+  ...point,
+  labelOffset: {
+    x: [-96, -92, -100, -96, -92, -96][index],
+    y: index < 3 ? 116 : -104,
   },
-  {
-    id: "chalk-farm",
-    name: "Chalk Farm",
-    lat: 51.545826,
-    lng: -0.152783,
-    labelOffset: { x: -92, y: 116 },
-  },
-  {
-    id: "lower-clapton",
-    name: "Lower Clapton",
-    lat: 51.545814,
-    lng: -0.052743,
-    labelOffset: { x: -100, y: 116 },
-  },
-  {
-    id: "roehampton",
-    name: "Roehampton",
-    lat: 51.445861,
-    lng: -0.252788,
-    labelOffset: { x: -96, y: -104 },
-  },
-  {
-    id: "balham",
-    name: "Balham",
-    lat: 51.445832,
-    lng: -0.15271,
-    labelOffset: { x: -92, y: -104 },
-  },
-  {
-    id: "forest-hill",
-    name: "Forest Hill",
-    lat: 51.44588,
-    lng: -0.052761,
-    labelOffset: { x: -96, y: -104 },
-  },
-];
+}));
 
 const SHARED_CODE = "45-52-87";
 const TILE_SIZE = 256;
@@ -99,13 +64,6 @@ const MAP_CENTER = {
   lat: 51.49585,
   lng: -0.15275,
 };
-
-function getSixDCode(lat: number, lng: number) {
-  const latDigits = Math.abs(lat).toFixed(6).split(".")[1].padEnd(6, "0");
-  const lngDigits = Math.abs(lng).toFixed(6).split(".")[1].padEnd(6, "0");
-
-  return `${latDigits[1]}${lngDigits[1]}-${latDigits[2]}${lngDigits[2]}-${latDigits[3]}${lngDigits[3]}`;
-}
 
 function lonToWorldX(lng: number, zoom: number) {
   const scale = TILE_SIZE * 2 ** zoom;
@@ -205,7 +163,7 @@ export function LocalityLondonMap({
 
   const projectedPoints = localityPoints.map((point) => ({
     ...point,
-    code: getSixDCode(point.lat, point.lng),
+    code: calculateSixDCode(point.lat, point.lng),
     position: projectPoint(point.lat, point.lng, zoom, topLeft),
   }));
 

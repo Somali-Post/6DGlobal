@@ -38,8 +38,8 @@ export function createGridOverlay(google: any, map: any) {
     const sw = bounds.getSouthWest();
     const gridStyle = {
       strokeColor: "#006CE3",
-      strokeOpacity: spacing === 0.0001 ? 0.16 : 0.12,
-      strokeWeight: spacing === 0.0001 ? 0.7 : 1,
+      strokeOpacity: spacing === 0.0001 ? 0.28 : 0.2,
+      strokeWeight: spacing === 0.0001 ? 1.15 : 1.35,
       clickable: false,
       map,
       zIndex: 20,
@@ -75,7 +75,7 @@ export function createGridOverlay(google: any, map: any) {
       const west = Math.floor(snapped.lng * style.scale) / style.scale;
       state.selectedBoxes.push(new google.maps.Rectangle({
         ...style,
-        strokeWeight: style.scale === 10000 ? 2 : 1.25,
+        strokeWeight: style.scale === 10000 ? 2.5 : 1.65,
         fillColor: style.strokeColor,
         map,
         clickable: false,

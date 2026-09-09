@@ -1,8 +1,8 @@
 [
-  { "id": "dollis-hill", "name": "Dollis Hill", "lat": 51.54585, "lng": -0.25275 },
-  { "id": "chalk-farm", "name": "Chalk Farm", "lat": 51.54585, "lng": -0.15275 },
-  { "id": "lower-clapton", "name": "Lower Clapton", "lat": 51.54585, "lng": -0.05275 },
-  { "id": "east-sheen", "name": "East Sheen", "lat": 51.44585, "lng": -0.25275 },
-  { "id": "balham", "name": "Balham", "lat": 51.44585, "lng": -0.15275 },
-  { "id": "forest-hill", "name": "Forest Hill", "lat": 51.44585, "lng": -0.05275 }
+  { "id": "dollis-hill", "name": "Dollis Hill", "lat": 51.545874, "lng": -0.252734 },
+  { "id": "chalk-farm", "name": "Chalk Farm", "lat": 51.545826, "lng": -0.152783 },
+  { "id": "lower-clapton", "name": "Lower Clapton", "lat": 51.545814, "lng": -0.052743 },
+  { "id": "roehampton", "name": "Roehampton", "lat": 51.445861, "lng": -0.252788 },
+  { "id": "balham", "name": "Balham", "lat": 51.445832, "lng": -0.15271 },
+  { "id": "forest-hill", "name": "Forest Hill", "lat": 51.44588, "lng": -0.052761 }
 ]

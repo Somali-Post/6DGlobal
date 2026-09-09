@@ -8,6 +8,7 @@
     "lint": "tsc -b --pretty false",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
+    "verify:locality": "node --experimental-strip-types scripts/verifyLocalityMapPoints.ts",
     "verify:landmarks": "node --experimental-strip-types scripts/verifyLandmarkExamples.ts",
     "optimize:assets": "node scripts/optimize-assets.mjs",
     "check:budget": "node scripts/check-build-budget.mjs"
