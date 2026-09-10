@@ -18,8 +18,28 @@ export type MapAddress = {
   country?: string;
 };
 
+export type MapViewport = {
+  bounds: {
+    north: number;
+    south: number;
+    east: number;
+    west: number;
+  };
+  zoom: number;
+  center: Coordinate;
+};
+
+export type MapReverseSearchPreview = Coordinate & {
+  id: string;
+  label: string;
+};
+
 export type MapAdapter = {
   setPin: (coordinate: Coordinate, zoom?: number) => void;
+  getViewport: () => MapViewport | null;
+  showReverseSearchPreview: (results: MapReverseSearchPreview[]) => void;
+  setReverseSearchPreviewActive: (id: string | null) => void;
+  clearReverseSearchPreview: () => void;
   destroy: () => void;
 };
 
@@ -30,6 +50,7 @@ export async function createGoogleMapsAdapter(args: {
   onAddress: (address: MapAddress) => void;
   onNotice: (message: string) => void;
   onReady?: () => void;
+  onViewportChange?: (viewport: MapViewport | null) => void;
 }): Promise<MapAdapter | null> {
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
   if (!apiKey) return null;
@@ -60,9 +81,55 @@ export async function createGoogleMapsAdapter(args: {
   const geocoder = new google.maps.Geocoder();
   const overlay = createGridOverlay(google, map);
   let marker: any = null;
+  const reverseSearchPreviewMarkers = new Map<string, { marker: any; listeners: any[] }>();
+
+  const getViewport = (): MapViewport | null => {
+    const mapBounds = map.getBounds?.();
+    const zoom = map.getZoom?.();
+    const center = map.getCenter?.();
+    if (!mapBounds || !Number.isFinite(zoom) || !center) return null;
+
+    const northEast = mapBounds.getNorthEast?.();
+    const southWest = mapBounds.getSouthWest?.();
+    if (!northEast || !southWest) return null;
+
+    const viewport = {
+      bounds: {
+        north: northEast.lat(),
+        south: southWest.lat(),
+        east: northEast.lng(),
+        west: southWest.lng(),
+      },
+      zoom,
+      center: { lat: center.lat(), lng: center.lng() },
+    };
+
+    return Object.values(viewport.bounds).every(Number.isFinite)
+      && Number.isFinite(viewport.center.lat)
+      && Number.isFinite(viewport.center.lng)
+      ? viewport
+      : null;
+  };
+
+  const clearReverseSearchPreview = () => {
+    reverseSearchPreviewMarkers.forEach(({ marker: previewMarker, listeners }) => {
+      listeners.forEach((listener) => google.maps.event.removeListener(listener));
+      previewMarker.setMap(null);
+    });
+    reverseSearchPreviewMarkers.clear();
+  };
+
+  const setReverseSearchPreviewActive = (id: string | null) => {
+    reverseSearchPreviewMarkers.forEach(({ marker: previewMarker }, markerId) => {
+      const active = markerId === id;
+      previewMarker.setIcon(reverseSearchPreviewSymbol(google, active));
+      previewMarker.setZIndex(active ? 45 : 40);
+    });
+  };
 
   const pick = (latLng: any) => {
     if (!latLng || typeof latLng.lat !== "function" || typeof latLng.lng !== "function") return;
+    clearReverseSearchPreview();
     const coordinate = snapToGridCenter({ lat: latLng.lat(), lng: latLng.lng() });
     if (!marker) {
       marker = new google.maps.Marker({
@@ -80,9 +147,35 @@ export async function createGoogleMapsAdapter(args: {
     resolveAddress(google, geocoder, coordinate, args.onAddress);
   };
 
+  const showReverseSearchPreview = (results: MapReverseSearchPreview[]) => {
+    clearReverseSearchPreview();
+    results.forEach((result) => {
+      const previewMarker = new google.maps.Marker({
+        position: { lat: result.lat, lng: result.lng },
+        map,
+        title: result.label,
+        icon: reverseSearchPreviewSymbol(google, false),
+        optimized: true,
+        zIndex: 40,
+      });
+      const listeners = [
+        previewMarker.addListener("click", () => pick(new google.maps.LatLng(result.lat, result.lng))),
+        previewMarker.addListener("mouseover", () => setReverseSearchPreviewActive(result.id)),
+        previewMarker.addListener("mouseout", () => setReverseSearchPreviewActive(null)),
+      ];
+      reverseSearchPreviewMarkers.set(result.id, { marker: previewMarker, listeners });
+    });
+  };
+
   const mapClick = map.addListener("click", (event: any) => pick(event?.latLng));
-  const idleListener = map.addListener("idle", overlay.updateDynamicGrid);
-  const readyListener = google.maps.event.addListenerOnce(map, "tilesloaded", () => args.onReady?.());
+  const idleListener = map.addListener("idle", () => {
+    overlay.updateDynamicGrid();
+    args.onViewportChange?.(getViewport());
+  });
+  const readyListener = google.maps.event.addListenerOnce(map, "tilesloaded", () => {
+    args.onViewportChange?.(getViewport());
+    args.onReady?.();
+  });
   overlay.updateDynamicGrid();
 
   const setPin = (coordinate: Coordinate, zoom = 17) => {
@@ -92,13 +185,33 @@ export async function createGoogleMapsAdapter(args: {
 
   return {
     setPin,
+    getViewport,
+    showReverseSearchPreview,
+    setReverseSearchPreviewActive,
+    clearReverseSearchPreview,
     destroy() {
       google.maps.event.removeListener(mapClick);
       google.maps.event.removeListener(idleListener);
       google.maps.event.removeListener(readyListener);
+      clearReverseSearchPreview();
       overlay.destroy();
       marker?.setMap(null);
     },
+  };
+}
+
+function reverseSearchPreviewSymbol(google: any, active: boolean) {
+  const size = active ? 24 : 18;
+  return {
+    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" fill="#fff" fill-opacity=".94" stroke="#D32F2F" stroke-width="2"/>
+        <circle cx="12" cy="12" r="6.4" fill="#388E3C" fill-opacity=".92"/>
+        <circle cx="12" cy="12" r="3.2" fill="#1976D2"/>
+      </svg>
+    `)}`,
+    scaledSize: new google.maps.Size(size, size),
+    anchor: new google.maps.Point(size / 2, size / 2),
   };
 }
 
