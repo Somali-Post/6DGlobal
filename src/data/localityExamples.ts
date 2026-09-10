@@ -1,5 +1,5 @@
-import { calculateSixDCode } from "../lib/sixd";
-import localityMapPoints from "./localityMapPoints.json";
+import { calculateSixDCode } from "../lib/sixd.ts";
+import localityMapPoints from "./localityMapPoints.json" with { type: "json" };
 
 export type LocalityExample = {
   id: string;

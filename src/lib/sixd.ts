@@ -40,6 +40,12 @@ export function calculateSixDCode(lat: number, lng: number): string {
   ].join("-");
 }
 
+/** Returns the snapped 6D code displayed by the finder and examples. */
+export function calculateDisplaySixDCode(lat: number, lng: number): string {
+  const snapped = snapToGridCenter({ lat, lng });
+  return calculateSixDCode(snapped.lat, snapped.lng);
+}
+
 export function generate6DCode(coordinate: Coordinate): SixDResult {
   const snapped = snapToGridCenter(coordinate);
   const absLat = Math.abs(snapped.lat);
@@ -50,7 +56,7 @@ export function generate6DCode(coordinate: Coordinate): SixDResult {
 
   return {
     coordinate: snapped,
-    code: calculateSixDCode(snapped.lat, snapped.lng),
+    code: calculateDisplaySixDCode(coordinate.lat, coordinate.lng),
     localitySuffix: `${latD1}${lngD1}`,
   };
 }
