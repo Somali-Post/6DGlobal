@@ -2343,7 +2343,7 @@ kbd,
   background-image: url("/images/somalia-grid-sketch.webp");
   background-position: center;
   background-repeat: no-repeat;
-  background-size: cover;
+  background-size: 100% 100%;
   mix-blend-mode: multiply;
   opacity: .34;
 }
