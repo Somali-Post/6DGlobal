@@ -400,7 +400,6 @@ function Navigation({
       </a>
       <nav className="nav-pill" aria-label="Primary navigation">{renderLinks()}</nav>
       <div className="nav-actions">
-        <span className="method-badge"><span /> Open method</span>
         <LiteButton className="button primary nav-cta" onClick={onFind}>Find my 6D</LiteButton>
         <button
           className="menu-button"
@@ -435,9 +434,11 @@ function GlobeHeroVisual() {
   const globeRef = useRef<HTMLDivElement>(null);
   const heavyVisualState = useHeavyVisualState();
   const [globeReady, setGlobeReady] = useState(false);
+  const [globeProgress, setGlobeProgress] = useState(0);
 
   useEffect(() => {
     setGlobeReady(false);
+    setGlobeProgress(0);
     if (heavyVisualState !== "enabled") return;
     if (!globeRef.current) return;
     let readyTimer = 0;
@@ -445,6 +446,7 @@ function GlobeHeroVisual() {
     let destroyGlobe: (() => void) | undefined;
     const markReady = () => {
       if (cancelled) return;
+      setGlobeProgress(100);
       window.clearTimeout(readyTimer);
       readyTimer = window.setTimeout(() => setGlobeReady(true), 180);
     };
@@ -459,6 +461,9 @@ function GlobeHeroVisual() {
         globeScale: 1,
         horizontalOffset: 0.62,
         pointerTiltDegrees: 0,
+        onProgress: (loaded, total) => {
+          setGlobeProgress(Math.round((loaded / total) * 92));
+        },
         onReady: markReady,
       });
 
@@ -475,6 +480,17 @@ function GlobeHeroVisual() {
   return (
     <div className="hero-visual hero-content" aria-hidden="true">
       <div className={`hero-globe-root ${globeReady ? "is-ready" : ""}`} ref={globeRef} />
+      {!globeReady && heavyVisualState === "enabled" && (
+        <div className="hero-globe-loading">
+          <div className="hero-globe-loading__label">
+            <span>Loading globe</span>
+            <span>{globeProgress}%</span>
+          </div>
+          <div className="hero-globe-loading__track">
+            <span style={{ width: `${globeProgress}%` }} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

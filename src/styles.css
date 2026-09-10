@@ -933,8 +933,46 @@ kbd,
   width: 100%;
   height: 100%;
 }
+.hero-globe-loading {
+  position: absolute;
+  right: clamp(2rem, 7vw, 7rem);
+  bottom: clamp(4.5rem, 10vh, 8rem);
+  z-index: 1;
+  width: clamp(170px, 16vw, 230px);
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 10px;
+  font-weight: 760;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.hero-globe-loading__label {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 8px;
+}
+.hero-globe-loading__label span:last-child {
+  color: #9bdcff;
+  font-variant-numeric: tabular-nums;
+}
+.hero-globe-loading__track {
+  height: 3px;
+  overflow: hidden;
+  background: rgba(155, 220, 255, 0.18);
+}
+.hero-globe-loading__track span {
+  display: block;
+  height: 100%;
+  background: #42c8ff;
+  box-shadow: 0 0 14px rgba(66, 200, 255, 0.85);
+  transition: width 180ms ease-out;
+}
 @media (prefers-reduced-motion: reduce) {
   .hero-globe-root {
+    transition: none;
+  }
+  .hero-globe-loading__track span {
     transition: none;
   }
 }
@@ -2305,7 +2343,7 @@ kbd,
   background-image: url("/images/somalia-grid-sketch.webp");
   background-position: center;
   background-repeat: no-repeat;
-  background-size: contain;
+  background-size: cover;
   mix-blend-mode: multiply;
   opacity: .34;
 }
