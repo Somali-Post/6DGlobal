@@ -1,14 +1,14 @@
 import {
   CanvasTexture,
   LinearFilter,
+  LinearMipmapLinearFilter,
   RepeatWrapping,
   SRGBColorSpace,
   Texture,
   TextureFilter,
 } from 'three';
 
-const BLUE_MARBLE_SRC = '/images/globe/earth-day-1536.webp';
-const BLACK_MARBLE_SRC = '/images/globe/earth-night-1536.webp';
+const earthTextureSource = (kind: 'day' | 'night', width: number) => `/images/globe/earth-${kind}-${width}.webp`;
 const COUNTRY_BORDERS_SRC = '/data/ne_110m_admin_0_countries.geojson';
 
 type LonLat = [number, number];
@@ -44,7 +44,7 @@ function project([lon, lat]: LonLat, width: number, height: number): [number, nu
 function textureFromCanvas(canvas: HTMLCanvasElement | OffscreenCanvas): Texture {
   const texture = new CanvasTexture(canvas);
   texture.colorSpace = SRGBColorSpace;
-  texture.minFilter = LinearFilter as TextureFilter;
+  texture.minFilter = LinearMipmapLinearFilter as TextureFilter;
   texture.magFilter = LinearFilter;
   texture.wrapS = RepeatWrapping;
   texture.wrapT = RepeatWrapping;
@@ -99,29 +99,22 @@ function drawCityLightGlow(
   height: number,
 ) {
   ctx.save();
+  ctx.drawImage(night, 0, 0, width, height);
+  const pixels = ctx.getImageData(0, 0, width, height);
+  for (let i = 0; i < pixels.data.length; i += 4) {
+    // Isolate the warm satellite lights; blue terrain must not become emissive.
+    const light = Math.max(0, pixels.data[i] - pixels.data[i + 2] * 0.85 - 6);
+    const strength = Math.pow(light / 255, 0.64) * 380;
+    pixels.data[i] = clampChannel(strength);
+    pixels.data[i + 1] = clampChannel(strength * 0.83);
+    pixels.data[i + 2] = clampChannel(strength * 0.52);
+  }
+  ctx.putImageData(pixels, 0, 0);
   ctx.globalCompositeOperation = 'screen';
-  ctx.filter = `sepia(0.28) hue-rotate(-12deg) saturate(1.28) brightness(2.35) contrast(2.25) blur(${Math.max(0.16, width / 6800)}px)`;
-  ctx.globalAlpha = 0.48;
-  ctx.drawImage(night, 0, 0, width, height);
-
-  ctx.filter = 'sepia(0.34) hue-rotate(-14deg) saturate(1.38) brightness(3.3) contrast(3)';
-  ctx.globalAlpha = 0.42;
-  ctx.drawImage(night, 0, 0, width, height);
-
-  ctx.filter = 'sepia(0.5) hue-rotate(-18deg) saturate(1.5) brightness(4.3) contrast(3.6)';
-  ctx.globalAlpha = 0.16;
-  ctx.drawImage(night, 0, 0, width, height);
+  ctx.filter = `blur(${width / 1800}px)`;
+  ctx.globalAlpha = 0.65;
+  ctx.drawImage(ctx.canvas, 0, 0);
   ctx.restore();
-}
-
-function drawSoftTerminator(ctx: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D, width: number, height: number) {
-  const shade = ctx.createLinearGradient(0, 0, width, 0);
-  shade.addColorStop(0, 'rgba(0, 5, 14, 0.24)');
-  shade.addColorStop(0.38, 'rgba(0, 5, 14, 0.03)');
-  shade.addColorStop(0.72, 'rgba(0, 5, 14, 0.08)');
-  shade.addColorStop(1, 'rgba(0, 5, 14, 0.28)');
-  ctx.fillStyle = shade;
-  ctx.fillRect(0, 0, width, height);
 }
 
 function processEarthSurfaceImage(ctx: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D, width: number, height: number) {
@@ -129,30 +122,15 @@ function processEarthSurfaceImage(ctx: OffscreenCanvasRenderingContext2D | Canva
   const { data } = imageData;
 
   for (let i = 0; i < data.length; i += 4) {
-    let r = data[i];
-    let g = data[i + 1];
-    let b = data[i + 2];
-    const brightness = (r + g + b) / 3;
-    const blueDominant = b > r * 1.16 && b > g * 1.06;
-    const deepOcean = blueDominant && brightness < 180;
-
-    if (deepOcean) {
-      r *= 0.34;
-      g *= 0.44;
-      b *= 0.62;
-      b += 5;
-    } else {
-      r = (r - 128) * 1.18 + 128;
-      g = (g - 128) * 1.18 + 128;
-      b = (b - 128) * 1.12 + 128;
-      r *= 0.68;
-      g *= 0.78;
-      b *= 0.88;
-    }
-
-    data[i] = clampChannel(r * 0.86);
-    data[i + 1] = clampChannel(g * 0.88);
-    data[i + 2] = clampChannel(b * 0.92);
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+    const luminance = r * 0.3 + g * 0.59 + b * 0.11;
+    const ocean = b > r * 1.16 && b > g * 1.06;
+    // Retain photographic relief, snow and bathymetry in a midnight-blue palette.
+    data[i] = clampChannel(ocean ? r * 0.28 : 13 + luminance * 0.3);
+    data[i + 1] = clampChannel(ocean ? g * 0.48 : 29 + luminance * 0.48);
+    data[i + 2] = clampChannel(ocean ? b * 0.68 : 58 + luminance * 0.73);
   }
 
   ctx.putImageData(imageData, 0, 0);
@@ -163,30 +141,16 @@ async function drawRealEarthSurface(
   width: number,
   height: number,
 ) {
-  const earth = await loadImage(BLUE_MARBLE_SRC);
+  const earth = await loadImage(earthTextureSource('day', width));
 
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
-  ctx.filter = 'contrast(1.24) saturate(0.94) brightness(0.82)';
   ctx.drawImage(earth, 0, 0, width, height);
-  ctx.filter = 'none';
   processEarthSurfaceImage(ctx, width, height);
-  ctx.save();
-  ctx.globalCompositeOperation = 'multiply';
-  ctx.fillStyle = 'rgba(0, 12, 34, 0.46)';
-  ctx.fillRect(0, 0, width, height);
-  ctx.globalCompositeOperation = 'screen';
-  ctx.fillStyle = 'rgba(34, 114, 196, 0.06)';
-  ctx.fillRect(0, 0, width, height);
-  ctx.globalCompositeOperation = 'multiply';
-  ctx.fillStyle = 'rgba(0, 6, 14, 0.2)';
-  ctx.fillRect(0, 0, width, height);
-  ctx.restore();
-  drawSoftTerminator(ctx, width, height);
 }
 
 export function createSurfaceTexture(isMobile: boolean, onReady?: TextureReadyCallback): Texture {
-  const width = isMobile ? 1024 : 1536;
+  const width = isMobile ? 1024 : 3072;
   const height = width / 2;
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -213,7 +177,7 @@ export function createSurfaceTexture(isMobile: boolean, onReady?: TextureReadyCa
 }
 
 export function createCityLightsTexture(isMobile: boolean, onReady?: TextureReadyCallback): Texture {
-  const width = isMobile ? 1024 : 1536;
+  const width = isMobile ? 1024 : 3072;
   const height = width / 2;
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext('2d');
@@ -225,7 +189,7 @@ export function createCityLightsTexture(isMobile: boolean, onReady?: TextureRead
   ctx.clearRect(0, 0, width, height);
   const texture = textureFromCanvas(canvas);
 
-  void loadImage(BLACK_MARBLE_SRC)
+  void loadImage(earthTextureSource('night', width))
     .then((night) => {
       drawCityLightGlow(ctx, night, width, height);
       texture.needsUpdate = true;
@@ -250,14 +214,37 @@ export function createLimbGlowTexture(): Texture {
   }
 
   ctx.clearRect(0, 0, size, size);
-  const glow = ctx.createRadialGradient(size * 0.5, size * 0.5, 8, size * 0.5, size * 0.5, size * 0.48);
-  glow.addColorStop(0, 'rgba(205, 240, 255, 0.72)');
-  glow.addColorStop(0.18, 'rgba(135, 205, 255, 0.4)');
-  glow.addColorStop(0.42, 'rgba(72, 154, 255, 0.18)');
-  glow.addColorStop(0.76, 'rgba(28, 108, 235, 0.055)');
+  const glow = ctx.createRadialGradient(size * 0.5, size * 0.5, 0, size * 0.5, size * 0.5, size * 0.48);
+  glow.addColorStop(0, 'rgba(255, 255, 255, 1)');
+  glow.addColorStop(0.025, 'rgba(240, 252, 255, 1)');
+  glow.addColorStop(0.07, 'rgba(170, 227, 255, 0.95)');
+  glow.addColorStop(0.16, 'rgba(66, 163, 255, 0.55)');
+  glow.addColorStop(0.36, 'rgba(21, 105, 255, 0.19)');
+  glow.addColorStop(0.7, 'rgba(12, 76, 215, 0.04)');
   glow.addColorStop(1, 'rgba(9, 62, 139, 0)');
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, size, size);
+
+  ctx.translate(size / 2, size / 2);
+  ctx.globalCompositeOperation = 'screen';
+  ctx.filter = 'blur(2px)';
+  for (let ray = 0; ray < 12; ray += 1) {
+    ctx.save();
+    ctx.rotate(ray * Math.PI / 6 + 0.18);
+    const length = ray % 3 === 0 ? size * 0.46 : size * 0.28;
+    const beam = ctx.createLinearGradient(0, 0, length, 0);
+    beam.addColorStop(0, 'rgba(211, 242, 255, 0.3)');
+    beam.addColorStop(0.12, 'rgba(104, 182, 255, 0.08)');
+    beam.addColorStop(1, 'rgba(38, 124, 255, 0)');
+    ctx.fillStyle = beam;
+    ctx.beginPath();
+    ctx.moveTo(0, -2);
+    ctx.lineTo(length, -2);
+    ctx.lineTo(length, 2);
+    ctx.lineTo(0, 2);
+    ctx.fill();
+    ctx.restore();
+  }
 
   return textureFromCanvas(canvas);
 }

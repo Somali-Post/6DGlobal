@@ -454,7 +454,7 @@ function GlobeHeroVisual() {
 
       const globe = createHeroGlobe({
         container: globeRef.current,
-        rotationDuration: 50,
+        rotationDuration: 160,
         initialLongitude: -150,
         globeScale: 1,
         horizontalOffset: 0.62,

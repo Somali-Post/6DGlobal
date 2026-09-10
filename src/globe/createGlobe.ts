@@ -8,6 +8,8 @@ import {
   Mesh,
   MeshBasicMaterial,
   PerspectiveCamera,
+  Points,
+  PointsMaterial,
   Scene,
   SphereGeometry,
   Sprite,
@@ -216,12 +218,17 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
   const globeGeometry = new SphereGeometry(1, segments, Math.floor(segments / 2));
   const cityLightsGeometry = new SphereGeometry(1.004, segments, Math.floor(segments / 2));
   const countryBordersGeometry = new SphereGeometry(1.006, segments, Math.floor(segments / 2));
-  const atmosphereRimGeometry = new SphereGeometry(1.018, segments, Math.floor(segments / 2));
+  const atmosphereRimGeometry = new SphereGeometry(1.012, segments, Math.floor(segments / 2));
+  const atmosphereHaloGeometry = new SphereGeometry(1.04, segments, Math.floor(segments / 2));
+  const anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+  surfaceTexture.anisotropy = anisotropy;
+  cityLightsTexture.anisotropy = anisotropy;
   const surfaceMaterial = createSurfaceMaterial(surfaceTexture);
   const cityLightsMaterial = createCityLightsMaterial(cityLightsTexture);
   const countryBordersMaterial = createGridMaterial(countryBordersTexture, config.gridOpacity);
   const limbGlowMaterial = createLimbGlowMaterial(limbGlowTexture, config.atmosphereIntensity);
   const atmosphereRimMaterial = createAtmosphereRimMaterial(config.atmosphereIntensity);
+  const atmosphereHaloMaterial = createAtmosphereRimMaterial(config.atmosphereIntensity, true);
 
   const globeGroup = new Group();
   const spinningGroup = new Group();
@@ -229,21 +236,38 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
   const cityLights = new Mesh(cityLightsGeometry, cityLightsMaterial);
   const countryBorders = new Mesh(countryBordersGeometry, countryBordersMaterial);
   const atmosphereRim = new Mesh(atmosphereRimGeometry, atmosphereRimMaterial);
+  const atmosphereHalo = new Mesh(atmosphereHaloGeometry, atmosphereHaloMaterial);
   const locationLabels = LOCATION_LABELS.map((label, index) => ({
     mesh: createCurvedLocationLabel(label, locationLabelTextures[index]),
     anchor: new Vector3(...Object.values(lonLatToSpherePosition(label.latitude, label.longitude, 1))),
     opacity: 0,
   }));
   const limbGlow = new Sprite(limbGlowMaterial);
-  limbGlow.position.set(1.28, 0.08, -0.24);
-  limbGlow.scale.set(2.22, 2.36, 1);
+  // Keep the sun in the camera-facing tangent plane at the upper-right limb.
+  // This group never spins with the Earth or its geographic labels.
+  limbGlow.scale.set(1.35, 1.35, 1);
   spinningGroup.add(surface, cityLights, countryBorders, ...locationLabels.map((label) => label.mesh));
-  globeGroup.add(limbGlow, spinningGroup, atmosphereRim);
+  globeGroup.add(limbGlow, spinningGroup, atmosphereRim, atmosphereHalo);
   scene.add(globeGroup);
 
-  scene.add(new AmbientLight(0x5f95c8, 0.96));
-  const keyLight = new DirectionalLight(0x9bd8f5, 0.76);
-  keyLight.position.set(-2.4, 2.1, 2.7);
+  // Seeded, static stars remain inexpensive and respect reduced motion.
+  const starPositions: number[] = [];
+  let seed = 617;
+  const random = () => {
+    seed = (seed * 16807) % 2147483647;
+    return (seed - 1) / 2147483646;
+  };
+  for (let index = 0; index < (isMobile ? 180 : 750); index += 1) {
+    starPositions.push((random() - 0.5) * 19, (random() - 0.5) * 10, -5 - random() * 3);
+  }
+  const starsGeometry = new BufferGeometry();
+  starsGeometry.setAttribute('position', new Float32BufferAttribute(starPositions, 3));
+  const starsMaterial = new PointsMaterial({ color: 0x74b6ff, size: 0.013, transparent: true, opacity: 0.52, depthWrite: false });
+  scene.add(new Points(starsGeometry, starsMaterial));
+
+  scene.add(new AmbientLight(0x9abbff, 1.1));
+  const keyLight = new DirectionalLight(0xc6e6ff, 2);
+  keyLight.position.set(3.5, 4, 1.8);
   scene.add(keyLight);
 
   const startTime = performance.now();
@@ -261,10 +285,15 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
     camera.updateProjectionMatrix();
 
     const shortest = Math.min(width, height);
-    const responsiveScale = width < 640 ? 0.56 : width < 1024 ? 1.18 : 1.45;
+    const stackedLayout = width <= 860;
+    const responsiveScale = stackedLayout ? 0.43 : width < 1024 ? 1.18 : 1.45;
     globeGroup.scale.setScalar(config.globeScale * responsiveScale);
-    globeGroup.position.x = width < 640 ? 0.72 : config.horizontalOffset * (width / shortest);
-    globeGroup.position.y = width < 640 ? 0.72 : -0.02;
+    globeGroup.position.x = stackedLayout ? 0.22 : config.horizontalOffset * (width / shortest);
+    globeGroup.position.y = stackedLayout ? 1 : -0.02;
+    const viewDirection = camera.position.clone().sub(globeGroup.position).normalize();
+    const right = new Vector3().crossVectors(new Vector3(0, 1, 0), viewDirection).normalize();
+    const up = new Vector3().crossVectors(viewDirection, right).normalize();
+    limbGlow.position.copy(right.multiplyScalar(0.64)).add(up.multiplyScalar(0.74)).addScaledVector(viewDirection, 0.25);
   }
 
   function applyOrientation(elapsedSeconds: number) {
@@ -287,7 +316,11 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
       globeGroup.rotation.y = currentTiltY;
       locationLabels.forEach((label) => {
         const visibleAnchor = label.anchor.clone().applyEuler(spinningGroup.rotation).applyEuler(globeGroup.rotation);
-        const targetOpacity = smoothstep(LABEL_FADE_START, LABEL_FADE_END, visibleAnchor.z) * LABEL_MAX_OPACITY;
+        // Perspective matters on an offset globe: fade against the actual
+        // anchor-to-camera direction before cards become edge-on or occluded.
+        const viewDirection = camera.position.clone().sub(globeGroup.position)
+          .addScaledVector(visibleAnchor, -globeGroup.scale.x).normalize();
+        const targetOpacity = smoothstep(LABEL_FADE_START, LABEL_FADE_END, visibleAnchor.dot(viewDirection)) * LABEL_MAX_OPACITY;
         label.opacity += (targetOpacity - label.opacity) * 0.08;
         label.mesh.material.opacity = label.opacity;
         label.mesh.visible = targetOpacity > LABEL_VISIBLE_THRESHOLD && label.opacity > 0.04;
@@ -352,8 +385,9 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
     updateConfig(nextOptions) {
       Object.assign(config, nextOptions);
       countryBordersMaterial.opacity = config.gridOpacity;
-      limbGlowMaterial.opacity = Math.min(0.58, Math.max(0, config.atmosphereIntensity * 0.52));
-      atmosphereRimMaterial.uniforms.opacity.value = Math.min(0.42, Math.max(0, config.atmosphereIntensity * 0.4));
+      limbGlowMaterial.opacity = Math.min(1, Math.max(0, config.atmosphereIntensity));
+      atmosphereRimMaterial.uniforms.opacity.value = Math.max(0, config.atmosphereIntensity);
+      atmosphereHaloMaterial.uniforms.opacity.value = Math.max(0, config.atmosphereIntensity);
       applyResponsiveLayout();
       applyOrientation(reducedMotion ? 0 : (performance.now() - startTime - hiddenDuration) / 1000);
       renderer.render(scene, camera);
@@ -371,6 +405,9 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
       cityLightsGeometry.dispose();
       countryBordersGeometry.dispose();
       atmosphereRimGeometry.dispose();
+      atmosphereHaloGeometry.dispose();
+      starsGeometry.dispose();
+      starsMaterial.dispose();
       surfaceTexture.dispose();
       cityLightsTexture.dispose();
       countryBordersTexture.dispose();
@@ -382,6 +419,7 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
       countryBordersMaterial.dispose();
       limbGlowMaterial.dispose();
       atmosphereRimMaterial.dispose();
+      atmosphereHaloMaterial.dispose();
       locationLabels.forEach((label) => {
         if (Array.isArray(label.mesh.material)) {
           label.mesh.material.forEach((material) => material.dispose());

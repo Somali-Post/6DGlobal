@@ -21,9 +21,12 @@ Create `.env.local` from `.env.example`:
 
 ```bash
 VITE_GOOGLE_MAPS_API_KEY=your_google_maps_key_here
+# Server-side only; configure this in Netlify, never as VITE_GEOAPIFY_API_KEY.
+GEOAPIFY_API_KEY=your_geoapify_key_here
 ```
 
-The key is read by Vite at build/dev time. Do not commit `.env` or `.env.local`.
+The Google Maps key is read by Vite at build/dev time. Do not commit `.env` or `.env.local`.
+The Geoapify key is used only by the Netlify geocoder function. Plain Vite dev does not run Netlify Functions; use Netlify Dev when testing `/.netlify/functions/geocode` locally.
 
 ## Clean Sharing
 

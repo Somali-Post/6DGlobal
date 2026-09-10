@@ -12,14 +12,14 @@ export type GlobeConfig = {
 };
 
 export const GLOBE_CONFIG: GlobeConfig = {
-  rotationDuration: 50,
+  rotationDuration: 160,
   initialLongitude: -150,
   globeScale: 1,
   horizontalOffset: 0.22,
-  gridOpacity: 0.34,
-  atmosphereIntensity: 0.82,
+  gridOpacity: 0.075,
+  atmosphereIntensity: 1.05,
   maxPixelRatio: 1.5,
-  desktopSegments: 96,
+  desktopSegments: 128,
   mobileSegments: 64,
   pointerTiltDegrees: 8,
 };

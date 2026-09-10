@@ -3,7 +3,14 @@ import { MapLoadingScreen } from "../components/MapLoadingScreen";
 import { NoWrap6D, renderNoWrap6D } from "../components/NoWrap6D";
 import { Coordinate, generate6DCode } from "../lib/sixd";
 import {
+  geocodePlaces,
+  getSearchBoundsForGeocoderPlace,
+  isGeocoderPlaceTooBroad,
+  type GeocoderPlace,
+} from "../lib/geocoderClient";
+import {
   normalize6DCode,
+  normalizeSearchText,
   parseCombinedReverse6DInput,
   searchReverse6DDemoIndex,
   type Reverse6DSearchResult,
@@ -23,6 +30,8 @@ const REVERSE_VIEWPORT_MAX_UNNAMED_RESULTS = 12;
 const REVERSE_VIEWPORT_MAX_LATITUDE_SPAN = 0.2;
 const REVERSE_VIEWPORT_MAX_LONGITUDE_SPAN = 0.3;
 const REVERSE_VIEWPORT_MAX_AREA = 0.04;
+const PROVIDER_AUTOCOMPLETE_DEBOUNCE_MS = 320;
+const PROVIDER_RESULT_LIMIT = 6;
 
 type MapLoadState = "loading" | "ready" | "missing-key" | "error";
 type LocationState = "idle" | "locating" | "denied" | "unavailable" | "error";
@@ -53,6 +62,16 @@ type InitialReverseSearch = {
   codeInput: string;
   place: string;
 };
+
+type ProviderSearchState = "idle" | "loading" | "ready" | "unavailable";
+
+type SearchSuggestion =
+  | { kind: "local"; result: Reverse6DSearchResult }
+  | { kind: "provider"; place: GeocoderPlace };
+
+type CandidateContext =
+  | { kind: "viewport" }
+  | { kind: "provider"; place: GeocoderPlace };
 
 function parseUrlCoordinate(params: URLSearchParams): Coordinate | null {
   if (!params.has("lat") || !params.has("lng")) return null;
@@ -364,16 +383,34 @@ function ReverseSearchPanel({
   const listboxId = useId();
   const viewportListId = useId();
   const initialSearchHandledRef = useRef(false);
+  const providerRequestRef = useRef<AbortController | null>(null);
+  const providerAutocompleteTimerRef = useRef<number | null>(null);
+  const providerRequestSequenceRef = useRef(0);
+  const skipProviderAutocompleteQueryRef = useRef<string | null>(null);
   const [codeInput, setCodeInput] = useState(() => initialSearch?.codeInput ?? "");
   const [query, setQuery] = useState(() => initialSearch?.place ?? "");
   const [message, setMessage] = useState("");
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [viewportCandidates, setViewportCandidates] = useState<Reverse6DViewportCandidate[]>([]);
+  const [candidateContext, setCandidateContext] = useState<CandidateContext | null>(null);
+  const [providerPlaces, setProviderPlaces] = useState<GeocoderPlace[]>([]);
+  const [providerSearchState, setProviderSearchState] = useState<ProviderSearchState>("idle");
   const normalizedCode = normalize6DCode(codeInput);
-  const suggestions = useMemo(
+  const localSuggestions = useMemo(
     () => normalizedCode && query.trim() ? searchReverse6DDemoIndex(normalizedCode, query) : [],
     [normalizedCode, query],
+  );
+  const visibleProviderPlaces = useMemo(
+    () => dedupeProviderPlaces(providerPlaces, localSuggestions),
+    [localSuggestions, providerPlaces],
+  );
+  const suggestions = useMemo<SearchSuggestion[]>(
+    () => [
+      ...localSuggestions.map((result): SearchSuggestion => ({ kind: "local", result })),
+      ...visibleProviderPlaces.map((place): SearchSuggestion => ({ kind: "provider", place })),
+    ],
+    [localSuggestions, visibleProviderPlaces],
   );
 
   const closeSuggestions = () => {
@@ -383,17 +420,80 @@ function ReverseSearchPanel({
 
   const clearViewportCandidates = () => {
     setViewportCandidates([]);
+    setCandidateContext(null);
     onPreviewActive(null);
     onClearPreview();
   };
 
+  const cancelProviderRequest = () => {
+    providerRequestSequenceRef.current += 1;
+    if (providerAutocompleteTimerRef.current !== null) {
+      window.clearTimeout(providerAutocompleteTimerRef.current);
+      providerAutocompleteTimerRef.current = null;
+    }
+    providerRequestRef.current?.abort();
+    providerRequestRef.current = null;
+  };
+
   useEffect(() => {
     setViewportCandidates([]);
+    setCandidateContext(null);
     onPreviewActive(null);
     onClearPreview();
   }, [onClearPreview, onPreviewActive, selectionRevision]);
 
+  useEffect(() => {
+    const providerQuery = query.trim();
+    if (skipProviderAutocompleteQueryRef.current === providerQuery) {
+      skipProviderAutocompleteQueryRef.current = null;
+      return;
+    }
+    if (!normalizedCode || providerQuery.length < 2) {
+      cancelProviderRequest();
+      setProviderPlaces([]);
+      setProviderSearchState("idle");
+      return;
+    }
+
+    const sequence = ++providerRequestSequenceRef.current;
+    let controller: AbortController | null = null;
+    setProviderPlaces([]);
+    setProviderSearchState("idle");
+
+    const timer = window.setTimeout(async () => {
+      if (providerRequestSequenceRef.current !== sequence) return;
+      providerAutocompleteTimerRef.current = null;
+      controller = new AbortController();
+      providerRequestRef.current?.abort();
+      providerRequestRef.current = controller;
+      setProviderSearchState("loading");
+
+      try {
+        const places = await geocodePlaces(providerQuery, "autocomplete", PROVIDER_RESULT_LIMIT, controller.signal);
+        if (providerRequestSequenceRef.current !== sequence) return;
+        setProviderPlaces(places);
+        setProviderSearchState("ready");
+      } catch (error) {
+        if (isAbortError(error) || providerRequestSequenceRef.current !== sequence) return;
+        setProviderPlaces([]);
+        setProviderSearchState("unavailable");
+      } finally {
+        if (providerRequestRef.current === controller) providerRequestRef.current = null;
+      }
+    }, PROVIDER_AUTOCOMPLETE_DEBOUNCE_MS);
+    providerAutocompleteTimerRef.current = timer;
+
+    return () => {
+      window.clearTimeout(timer);
+      if (providerAutocompleteTimerRef.current === timer) providerAutocompleteTimerRef.current = null;
+      controller?.abort();
+    };
+  }, [normalizedCode, query]);
+
+  useEffect(() => () => cancelProviderRequest(), []);
+
   const applyCodeInput = (value: string) => {
+    skipProviderAutocompleteQueryRef.current = null;
     const parsed = parseCombinedReverse6DInput(value);
     setCodeInput(parsed.code ?? value);
     if (parsed.code && parsed.place) {
@@ -408,6 +508,7 @@ function ReverseSearchPanel({
   };
 
   const applyQueryInput = (value: string) => {
+    skipProviderAutocompleteQueryRef.current = null;
     const parsed = parseCombinedReverse6DInput(value);
     if (parsed.code && parsed.place) {
       setCodeInput(parsed.code);
@@ -422,10 +523,12 @@ function ReverseSearchPanel({
   };
 
   const selectSuggestion = (suggestion: Reverse6DSearchResult, updateUrl = true) => {
+    cancelProviderRequest();
     if (!onSelect({ lat: suggestion.place.lat, lng: suggestion.place.lng })) {
       setMessage("The map is still loading. Try again in a moment.");
       return;
     }
+    skipProviderAutocompleteQueryRef.current = suggestion.place.name;
     setQuery(suggestion.place.name);
     setMessage("");
     closeSuggestions();
@@ -433,20 +536,118 @@ function ReverseSearchPanel({
     if (updateUrl) replaceFindUrl({ code: suggestion.code, place: suggestion.place.name });
   };
 
-  const selectViewportCandidate = (candidate: Reverse6DViewportCandidate) => {
+  const selectViewportCandidate = (
+    candidate: Reverse6DViewportCandidate,
+    providerPlace = candidateContext?.kind === "provider" ? candidateContext.place : undefined,
+  ) => {
     if (!onSelect({ lat: candidate.lat, lng: candidate.lng })) {
       setMessage("Map is still loading. Try again in a moment.");
       return;
     }
 
-    if (candidate.matchedDemoPlace) setQuery(candidate.matchedDemoPlace.name);
+    const selectedPlaceName = providerPlace?.name ?? candidate.matchedDemoPlace?.name;
+    if (selectedPlaceName) {
+      skipProviderAutocompleteQueryRef.current = selectedPlaceName;
+      setQuery(selectedPlaceName);
+    }
     setMessage("");
     closeSuggestions();
     clearViewportCandidates();
-    replaceFindUrl({ code: candidate.code, coordinate: { lat: candidate.lat, lng: candidate.lng } });
+    replaceFindUrl({
+      code: candidate.code,
+      place: selectedPlaceName,
+      coordinate: { lat: candidate.lat, lng: candidate.lng },
+    });
   };
 
-  const runSearch = (updateUrl = true) => {
+  const requestProviderPlaces = async (providerQuery: string, mode: "autocomplete" | "search") => {
+    cancelProviderRequest();
+    const sequence = providerRequestSequenceRef.current;
+    const controller = new AbortController();
+    providerRequestRef.current = controller;
+    setProviderSearchState("loading");
+
+    try {
+      const places = await geocodePlaces(providerQuery, mode, PROVIDER_RESULT_LIMIT, controller.signal);
+      if (providerRequestSequenceRef.current !== sequence) return "stale" as const;
+      setProviderPlaces(places);
+      setProviderSearchState("ready");
+      return places;
+    } catch (error) {
+      if (isAbortError(error) || providerRequestSequenceRef.current !== sequence) return "stale" as const;
+      setProviderPlaces([]);
+      setProviderSearchState("unavailable");
+      return "unavailable" as const;
+    } finally {
+      if (providerRequestRef.current === controller) providerRequestRef.current = null;
+    }
+  };
+
+  const selectProviderPlace = (place: GeocoderPlace, updateUrl = true) => {
+    const requestedCode = normalize6DCode(codeInput);
+    if (!requestedCode) {
+      setMessage("Enter a valid 6D code, for example 35-12-12.");
+      return;
+    }
+
+    skipProviderAutocompleteQueryRef.current = place.name;
+    setQuery(place.name);
+    if (updateUrl) replaceFindUrl({ code: requestedCode, place: place.name });
+
+    const bounds = getSearchBoundsForGeocoderPlace(place);
+    clearViewportCandidates();
+    if (isGeocoderPlaceTooBroad(place, bounds)) {
+      setMessage("This place is too broad for a reliable reverse 6D search. Add a more specific locality, neighbourhood or landmark.");
+      setSuggestionsOpen(true);
+      setHighlightedIndex(-1);
+      return;
+    }
+
+    const searchResult = findReverse6DCandidatesInBounds({
+      code: requestedCode,
+      bounds: bounds!,
+      maxCandidates: REVERSE_VIEWPORT_MAX_CANDIDATES,
+    });
+
+    if (searchResult.exceededLimit) {
+      setMessage("Too many matching 6D cells were found in this area. Add a more specific locality, neighbourhood or landmark.");
+      closeSuggestions();
+      return;
+    }
+    if (searchResult.candidates.length === 0) {
+      setMessage("The place was found, but this 6D code was not found inside its area. Check the code or choose a more specific locality.");
+      closeSuggestions();
+      return;
+    }
+    const providerNeedsExplicitCellChoice = place.placeType === "city" || place.placeType === "district";
+    if (searchResult.candidates.length === 1 && !providerNeedsExplicitCellChoice) {
+      selectViewportCandidate(searchResult.candidates[0], place);
+      return;
+    }
+    if (searchResult.candidates.filter((candidate) => !candidate.matchedDemoPlace).length > REVERSE_VIEWPORT_MAX_UNNAMED_RESULTS) {
+      setMessage("Too many matching 6D cells were found in this area. Add a more specific locality, neighbourhood or landmark.");
+      closeSuggestions();
+      return;
+    }
+
+    setViewportCandidates(searchResult.candidates);
+    setCandidateContext({ kind: "provider", place });
+    onShowPreview(searchResult.candidates);
+    setMessage(searchResult.candidates.length === 1
+      ? "Choose the matching 6D cell for this place."
+      : "This 6D code appears more than once in this area. Choose a matching cell or narrow the place.");
+    closeSuggestions();
+  };
+
+  const chooseSuggestion = (suggestion: SearchSuggestion, updateUrl = true) => {
+    if (suggestion.kind === "local") {
+      selectSuggestion(suggestion.result, updateUrl);
+      return;
+    }
+    selectProviderPlace(suggestion.place, updateUrl);
+  };
+
+  const runSearch = async (updateUrl = true) => {
     if (!normalizedCode) {
       setMessage("Enter a valid 6D code, for example 35-12-12.");
       closeSuggestions();
@@ -457,33 +658,79 @@ function ReverseSearchPanel({
     if (updateUrl) replaceFindUrl({ code: normalizedCode, place: query.trim() || undefined });
 
     if (!query.trim()) {
+      cancelProviderRequest();
+      setProviderPlaces([]);
+      setProviderSearchState("idle");
       setMessage("A 6D code is not a complete address on its own. Add a locality, city or country, or search within the current map view.");
       closeSuggestions();
       clearViewportCandidates();
       return;
     }
-    if (!suggestions.length) {
-      setMessage("No matching demo location found. Add more place detail or search within the current map view.");
-      closeSuggestions();
+
+    const highConfidenceResults = localSuggestions.filter((result) => result.confidence === "high");
+    if (highConfidenceResults.length === 1) {
+      selectSuggestion(highConfidenceResults[0], updateUrl);
+      return;
+    }
+
+    if (localSuggestions.length) {
+      setMessage("This 6D code appears more than once in this area. Choose a matching cell or narrow the place.");
+      setSuggestionsOpen(true);
+      setHighlightedIndex(0);
+      clearViewportCandidates();
+    } else {
+      setMessage("");
+      setSuggestionsOpen(true);
+      setHighlightedIndex(-1);
+      clearViewportCandidates();
+    }
+
+    const places = await requestProviderPlaces(query.trim(), "search");
+    if (places === "stale") return;
+    if (places === "unavailable") {
+      if (localSuggestions.length) {
+        setMessage("This 6D code appears more than once in this area. Choose a matching locality or narrow the place.");
+        setSuggestionsOpen(true);
+        setHighlightedIndex(0);
+      } else {
+        setMessage("Worldwide place search is temporarily unavailable.");
+        closeSuggestions();
+      }
       clearViewportCandidates();
       return;
     }
 
-    const highConfidenceResults = suggestions.filter((result) => result.confidence === "high");
-    if (suggestions.length === 1 && highConfidenceResults.length === 1) {
-      selectSuggestion(suggestions[0], updateUrl);
+    const dedupedPlaces = dedupeProviderPlaces(places, localSuggestions);
+    if (localSuggestions.length) {
+      setMessage(localSuggestions.length > 1
+        ? "This 6D code appears more than once in this area. Choose a matching cell or narrow the place."
+        : "Choose the matching locality or a worldwide place result.");
+      setSuggestionsOpen(true);
+      setHighlightedIndex(0);
+      clearViewportCandidates();
+      return;
+    }
+    if (dedupedPlaces.length === 0) {
+      setMessage("No matching place found. Try another spelling or add city or country detail.");
+      setSuggestionsOpen(true);
+      setHighlightedIndex(-1);
+      clearViewportCandidates();
+      return;
+    }
+    if (dedupedPlaces.length === 1) {
+      selectProviderPlace(dedupedPlaces[0], updateUrl);
       return;
     }
 
-    setMessage(suggestions.length > 1
-      ? "This 6D code appears more than once in this area. Please choose the locality."
-      : "");
+    setMessage("Choose a worldwide place result to search for matching 6D cells in its area.");
     setSuggestionsOpen(true);
     setHighlightedIndex(0);
     clearViewportCandidates();
   };
 
   const runViewportSearch = () => {
+    cancelProviderRequest();
+    setProviderSearchState("idle");
     closeSuggestions();
     clearViewportCandidates();
 
@@ -534,6 +781,7 @@ function ReverseSearchPanel({
     }
 
     setViewportCandidates(searchResult.candidates);
+    setCandidateContext({ kind: "viewport" });
     onShowPreview(searchResult.candidates);
     setMessage("This 6D code appears more than once in the current map view. Choose a matching cell or zoom in further.");
   };
@@ -541,17 +789,17 @@ function ReverseSearchPanel({
   useEffect(() => {
     if (!initialSearch || !isMapReady || initialSearchHandledRef.current) return;
     initialSearchHandledRef.current = true;
-    runSearch(false);
+    void runSearch(false);
   }, [initialSearch, isMapReady]);
 
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     initialSearchHandledRef.current = true;
     if (suggestionsOpen && highlightedIndex >= 0 && suggestions[highlightedIndex]) {
-      selectSuggestion(suggestions[highlightedIndex]);
+      chooseSuggestion(suggestions[highlightedIndex]);
       return;
     }
-    runSearch();
+    void runSearch();
   };
 
   const onQueryKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -574,15 +822,19 @@ function ReverseSearchPanel({
 
   const resetSearch = () => {
     initialSearchHandledRef.current = true;
+    cancelProviderRequest();
     setCodeInput("");
     setQuery("");
     setMessage("");
     closeSuggestions();
     clearViewportCandidates();
+    setProviderPlaces([]);
+    setProviderSearchState("idle");
     replaceFindUrl();
   };
 
-  const showSuggestions = suggestionsOpen && suggestions.length > 0;
+  const showProviderStatus = Boolean(normalizedCode && query.trim().length >= 2);
+  const showSuggestions = suggestionsOpen && (suggestions.length > 0 || showProviderStatus);
   const canSearchViewport = Boolean(
     normalizedCode
       && isMapReady
@@ -628,7 +880,7 @@ function ReverseSearchPanel({
                 initialSearchHandledRef.current = true;
                 applyQueryInput(event.target.value);
               }}
-              onFocus={() => suggestions.length > 0 && setSuggestionsOpen(true)}
+              onFocus={() => (suggestions.length > 0 || showProviderStatus) && setSuggestionsOpen(true)}
               onKeyDown={onQueryKeyDown}
               placeholder="London, Bosaso, Eiffel Tower"
               role="combobox"
@@ -636,25 +888,50 @@ function ReverseSearchPanel({
             />
             {showSuggestions && (
               <div className="find-reverse-search__suggestions" id={listboxId} role="listbox">
-                {suggestions.map((suggestion, index) => (
-                  <button
-                    aria-selected={highlightedIndex === index}
-                    className={highlightedIndex === index ? "is-highlighted" : ""}
-                    id={`${listboxId}-${index}`}
-                    key={suggestion.place.id}
-                    onClick={() => selectSuggestion(suggestion)}
-                    onMouseEnter={() => setHighlightedIndex(index)}
-                    role="option"
-                    type="button"
-                  >
-                    <span className="find-reverse-search__suggestion-copy">
-                      <strong>{suggestion.place.name}</strong>
-                      <small>{[suggestion.place.city, suggestion.place.admin1, suggestion.place.country].filter(Boolean).join(", ")}</small>
-                      {suggestion.didYouMean && <em>Did you mean {suggestion.place.displayName}?</em>}
-                    </span>
-                    <span className="find-reverse-search__code-badge">{suggestion.code}</span>
-                  </button>
-                ))}
+                {suggestions.map((suggestion, index) => {
+                  const key = suggestion.kind === "local" ? `local-${suggestion.result.place.id}` : `provider-${suggestion.place.id}`;
+                  return (
+                    <button
+                      aria-selected={highlightedIndex === index}
+                      className={`${highlightedIndex === index ? "is-highlighted " : ""}${suggestion.kind === "provider" ? "is-provider" : ""}`.trim()}
+                      id={`${listboxId}-${index}`}
+                      key={key}
+                      onClick={() => chooseSuggestion(suggestion)}
+                      onMouseEnter={() => setHighlightedIndex(index)}
+                      role="option"
+                      type="button"
+                    >
+                      {suggestion.kind === "local" ? (
+                        <>
+                          <span className="find-reverse-search__suggestion-copy">
+                            <strong>{suggestion.result.place.name}</strong>
+                            <small>{[suggestion.result.place.city, suggestion.result.place.admin1, suggestion.result.place.country].filter(Boolean).join(", ")}</small>
+                            {suggestion.result.didYouMean && <em>Did you mean {suggestion.result.place.displayName}?</em>}
+                          </span>
+                          <span className="find-reverse-search__code-badge">{suggestion.result.code}</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="find-reverse-search__suggestion-copy">
+                            <strong>{suggestion.place.name}</strong>
+                            <small>{getProviderSecondaryLabel(suggestion.place)}</small>
+                            <em>Worldwide place result</em>
+                          </span>
+                          <span className="find-reverse-search__provider-badge">Worldwide</span>
+                        </>
+                      )}
+                    </button>
+                  );
+                })}
+                {providerSearchState === "loading" && (
+                  <p className="find-reverse-search__provider-status" role="status">Searching worldwide place data…</p>
+                )}
+                {providerSearchState === "unavailable" && (
+                  <p className="find-reverse-search__provider-status is-error" role="status">Worldwide place search is temporarily unavailable.</p>
+                )}
+                {providerSearchState === "ready" && visibleProviderPlaces.length === 0 && localSuggestions.length === 0 && (
+                  <p className="find-reverse-search__provider-status" role="status">No matching place found. Try another spelling or add city or country detail.</p>
+                )}
               </div>
             )}
           </label>
@@ -682,9 +959,13 @@ function ReverseSearchPanel({
           </button>
         </div>
         {message && <p className="find-reverse-search__message" role="status">{message}</p>}
-        {viewportCandidates.length > 1 && (
+        {viewportCandidates.length > 0 && candidateContext && (
           <section className="find-reverse-search__viewport-results" aria-labelledby={`${viewportListId}-heading`}>
-            <h2 id={`${viewportListId}-heading`}>Matching 6D cells in this map view</h2>
+            <h2 id={`${viewportListId}-heading`}>
+              {candidateContext.kind === "provider"
+                ? `Matching 6D cells in ${candidateContext.place?.name ?? "this area"}`
+                : "Matching 6D cells in this map view"}
+            </h2>
             <div className="find-reverse-search__viewport-list" id={viewportListId}>
               {viewportCandidates.map((candidate) => (
                 <button
@@ -709,6 +990,54 @@ function ReverseSearchPanel({
       </form>
     </aside>
   );
+}
+
+function dedupeProviderPlaces(
+  places: GeocoderPlace[],
+  localResults: Reverse6DSearchResult[],
+): GeocoderPlace[] {
+  const seenProviderPlaces: GeocoderPlace[] = [];
+
+  return places.filter((place) => {
+    const providerName = normalizeSearchText(place.name);
+    const duplicatesLocalResult = localResults.some(({ place: localPlace }) => {
+      const localNames = [localPlace.name, localPlace.displayName, ...localPlace.aliases].map(normalizeSearchText);
+      return localNames.includes(providerName)
+        && coordinatesAreNear(place.lat, place.lng, localPlace.lat, localPlace.lng);
+    });
+    if (duplicatesLocalResult) return false;
+
+    const duplicatesProviderResult = seenProviderPlaces.some((seenPlace) =>
+      normalizeSearchText(seenPlace.name) === providerName
+      && coordinatesAreNear(place.lat, place.lng, seenPlace.lat, seenPlace.lng)
+    );
+    if (duplicatesProviderResult) return false;
+
+    seenProviderPlaces.push(place);
+    return true;
+  });
+}
+
+function coordinatesAreNear(firstLat: number, firstLng: number, secondLat: number, secondLng: number) {
+  const latitudeDifference = Math.abs(firstLat - secondLat);
+  const longitudeDifference = Math.abs(firstLng - secondLng)
+    * Math.max(0.1, Math.cos(((firstLat + secondLat) / 2) * Math.PI / 180));
+  return latitudeDifference <= 0.0015 && longitudeDifference <= 0.0015;
+}
+
+function getProviderSecondaryLabel(place: GeocoderPlace) {
+  const normalizedName = normalizeSearchText(place.name);
+  const parts = [place.locality, place.district, place.city, place.region, place.country]
+    .filter((part): part is string => Boolean(part))
+    .filter((part, index, allParts) =>
+      normalizeSearchText(part) !== normalizedName
+      && allParts.findIndex((candidate) => normalizeSearchText(candidate) === normalizeSearchText(part)) === index
+    );
+  return parts.join(", ") || place.displayName;
+}
+
+function isAbortError(error: unknown) {
+  return (error instanceof DOMException || error instanceof Error) && error.name === "AbortError";
 }
 
 function getFinderPanelState({
