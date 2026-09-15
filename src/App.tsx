@@ -213,18 +213,22 @@ function useHeavyVisualState() {
       return;
     }
 
+    const isNarrowViewport = window.matchMedia("(max-width: 760px)").matches;
     const load = () => setState("enabled");
 
+    // Give text, navigation and the lightweight hero shell priority on phones.
+    // Desktop still starts the globe quickly, while narrow devices wait for an
+    // idle slot (or a bounded timeout) before loading Three.js and textures.
     if ("requestIdleCallback" in window && "cancelIdleCallback" in window) {
       const idleWindow = window as Window & {
         requestIdleCallback: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
         cancelIdleCallback: (handle: number) => void;
       };
-      const id = idleWindow.requestIdleCallback(load, { timeout: 1400 });
+      const id = idleWindow.requestIdleCallback(load, { timeout: isNarrowViewport ? 1900 : 1100 });
       return () => idleWindow.cancelIdleCallback(id);
     }
 
-    const id = globalThis.setTimeout(load, 650);
+    const id = globalThis.setTimeout(load, isNarrowViewport ? 900 : 450);
     return () => globalThis.clearTimeout(id);
   }, []);
 
@@ -330,16 +334,13 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
 
       <LocalityMattersSection />
 
-      <NarrativeContactCta
-        tone="dark"
-        prompt="Want to explore how 6D Address could work in your context?"
-      />
+      <NarrativeContactCta tone="dark" />
 
       <SomaliaUseCaseSection />
 
       <ApplicationsCarouselSection />
 
-      <NarrativeContactCta tone="light" prompt="Have a location challenge to explore?" />
+      <NarrativeContactCta tone="light" />
 
       <PropositionSection />
 
@@ -483,6 +484,7 @@ function GlobeHeroVisual() {
 
   return (
     <div className="hero-visual hero-content" aria-hidden="true">
+      {!globeReady && <div className="hero-globe-placeholder" />}
       <div className={`hero-globe-root ${globeReady ? "is-ready" : ""}`} ref={globeRef} />
       {!globeReady && heavyVisualState === "enabled" && (
         <div className="hero-globe-loading">
@@ -556,7 +558,20 @@ function HowItWorksSection() {
             <span>Somalia</span>
           </address>
         </article>
-        <LiteButton className="button how-created__cta" href="/find">Find my <NoWrap6D /></LiteButton>
+        <aside className="how-created__action" aria-labelledby="try-sixd-heading">
+          <div className="how-created__action-heading">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+              <circle cx="12" cy="12" r="7" />
+              <circle cx="12" cy="12" r="2" />
+              <path d="M12 1v5m0 12v5M1 12h5m12 0h5" />
+            </svg>
+            <h3 id="try-sixd-heading">What’s the code for your place?</h3>
+          </div>
+          <p>Choose a spot on the map and discover its six-digit code.</p>
+          <a className="cta-action cta-action--navy" href="/find">
+            <span>Find my <NoWrap6D /></span><span className="cta-arrow" aria-hidden="true">→</span>
+          </a>
+        </aside>
       </div>
     </div>
   );
@@ -602,20 +617,41 @@ function LocalityMattersSection() {
   );
 }
 
-function NarrativeContactCta({
-  tone,
-  prompt,
-}: {
-  tone: "dark" | "light";
-  prompt: string;
-}) {
+function NarrativeContactCta({ tone }: { tone: "dark" | "light" }) {
+  if (tone === "dark") {
+    return (
+      <section className="narrative-contact-cta narrative-contact-cta--dark craft-grid-bg craft-grid-bg--dark" aria-labelledby="implementation-cta-heading">
+        <div className="craft-container">
+          <div className="implementation-cta">
+            <header className="implementation-cta__copy">
+              <h2 id="implementation-cta-heading">Bring <NoWrap6D /> to your context.</h2>
+              <p>Explore what implementation could look like for your country, organisation or use case.</p>
+            </header>
+            <ul className="implementation-cta__topics" aria-label="Discussion topics">
+              <li>Country implementation</li>
+              <li>Use-case testing</li>
+              <li>Partnerships &amp; pilots</li>
+              <li>Maps, data &amp; technical integration</li>
+            </ul>
+            <div className="implementation-cta__action">
+              <a className="cta-action cta-action--white" href="#contact">
+                <span>Start a conversation</span><span className="cta-arrow" aria-hidden="true">→</span>
+              </a>
+              <p>Tell us what you’re working on.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className={`narrative-contact-cta narrative-contact-cta--${tone}`} aria-label="Contact 6D Address">
       <div className="craft-container">
         <div className="narrative-contact-cta__inner">
-          <p>{prompt}</p>
+          <p>Have a location challenge to explore?</p>
           <a className="narrative-contact-cta__link" href="#contact">
-            Start a conversation <span aria-hidden="true">↗</span>
+            <span>Talk to the <NoWrap6D /> team</span><span className="cta-arrow" aria-hidden="true">→</span>
           </a>
         </div>
       </div>

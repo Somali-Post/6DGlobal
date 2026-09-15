@@ -210,6 +210,7 @@ export function LocalityLondonMap({
           <div className="llm-header">
             <div>
               <p className="llm-kicker">One shared reference · London</p>
+              <Code className="llm-code--header" />
             </div>
             <p className="llm-note">Locality completes the address</p>
           </div>
@@ -402,6 +403,12 @@ export function LocalityLondonMap({
           font-size: clamp(0.72rem, 0.9vw, 1rem);
         }
 
+        .llm-code--header {
+          display: none;
+          margin-top: 0.35rem;
+          font-size: 0.9rem;
+        }
+
         .llm-leaders {
           position: absolute;
           inset: 0;
@@ -516,7 +523,7 @@ export function LocalityLondonMap({
 
           .llm-label {
             min-width: 0;
-            width: 26%;
+            width: 24%;
             padding: 0.48rem 0.42rem;
           }
 
@@ -529,6 +536,38 @@ export function LocalityLondonMap({
 
           .llm-code--small {
             font-size: clamp(0.56rem, 2.7cqi, 0.7rem);
+          }
+        }
+
+        @media (max-width: 480px) {
+          .llm-header {
+            inset: 0.8rem 0.85rem auto 0.85rem;
+          }
+
+          .llm-kicker {
+            margin-bottom: 0.2rem;
+            font-size: 0.58rem;
+          }
+
+          .llm-code--header {
+            display: inline-flex;
+          }
+
+          .llm-label {
+            width: 24%;
+            padding: 0.42rem 0.34rem;
+          }
+
+          .llm-label strong {
+            font-size: clamp(0.58rem, 3.5cqi, 0.76rem);
+          }
+
+          .llm-label .llm-code--small {
+            display: none;
+          }
+
+          .llm-caption {
+            font-size: 0.72rem;
           }
         }
       `}</style>

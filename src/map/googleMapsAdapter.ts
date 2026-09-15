@@ -169,15 +169,24 @@ export async function createGoogleMapsAdapter(args: {
     });
   };
 
+  let readyNotified = false;
+  let readyFallback = 0;
+  const notifyReady = () => {
+    if (readyNotified) return;
+    readyNotified = true;
+    window.clearTimeout(readyFallback);
+    args.onViewportChange?.(getViewport());
+    args.onReady?.();
+  };
+
   const mapClick = map.addListener("click", (event: any) => pick(event?.latLng));
   const idleListener = map.addListener("idle", () => {
     overlay.updateDynamicGrid();
     args.onViewportChange?.(getViewport());
+    notifyReady();
   });
-  const readyListener = google.maps.event.addListenerOnce(map, "tilesloaded", () => {
-    args.onViewportChange?.(getViewport());
-    args.onReady?.();
-  });
+  const readyListener = google.maps.event.addListenerOnce(map, "tilesloaded", notifyReady);
+  readyFallback = window.setTimeout(notifyReady, 5000);
   overlay.updateDynamicGrid();
 
   const setPin = (coordinate: Coordinate, zoom = 17, source: MapPickSource = "programmatic") => {
@@ -192,6 +201,7 @@ export async function createGoogleMapsAdapter(args: {
     setReverseSearchPreviewActive,
     clearReverseSearchPreview,
     destroy() {
+      window.clearTimeout(readyFallback);
       google.maps.event.removeListener(mapClick);
       google.maps.event.removeListener(idleListener);
       google.maps.event.removeListener(readyListener);
