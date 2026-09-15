@@ -19,6 +19,7 @@ import {
   findReverse6DCandidatesInBounds,
   type Reverse6DViewportCandidate,
 } from "../lib/reverse6dViewportSearch";
+import { landmarkExamples, type LandmarkExample } from "../data/landmarkExamples";
 import { createGoogleMapsAdapter, MapAdapter, MapAddress, type MapViewport } from "../map/googleMapsAdapter";
 
 const INITIAL_MAP_CENTER: Coordinate = { lat: 51.5074, lng: -0.1278 };
@@ -45,6 +46,7 @@ type FormattedCode = {
 type FinderResult = {
   code: FormattedCode;
   address: AddressLines;
+  landmark?: LandmarkExample;
 };
 
 type AddressLines = {
@@ -116,10 +118,12 @@ function replaceFindUrl({
   code,
   place,
   coordinate,
+  landmark,
 }: {
   code?: string;
   place?: string;
   coordinate?: Coordinate;
+  landmark?: string;
 } = {}) {
   const params = new URLSearchParams();
   if (code) params.set("code", code);
@@ -128,6 +132,7 @@ function replaceFindUrl({
     params.set("lat", String(coordinate.lat));
     params.set("lng", String(coordinate.lng));
   }
+  if (landmark) params.set("landmark", landmark);
   const query = params.toString().replace(/\+/g, "%20");
   window.history.replaceState(window.history.state, "", `/find${query ? `?${query}` : ""}`);
 }
@@ -149,6 +154,8 @@ export default function FindPage() {
   const requestedInitialActionRef = useRef(false);
   const latestCode = useRef<FormattedCode | null>(null);
   const latestSuffix = useRef("");
+  const selectedCoordinate = useRef<Coordinate | null>(null);
+  const landmarkMode = useRef<LandmarkExample | null>(null);
   const loaderStartedAt = useRef(performance.now());
   const [mapLoadState, setMapLoadState] = useState<MapLoadState>("loading");
   const [viewport, setViewport] = useState<MapViewport | null>(null);
@@ -161,9 +168,25 @@ export default function FindPage() {
   const initialParams = useMemo(() => new URLSearchParams(window.location.search), []);
   const autoLocate = useMemo(() => initialParams.get("locate") === "1", [initialParams]);
   const initialReverseSearch = useMemo(() => getInitialReverseSearch(initialParams), [initialParams]);
+  const initialLandmark = useMemo(() => {
+    if (!parseUrlCoordinate(initialParams)) return null;
+    const id = initialParams.get("landmark");
+    return id ? landmarkExamples.find((example) => example.id === id) ?? null : null;
+  }, [initialParams]);
 
   const handleLocate = useCallback((mapAdapter = adapter.current) => {
     if (mapLoadState !== "ready" || !mapAdapter) return;
+
+    if (landmarkMode.current) {
+      landmarkMode.current = null;
+      if (selectedCoordinate.current) {
+        mapAdapter.setPin(selectedCoordinate.current, 18);
+      } else {
+        setResult(null);
+        setPendingCode(null);
+        replaceFindUrl();
+      }
+    }
     setLocationState("locating");
 
     if (!navigator.geolocation) {
@@ -202,17 +225,30 @@ export default function FindPage() {
     createGoogleMapsAdapter({
       element: mapRef.current,
       initial: INITIAL_MAP_CENTER,
-      onPick: (coordinate) => {
+      onPick: (coordinate, source) => {
         const sixd = generate6DCode(coordinate);
         latestCode.current = formatCode(sixd.code);
         latestSuffix.current = sixd.localitySuffix;
-        setResult(null);
-        setPendingCode(latestCode.current);
+        selectedCoordinate.current = coordinate;
+        const landmark = source === "landmark" ? initialLandmark : null;
+        landmarkMode.current = landmark;
+        if (landmark) {
+          setResult({
+            code: formatCode(landmark.code),
+            address: toLandmarkAddressLines(landmark),
+            landmark,
+          });
+          setPendingCode(null);
+        } else {
+          setResult(null);
+          setPendingCode(latestCode.current);
+        }
         setLocationState("idle");
         setSelectionRevision((current) => current + 1);
+        if (source !== "initial" && source !== "landmark") replaceFindUrl({ coordinate });
       },
-      onAddress: (address) => {
-        if (!latestCode.current) return;
+      onAddress: (address, coordinate) => {
+        if (!latestCode.current || landmarkMode.current || !coordinatesMatch(selectedCoordinate.current, coordinate)) return;
         setResult({
           code: latestCode.current,
           address: toAddressLines(address, latestSuffix.current),
@@ -248,7 +284,7 @@ export default function FindPage() {
       adapter.current?.destroy();
       adapter.current = null;
     };
-  }, []);
+  }, [initialLandmark]);
 
   useEffect(() => {
     if (mapLoadState === "loading") return;
@@ -277,8 +313,8 @@ export default function FindPage() {
 
     requestedInitialActionRef.current = true;
     setLocationState("idle");
-    adapter.current.setPin(coordinate, 18);
-  }, [initialParams, mapLoadState]);
+    adapter.current.setPin(coordinate, 18, initialLandmark ? "landmark" : "initial");
+  }, [initialLandmark, initialParams, mapLoadState]);
 
   useEffect(() => {
     if (mapLoadState !== "ready") return;
@@ -1126,13 +1162,30 @@ function FindInfoPanel({
     >
       {result ? (
         <>
-          <p className="find-map-page__panel-label"><NoWrap6D /></p>
-          <FindCode code={result.code} />
-          <address className="find-map-page__address-lines">
-            <span>{result.address.line1}</span>
-            {result.address.line2 && <span>{result.address.line2}</span>}
-            {result.address.line3 && <span>{result.address.line3}</span>}
-          </address>
+          {result.landmark ? (
+            <>
+              <h2 className="find-map-page__landmark-name">{result.landmark.name}</h2>
+              <address className="find-map-page__address-lines find-map-page__address-lines--landmark">
+                {result.landmark.streetLine && <span>{result.landmark.streetLine}</span>}
+                <div className="find-map-page__landmark-code-line">
+                  <FindCode code={result.code} />
+                  <span>{result.landmark.locality}</span>
+                </div>
+                {result.landmark.cityLine && <span>{result.landmark.cityLine}</span>}
+                <span>{result.landmark.country}</span>
+              </address>
+            </>
+          ) : (
+            <>
+              <p className="find-map-page__panel-label"><NoWrap6D /></p>
+              <FindCode code={result.code} />
+              <address className="find-map-page__address-lines">
+                <span>{result.address.line1}</span>
+                {result.address.line2 && <span>{result.address.line2}</span>}
+                {result.address.line3 && <span>{result.address.line3}</span>}
+              </address>
+            </>
+          )}
         </>
       ) : pendingCode ? (
         <>
@@ -1177,4 +1230,16 @@ function toAddressLines(address: MapAddress, suffix: string): AddressLines {
   const line3 = isUk ? "United Kingdom" : address.country || "";
 
   return { line1, line2, line3 };
+}
+
+function toLandmarkAddressLines(landmark: LandmarkExample): AddressLines {
+  return {
+    line1: landmark.streetLine || landmark.locality,
+    line2: landmark.cityLine,
+    line3: landmark.country,
+  };
+}
+
+function coordinatesMatch(first: Coordinate | null, second: Coordinate) {
+  return first?.lat === second.lat && first.lng === second.lng;
 }

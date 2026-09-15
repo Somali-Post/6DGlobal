@@ -34,8 +34,10 @@ export type MapReverseSearchPreview = Coordinate & {
   label: string;
 };
 
+export type MapPickSource = "initial" | "landmark" | "map" | "marker-drag" | "programmatic";
+
 export type MapAdapter = {
-  setPin: (coordinate: Coordinate, zoom?: number) => void;
+  setPin: (coordinate: Coordinate, zoom?: number, source?: MapPickSource) => void;
   getViewport: () => MapViewport | null;
   showReverseSearchPreview: (results: MapReverseSearchPreview[]) => void;
   setReverseSearchPreviewActive: (id: string | null) => void;
@@ -46,8 +48,8 @@ export type MapAdapter = {
 export async function createGoogleMapsAdapter(args: {
   element: HTMLElement;
   initial: Coordinate;
-  onPick: (coordinate: Coordinate) => void;
-  onAddress: (address: MapAddress) => void;
+  onPick: (coordinate: Coordinate, source: MapPickSource) => void;
+  onAddress: (address: MapAddress, coordinate: Coordinate) => void;
   onNotice: (message: string) => void;
   onReady?: () => void;
   onViewportChange?: (viewport: MapViewport | null) => void;
@@ -127,7 +129,7 @@ export async function createGoogleMapsAdapter(args: {
     });
   };
 
-  const pick = (latLng: any) => {
+  const pick = (latLng: any, source: MapPickSource = "map") => {
     if (!latLng || typeof latLng.lat !== "function" || typeof latLng.lng !== "function") return;
     clearReverseSearchPreview();
     const coordinate = snapToGridCenter({ lat: latLng.lat(), lng: latLng.lng() });
@@ -138,13 +140,13 @@ export async function createGoogleMapsAdapter(args: {
         draggable: true,
         icon: pinSymbol(google),
       });
-      marker.addListener("dragend", (event: any) => pick(event.latLng));
+      marker.addListener("dragend", (event: any) => pick(event.latLng, "marker-drag"));
     }
     marker.setPosition(coordinate);
     map.panTo(coordinate);
     overlay.drawSelectedBoxes(coordinate);
-    args.onPick(coordinate);
-    resolveAddress(google, geocoder, coordinate, args.onAddress);
+    args.onPick(coordinate, source);
+    resolveAddress(google, geocoder, coordinate, (address) => args.onAddress(address, coordinate));
   };
 
   const showReverseSearchPreview = (results: MapReverseSearchPreview[]) => {
@@ -159,7 +161,7 @@ export async function createGoogleMapsAdapter(args: {
         zIndex: 40,
       });
       const listeners = [
-        previewMarker.addListener("click", () => pick(new google.maps.LatLng(result.lat, result.lng))),
+        previewMarker.addListener("click", () => pick(new google.maps.LatLng(result.lat, result.lng), "map")),
         previewMarker.addListener("mouseover", () => setReverseSearchPreviewActive(result.id)),
         previewMarker.addListener("mouseout", () => setReverseSearchPreviewActive(null)),
       ];
@@ -178,9 +180,9 @@ export async function createGoogleMapsAdapter(args: {
   });
   overlay.updateDynamicGrid();
 
-  const setPin = (coordinate: Coordinate, zoom = 17) => {
+  const setPin = (coordinate: Coordinate, zoom = 17, source: MapPickSource = "programmatic") => {
     map.setZoom(zoom);
-    pick(new google.maps.LatLng(coordinate.lat, coordinate.lng));
+    pick(new google.maps.LatLng(coordinate.lat, coordinate.lng), source);
   };
 
   return {

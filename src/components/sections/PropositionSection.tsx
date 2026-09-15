@@ -15,7 +15,7 @@ const propositions: { copy: string; icon: IconName }[] = [
   { copy: "We want you to use 6D Address to develop suitable tools that deliver our dreams", icon: "tools" },
   { copy: "We want to partner with you to develop solutions for the unaddressed", icon: "partner" },
   { copy: "We want to partner with you to connect the disconnected", icon: "network" },
-  { copy: "In return we ask for a small license fee to use the 6D Address brand", icon: "license" },
+  { copy: "In return we ask for a small licence fee to use the 6D Address brand", icon: "license" },
 ];
 
 function TechnicalIcon({ name }: { name: IconName }) {
@@ -53,7 +53,7 @@ function PropositionColumn({ title, items, side }: { title: string; items: { cop
 
 export function PropositionSection() {
   return (
-    <section id="proposition" className="craft-section proposition-section">
+    <section id="proposition" className="craft-section proposition-section" tabIndex={-1}>
       <div className="craft-container proposition-section__inner">
         <div className="proposition-section__composition">
           <PropositionColumn title="Our Dreams" items={dreams} side="left" />

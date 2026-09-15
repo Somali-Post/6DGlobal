@@ -68,7 +68,7 @@ function AddressExampleCard({
   isDuplicate?: boolean;
   onCardClick: (event: MouseEvent<HTMLAnchorElement>) => void;
 }) {
-  const href = `/find?lat=${example.lat}&lng=${example.lng}&label=${encodeURIComponent(example.name)}`;
+  const href = `/find?lat=${example.lat}&lng=${example.lng}&landmark=${encodeURIComponent(example.id)}&label=${encodeURIComponent(example.name)}`;
 
   return (
     <a
@@ -283,7 +283,7 @@ export function ExamplesSection() {
   };
 
   return (
-    <section className="craft-section craft-section--light examples-chapter address-examples" id="examples">
+    <section className="craft-section craft-section--light examples-chapter address-examples" id="examples" tabIndex={-1}>
       <div className="craft-container address-examples__inner">
         <div className="examples-chapter__header craft-grid address-examples__header">
           <div className="examples-chapter__title craft-reveal">

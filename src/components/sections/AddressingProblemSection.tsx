@@ -27,7 +27,7 @@ function ProblemItem({ status, children }: { status: "missing" | "available"; ch
 
 export function AddressingProblemSection() {
   return (
-    <section className="craft-section craft-section--dark craft-grid-bg craft-grid-bg--dark problem-chapter" id="problem">
+    <section className="craft-section craft-section--dark craft-grid-bg craft-grid-bg--dark problem-chapter" id="problem" tabIndex={-1}>
       <div className="craft-container">
         <div className="problem-chapter__story">
           <div className="problem-chapter__top craft-reveal">

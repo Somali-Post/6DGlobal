@@ -1,4 +1,4 @@
-import { lazy, MouseEvent, ReactNode, Suspense, useEffect, useRef, useState } from "react";
+import { FormEvent, lazy, MouseEvent, ReactNode, Suspense, useEffect, useRef, useState } from "react";
 import CursorGrid from "./components/CursorGrid";
 import { MapLoadingScreen } from "./components/MapLoadingScreen";
 import { NoWrap6D, renderNoWrap6D } from "./components/NoWrap6D";
@@ -40,12 +40,6 @@ const navItems = [
     label: "FAQ",
     href: "#faq",
     activeFor: ["faq"],
-  },
-  {
-    id: "contact",
-    label: "Contact",
-    href: "#contact",
-    activeFor: ["contact"],
   },
 ];
 
@@ -135,7 +129,7 @@ const faqGroups = [
       },
       {
         question: "Who governs 6D Address?",
-        answer: "6D Address is a registered trademark, for which we request a nominal annual license fee to use.",
+        answer: "6D Address is a registered trademark, for which we request a nominal annual licence fee to use.",
       },
     ],
   },
@@ -259,13 +253,24 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    const focusHashTarget = () => {
+      const id = window.location.hash.slice(1);
+      if (!id) return;
+      document.getElementById(id)?.focus({ preventScroll: true });
+    };
+
+    window.addEventListener("hashchange", focusHashTarget);
+    return () => window.removeEventListener("hashchange", focusHashTarget);
+  }, []);
+
   const closeMenu = () => setMenuOpen(false);
 
   return (
     <main>
       <Navigation active={active} menuOpen={menuOpen} setMenuOpen={setMenuOpen} onFind={() => onFind(true)} onNavigate={closeMenu} />
 
-      <section id="top" className="hero section-dark" ref={heroRef}>
+      <section id="top" className="hero section-dark" ref={heroRef} tabIndex={-1}>
         <div className="hero-grid-layer" aria-hidden="true">
           <CursorGrid
             cellSize={50}
@@ -306,7 +311,7 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
               </span>
             </div>
             <div className="actions hero-actions">
-              <LiteButton className="button hero-cta hero-cta--primary" onClick={() => onFind(true)}>Find my <NoWrap6D /></LiteButton>
+              <LiteButton className="button hero-cta hero-cta--primary" href="#how-it-works">How it works</LiteButton>
             </div>
           </div>
           <GlobeHeroVisual />
@@ -315,7 +320,7 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
 
       <AddressingProblemSection />
 
-      <section className="craft-section craft-section--blueprint craft-grid-bg how-created-section" id="how-it-works">
+      <section className="craft-section craft-section--blueprint craft-grid-bg how-created-section" id="how-it-works" tabIndex={-1}>
         <div className="craft-container">
           <HowItWorksSection />
         </div>
@@ -325,9 +330,16 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
 
       <LocalityMattersSection />
 
+      <NarrativeContactCta
+        tone="dark"
+        prompt="Want to explore how 6D Address could work in your context?"
+      />
+
       <SomaliaUseCaseSection />
 
       <ApplicationsCarouselSection />
+
+      <NarrativeContactCta tone="light" prompt="Have a location challenge to explore?" />
 
       <PropositionSection />
 
@@ -335,7 +347,7 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
 
       <FAQSection />
 
-      <section id="contact" className="craft-section craft-section--dark craft-grid-bg craft-grid-bg--dark contact-chapter">
+      <section id="contact" className="craft-section craft-section--dark craft-grid-bg craft-grid-bg--dark contact-chapter" tabIndex={-1}>
         <div className="craft-container">
           <div className="contact-chapter__grid">
             <header className="contact-chapter__header craft-reveal">
@@ -400,7 +412,7 @@ function Navigation({
       </a>
       <nav className="nav-pill" aria-label="Primary navigation">{renderLinks()}</nav>
       <div className="nav-actions">
-        <LiteButton className="button primary nav-cta" onClick={onFind}>Find my 6D</LiteButton>
+        <LiteButton className="button primary nav-cta" href="#contact" onClick={onNavigate}>Contact us</LiteButton>
         <button
           className="menu-button"
           type="button"
@@ -415,15 +427,7 @@ function Navigation({
       </div>
       <nav className={`mobile-menu ${menuOpen ? "open" : ""}`} id="site-navigation" aria-label="Mobile navigation">
         {renderLinks()}
-        <LiteButton
-          className="button primary"
-          onClick={() => {
-            onNavigate();
-            onFind();
-          }}
-        >
-          Find my <NoWrap6D />
-        </LiteButton>
+        <LiteButton className="button primary" href="#contact" onClick={onNavigate}>Contact us</LiteButton>
       </nav>
     </header>
   );
@@ -552,6 +556,7 @@ function HowItWorksSection() {
             <span>Somalia</span>
           </address>
         </article>
+        <LiteButton className="button how-created__cta" href="/find">Find my <NoWrap6D /></LiteButton>
       </div>
     </div>
   );
@@ -573,7 +578,7 @@ function ColouredCode({ code, className = "" }: { code: string; className?: stri
 
 function LocalityMattersSection() {
   return (
-    <section id="locality" className="craft-section craft-section--dark craft-grid-bg craft-grid-bg--dark locality-proof">
+    <section id="locality" className="craft-section craft-section--dark craft-grid-bg craft-grid-bg--dark locality-proof" tabIndex={-1}>
       <div className="craft-container">
         <div className="locality-proof__grid">
           <header className="locality-proof__header craft-reveal">
@@ -597,9 +602,30 @@ function LocalityMattersSection() {
   );
 }
 
+function NarrativeContactCta({
+  tone,
+  prompt,
+}: {
+  tone: "dark" | "light";
+  prompt: string;
+}) {
+  return (
+    <section className={`narrative-contact-cta narrative-contact-cta--${tone}`} aria-label="Contact 6D Address">
+      <div className="craft-container">
+        <div className="narrative-contact-cta__inner">
+          <p>{prompt}</p>
+          <a className="narrative-contact-cta__link" href="#contact">
+            Start a conversation <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function SomaliaUseCaseSection() {
   return (
-    <section id="somalia-use-case" className="craft-section craft-section--warm somalia-case">
+    <section id="somalia-use-case" className="craft-section craft-section--warm somalia-case" tabIndex={-1}>
       <div className="craft-container">
         <div className="somalia-case__layout">
           <header className="somalia-case__copy craft-reveal">
@@ -721,7 +747,7 @@ function FAQSection() {
   const activeGroup = faqGroups[activeFaqGroup];
 
   return (
-    <section id="faq" className="craft-section craft-section--warm faq-chapter">
+    <section id="faq" className="craft-section craft-section--warm faq-chapter" tabIndex={-1}>
       <div className="craft-container">
         <div className="faq-chapter__grid">
           <header className="faq-chapter__header craft-reveal">
@@ -783,26 +809,71 @@ function FAQSection() {
 }
 
 function ContactForm() {
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (status === "submitting") return;
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const encoded = new URLSearchParams();
+
+    formData.forEach((value, key) => {
+      encoded.append(key, typeof value === "string" ? value : value.name);
+    });
+
+    setStatus("submitting");
+
+    try {
+      const response = await fetch("/", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: encoded.toString(),
+      });
+
+      if (!response.ok) throw new Error("Contact form submission failed");
+      form.reset();
+      setStatus("success");
+    } catch {
+      setStatus("error");
+    }
+  };
+
   return (
     <form
       className="contact-form craft-reveal"
       name="contact"
       method="POST"
       data-netlify="true"
-      netlify-honeypot="bot-field"
-      action="/contact-thanks"
+      data-netlify-honeypot="bot-field"
+      onSubmit={handleSubmit}
+      aria-describedby={status !== "idle" ? "contact-form-status" : undefined}
     >
       <input type="hidden" name="form-name" value="contact" />
+      <input type="hidden" name="subject" value="New 6D Address enquiry" />
       <p className="contact-form__hidden">
         <label>
           Do not fill this out if you are human:
-          <input name="bot-field" />
+          <input name="bot-field" autoComplete="off" tabIndex={-1} />
         </label>
       </p>
       <label><span>Name</span><input name="name" type="text" autoComplete="name" required /></label>
       <label><span>Email</span><input name="email" type="email" autoComplete="email" required /></label>
       <label><span>Message</span><textarea name="message" rows={5} required /></label>
-      <LiteButton className="craft-button craft-button--primary" type="submit">Send enquiry</LiteButton>
+      <LiteButton className="craft-button craft-button--primary" type="submit" disabled={status === "submitting"}>
+        {status === "submitting" ? "Sending…" : "Send enquiry"}
+      </LiteButton>
+      <p
+        id="contact-form-status"
+        className={`contact-form__status contact-form__status--${status}`}
+        role={status === "error" ? "alert" : "status"}
+        aria-live={status === "error" ? "assertive" : "polite"}
+        aria-atomic="true"
+      >
+        {status === "success" && "Thank you. Your message has been sent to the 6D Address team."}
+        {status === "error" && "We couldn't send your message. Please try again."}
+      </p>
     </form>
   );
 }
@@ -812,7 +883,7 @@ function Footer() {
     <footer className="site-footer">
       <div className="craft-container site-footer__inner">
         <div className="site-footer__brand">
-          <a href="#" className="site-footer__logo" aria-label="6D Address home"><NoWrap6D /></a>
+          <a href="#top" className="site-footer__logo" aria-label="6D Address home"><NoWrap6D /></a>
           <p><NoWrap6D /> is being documented as an open addressing method.</p>
         </div>
 
@@ -840,12 +911,14 @@ function LiteButton({
   href,
   type = "button",
   onClick,
+  disabled = false,
 }: {
   children: ReactNode;
   className?: string;
   href?: string;
   type?: "button" | "submit" | "reset";
   onClick?: (event: MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => void;
+  disabled?: boolean;
 }) {
   const handlePointerMove = (event: MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -858,7 +931,7 @@ function LiteButton({
     return <a className={classes} href={href} onClick={onClick} onPointerMove={handlePointerMove}>{children}</a>;
   }
 
-  return <button className={classes} type={type} onClick={onClick} onPointerMove={handlePointerMove}>{children}</button>;
+  return <button className={classes} type={type} onClick={onClick} onPointerMove={handlePointerMove} disabled={disabled}>{children}</button>;
 }
 
 export default App;
