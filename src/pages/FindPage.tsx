@@ -20,6 +20,7 @@ import {
   type Reverse6DViewportCandidate,
 } from "../lib/reverse6dViewportSearch";
 import { landmarkExamples, type LandmarkExample } from "../data/landmarkExamples";
+import { getLandmarkStreetLine } from "../lib/landmarkDisplay";
 import { createGoogleMapsAdapter, MapAdapter, MapAddress, type MapViewport } from "../map/googleMapsAdapter";
 
 const INITIAL_MAP_CENTER: Coordinate = { lat: 51.5074, lng: -0.1278 };
@@ -432,6 +433,7 @@ function ReverseSearchPanel({
   const [candidateContext, setCandidateContext] = useState<CandidateContext | null>(null);
   const [providerPlaces, setProviderPlaces] = useState<GeocoderPlace[]>([]);
   const [providerSearchState, setProviderSearchState] = useState<ProviderSearchState>("idle");
+  const [searchCollapsed, setSearchCollapsed] = useState(false);
   const normalizedCode = normalize6DCode(codeInput);
   const localSuggestions = useMemo(
     () => normalizedCode && query.trim() ? searchReverse6DDemoIndex(normalizedCode, query) : [],
@@ -476,6 +478,7 @@ function ReverseSearchPanel({
     setCandidateContext(null);
     onPreviewActive(null);
     onClearPreview();
+    if (selectionRevision > 0) setSearchCollapsed(true);
   }, [onClearPreview, onPreviewActive, selectionRevision]);
 
   useEffect(() => {
@@ -529,6 +532,7 @@ function ReverseSearchPanel({
   useEffect(() => () => cancelProviderRequest(), []);
 
   const applyCodeInput = (value: string) => {
+    setSearchCollapsed(false);
     skipProviderAutocompleteQueryRef.current = null;
     const parsed = parseCombinedReverse6DInput(value);
     setCodeInput(parsed.code ?? value);
@@ -544,6 +548,7 @@ function ReverseSearchPanel({
   };
 
   const applyQueryInput = (value: string) => {
+    setSearchCollapsed(false);
     skipProviderAutocompleteQueryRef.current = null;
     const parsed = parseCombinedReverse6DInput(value);
     if (parsed.code && parsed.place) {
@@ -569,6 +574,7 @@ function ReverseSearchPanel({
     setMessage("");
     closeSuggestions();
     clearViewportCandidates();
+    setSearchCollapsed(true);
     if (updateUrl) replaceFindUrl({ code: suggestion.code, place: suggestion.place.name });
   };
 
@@ -589,6 +595,7 @@ function ReverseSearchPanel({
     setMessage("");
     closeSuggestions();
     clearViewportCandidates();
+    setSearchCollapsed(true);
     replaceFindUrl({
       code: candidate.code,
       place: selectedPlaceName,
@@ -857,6 +864,7 @@ function ReverseSearchPanel({
   };
 
   const resetSearch = () => {
+    setSearchCollapsed(false);
     initialSearchHandledRef.current = true;
     cancelProviderRequest();
     setCodeInput("");
@@ -886,10 +894,26 @@ function ReverseSearchPanel({
         ? "Zoom in to search the current map view"
         : "Search matching cells in the current map view";
 
+  const collapsedSummary = [normalizedCode ?? codeInput.trim(), query.trim()].filter(Boolean).join(" · ");
+
   return (
-    <aside className="find-reverse-search" aria-label="Find by 6D Address">
+    <aside className={`find-reverse-search ${searchCollapsed ? "is-collapsed" : ""}`} aria-label="Find by 6D Address">
       <form onSubmit={onSubmit}>
-        <h1>Find by 6D Address</h1>
+        <div className="find-reverse-search__header">
+          <div>
+            <h1>Find by 6D Address</h1>
+            {searchCollapsed && collapsedSummary && <p className="find-reverse-search__summary">{collapsedSummary}</p>}
+          </div>
+          <button
+            aria-expanded={!searchCollapsed}
+            className="find-reverse-search__collapse-toggle"
+            onClick={() => setSearchCollapsed((current) => !current)}
+            type="button"
+          >
+            {searchCollapsed ? "Edit search" : "Hide search"}
+          </button>
+        </div>
+        <div className="find-reverse-search__body">
         <div className="find-reverse-search__fields">
           <label className="find-reverse-search__code-field">
             <span>6D code</span>
@@ -1023,6 +1047,7 @@ function ReverseSearchPanel({
             </div>
           </section>
         )}
+        </div>
       </form>
     </aside>
   );
@@ -1154,6 +1179,8 @@ function FindInfoPanel({
   pendingCode: FormattedCode | null;
   result: FinderResult | null;
 }) {
+  const landmarkStreetLine = result?.landmark ? getLandmarkStreetLine(result.landmark) : undefined;
+
   return (
     <section
       className={`find-map-page__panel ${result ? "has-result" : ""}`}
@@ -1166,7 +1193,7 @@ function FindInfoPanel({
             <>
               <h2 className="find-map-page__landmark-name">{result.landmark.name}</h2>
               <address className="find-map-page__address-lines find-map-page__address-lines--landmark">
-                {result.landmark.streetLine && <span>{result.landmark.streetLine}</span>}
+                {landmarkStreetLine && <span>{landmarkStreetLine}</span>}
                 <div className="find-map-page__landmark-code-line">
                   <FindCode code={result.code} />
                   <span>{result.landmark.locality}</span>
@@ -1234,7 +1261,7 @@ function toAddressLines(address: MapAddress, suffix: string): AddressLines {
 
 function toLandmarkAddressLines(landmark: LandmarkExample): AddressLines {
   return {
-    line1: landmark.streetLine || landmark.locality,
+    line1: getLandmarkStreetLine(landmark) || landmark.locality,
     line2: landmark.cityLine,
     line3: landmark.country,
   };

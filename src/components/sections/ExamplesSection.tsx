@@ -1,6 +1,7 @@
 import { MouseEvent, PointerEvent, TouchEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { NoWrap6D } from "../NoWrap6D";
 import { LandmarkExample, visibleLandmarkExamples } from "../../data/landmarkExamples";
+import { getLandmarkStreetLine } from "../../lib/landmarkDisplay";
 
 const LANDMARK_AUTOPLAY_DELAY = 5400;
 const CARD_CLICK_DRAG_THRESHOLD = 6;
@@ -69,6 +70,7 @@ function AddressExampleCard({
   onCardClick: (event: MouseEvent<HTMLAnchorElement>) => void;
 }) {
   const href = `/find?lat=${example.lat}&lng=${example.lng}&landmark=${encodeURIComponent(example.id)}&label=${encodeURIComponent(example.name)}`;
+  const streetLine = getLandmarkStreetLine(example);
 
   return (
     <a
@@ -82,7 +84,7 @@ function AddressExampleCard({
       <div className="address-example-card__body">
         <h3 className="address-example-card__title">{example.name}</h3>
         <address className="address-example-card__address" aria-label={`${example.name} address`}>
-          {example.streetLine ? <span>{example.streetLine}</span> : null}
+          {streetLine ? <span>{streetLine}</span> : null}
           <span className="address-example-card__code-line">
             <ColouredCode code={example.code} className="address-example-card__inline-code" />
             <span>{example.locality}</span>
