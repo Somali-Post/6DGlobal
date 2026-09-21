@@ -258,14 +258,36 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
   }, []);
 
   useEffect(() => {
-    const focusHashTarget = () => {
-      const id = window.location.hash.slice(1);
-      if (!id) return;
-      document.getElementById(id)?.focus({ preventScroll: true });
+    let frame = 0;
+
+    const navigateToHashTarget = () => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        const rawId = window.location.hash.slice(1);
+        if (!rawId) return;
+
+        let id = rawId;
+        try {
+          id = decodeURIComponent(rawId);
+        } catch {
+          // Keep the raw fragment when it is not valid URI-encoded text.
+        }
+
+        const target = document.getElementById(id);
+        if (!target) return;
+
+        const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        target.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
+        target.focus({ preventScroll: true });
+      });
     };
 
-    window.addEventListener("hashchange", focusHashTarget);
-    return () => window.removeEventListener("hashchange", focusHashTarget);
+    navigateToHashTarget();
+    window.addEventListener("hashchange", navigateToHashTarget);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("hashchange", navigateToHashTarget);
+    };
   }, []);
 
   const closeMenu = () => setMenuOpen(false);
@@ -565,10 +587,10 @@ function HowItWorksSection() {
               <circle cx="12" cy="12" r="2" />
               <path d="M12 1v5m0 12v5M1 12h5m12 0h5" />
             </svg>
-            <h3 id="try-sixd-heading">What’s the code for your place?</h3>
+            <h3 id="try-sixd-heading">What’s your 6D Address?</h3>
           </div>
-          <p>Choose a spot on the map and discover its six-digit code.</p>
-          <a className="cta-action cta-action--navy" href="/find">
+          <p>Choose a location on the map to discover your 6D Address.</p>
+          <a className="cta-action cta-action--blue" href="/find?locate=1">
             <span>Find my <NoWrap6D /></span><span className="cta-arrow" aria-hidden="true">→</span>
           </a>
         </aside>
@@ -618,41 +640,33 @@ function LocalityMattersSection() {
 }
 
 function NarrativeContactCta({ tone }: { tone: "dark" | "light" }) {
-  if (tone === "dark") {
-    return (
-      <section className="narrative-contact-cta narrative-contact-cta--dark craft-grid-bg craft-grid-bg--dark" aria-labelledby="implementation-cta-heading">
-        <div className="craft-container">
-          <div className="implementation-cta">
-            <header className="implementation-cta__copy">
-              <h2 id="implementation-cta-heading">Bring <NoWrap6D /> to your context.</h2>
-              <p>Explore what implementation could look like for your country, organisation or use case.</p>
-            </header>
-            <ul className="implementation-cta__topics" aria-label="Discussion topics">
-              <li>Country implementation</li>
-              <li>Use-case testing</li>
-              <li>Partnerships &amp; pilots</li>
-              <li>Maps, data &amp; technical integration</li>
-            </ul>
-            <div className="implementation-cta__action">
-              <a className="cta-action cta-action--white" href="#contact">
-                <span>Start a conversation</span><span className="cta-arrow" aria-hidden="true">→</span>
-              </a>
-              <p>Tell us what you’re working on.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-    );
-  }
+  const isDark = tone === "dark";
+  const headingId = `${tone}-contact-cta-heading`;
+  const helperId = `${tone}-contact-cta-helper`;
 
   return (
-    <section className={`narrative-contact-cta narrative-contact-cta--${tone}`} aria-label="Contact 6D Address">
+    <section
+      className={`narrative-contact-cta narrative-contact-cta--${tone} craft-grid-bg${isDark ? " craft-grid-bg--dark" : ""}`}
+      aria-labelledby={headingId}
+    >
       <div className="craft-container">
-        <div className="narrative-contact-cta__inner">
-          <p>Have a location challenge to explore?</p>
-          <a className="narrative-contact-cta__link" href="#contact">
-            <span>Talk to the <NoWrap6D /> team</span><span className="cta-arrow" aria-hidden="true">→</span>
-          </a>
+        <div className="implementation-cta">
+          <header className="implementation-cta__copy">
+            <h2 id={headingId}>
+              {isDark ? <>Explore <NoWrap6D /> for your country or organisation</> : <>Could <NoWrap6D /> work for your use case?</>}
+            </h2>
+            <p>
+              {isDark
+                ? "See what implementation could look like for your addressing, delivery or service needs."
+                : <>Explore how <NoWrap6D /> could support your country, organisation or project.</>}
+            </p>
+          </header>
+          <div className="implementation-cta__action">
+            <a className={`cta-action ${isDark ? "cta-action--white" : "cta-action--blue"}`} href="#contact" aria-describedby={helperId}>
+              <span>Start a conversation</span><span className="cta-arrow" aria-hidden="true">→</span>
+            </a>
+            <p id={helperId}>Tell us what you’re working on.</p>
+          </div>
         </div>
       </div>
     </section>

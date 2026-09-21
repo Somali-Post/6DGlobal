@@ -21,12 +21,13 @@ Create `.env.local` from `.env.example`:
 
 ```bash
 VITE_GOOGLE_MAPS_API_KEY=your_google_maps_key_here
-# Server-side only; configure this in Netlify, never as VITE_GEOAPIFY_API_KEY.
-GEOAPIFY_API_KEY=your_geoapify_key_here
 ```
 
 The Google Maps key is read by Vite at build/dev time. Do not commit `.env` or `.env.local`.
-The Geoapify key is used only by the Netlify geocoder function. Plain Vite dev does not run Netlify Functions; use Netlify Dev when testing `/.netlify/functions/geocode` locally.
+
+## Netlify Deployment
+
+Netlify builds the site with `npm run build` and publishes `dist`. Keep the Google Maps key in the Netlify environment settings. The tracked `public/_redirects` rule serves the single-page app for routes such as `/find`, while `public/_headers` retains long-lived caching for static assets. Netlify detects the contact form at build time; submissions are posted to the site root by the form handler.
 
 ## Clean Sharing
 

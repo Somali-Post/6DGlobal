@@ -333,10 +333,10 @@ export function LocalityLondonMap({
         }
 
         .llm-header {
+          display: none;
           position: absolute;
           inset: 1.35rem 1.45rem auto 1.45rem;
           z-index: 8;
-          display: flex;
           justify-content: space-between;
           gap: 1.5rem;
           align-items: flex-start;
