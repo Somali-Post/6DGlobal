@@ -864,8 +864,8 @@ function ContactForm() {
         }),
       });
 
-      const result = await response.json().catch(() => null) as { success?: boolean; message?: string } | null;
-      if (!response.ok || result?.success !== true) {
+      if (!response.ok) {
+        const result = await response.json().catch(() => null) as { message?: string } | null;
         throw new Error(result?.message || "We couldn't send your message. Please try again.");
       }
 

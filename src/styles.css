@@ -3735,6 +3735,35 @@ kbd,
   background: oklch(0.13 0.034 260 / .82);
 }
 
+/* Keep browser-autofilled contact fields aligned with the dark form theme. */
+.contact-chapter .contact-form input:-webkit-autofill,
+.contact-chapter .contact-form input:-webkit-autofill:hover,
+.contact-chapter .contact-form input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text-invert) !important;
+  -webkit-box-shadow: 0 0 0 1000px oklch(0.105 0.030 260 / .62) inset !important;
+  box-shadow: 0 0 0 1000px oklch(0.105 0.030 260 / .62) inset !important;
+  border-color: var(--border-dark) !important;
+  caret-color: var(--text-invert);
+  transition: background-color 9999s ease-out 0s;
+}
+
+.contact-chapter .contact-form input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px oklch(0.13 0.034 260 / .82) inset !important;
+  box-shadow: 0 0 0 1000px oklch(0.13 0.034 260 / .82) inset !important;
+  border-color: var(--brand-blue-soft) !important;
+}
+
+.contact-chapter .contact-form input:autofill {
+  -webkit-text-fill-color: var(--text-invert) !important;
+  background-color: oklch(0.105 0.030 260 / .62) !important;
+  caret-color: var(--text-invert);
+}
+
+.contact-chapter .contact-form input:autofill:focus {
+  background-color: oklch(0.13 0.034 260 / .82) !important;
+  border-color: var(--brand-blue-soft) !important;
+}
+
 .contact-chapter .contact-form textarea {
   resize: vertical;
   min-height: 150px;
