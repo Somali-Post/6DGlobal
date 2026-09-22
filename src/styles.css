@@ -2098,8 +2098,7 @@ kbd,
   flex: 0 0 auto;
   transition: transform var(--duration-fast) var(--ease-out-craft);
 }
-.cta-action:hover .cta-arrow,
-.narrative-contact-cta__link:hover .cta-arrow {
+.cta-action:hover .cta-arrow {
   transform: translateX(3px);
 }
 .cta-action:focus-visible {
@@ -2268,6 +2267,7 @@ kbd,
 }
 .locality-proof__header {
   max-width: 560px;
+  transform: translateY(clamp(-1.25rem, -1.5vw, -.5rem));
 }
 .locality-proof__header .display-section {
   margin-bottom: clamp(1.35rem, 2.5vw, 2.25rem);
@@ -2284,116 +2284,29 @@ kbd,
 .locality-proof__message p {
   margin: 0;
 }
-
-.narrative-contact-cta {
-  padding-block: clamp(3.5rem, 4.5vw, 4rem);
-  border-block: 1px solid var(--border-light);
-}
-.narrative-contact-cta--dark {
-  color: var(--text-invert);
-  background: var(--navy-950);
-  border-color: var(--border-dark);
-}
-.implementation-cta {
-  position: relative;
+.locality-proof__cta {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas: "copy action";
-  column-gap: clamp(2rem, 5vw, 5rem);
-  row-gap: 24px;
-  align-items: end;
+  justify-items: start;
+  gap: 1rem;
+  margin-top: clamp(1.5rem, 2.5vw, 2.25rem);
 }
-.implementation-cta__copy {
-  grid-area: copy;
-}
-.implementation-cta__copy h2 {
+.locality-proof__cta p {
   margin: 0;
-  max-width: 18ch;
-  min-height: 3.45em;
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 2.8vw, 2.5rem);
-  line-height: 1.15;
-  letter-spacing: -.04em;
-  text-wrap: balance;
-}
-.implementation-cta__copy p {
-  max-width: 50ch;
-  margin: 16px 0 0;
   color: var(--text-invert-secondary);
   font-size: 1rem;
-  line-height: 1.6;
-  text-wrap: pretty;
-}
-.implementation-cta__action {
-  grid-area: action;
-  justify-self: end;
-}
-.implementation-cta__action .cta-action {
-  min-height: 48px;
-  padding: 12px 20px;
-  font-size: 1rem;
-}
-.implementation-cta__action p {
-  margin: 12px 0 0;
-  color: var(--text-invert-secondary);
-  font-size: .875rem;
   line-height: 1.5;
 }
-.narrative-contact-cta--light {
-  color: var(--text-primary);
-  background: var(--blueprint-50);
-}
-.narrative-contact-cta--light .implementation-cta__copy p,
-.narrative-contact-cta--light .implementation-cta__action p {
-  color: var(--text-secondary);
-}
-.narrative-contact-cta__inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 2rem;
-  min-height: 3.25rem;
-}
-.narrative-contact-cta__inner p {
-  max-width: 43rem;
-  margin: 0;
-  color: inherit;
-  font-size: var(--text-md);
-  line-height: 1.45;
-}
-.narrative-contact-cta__link {
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  gap: .55rem;
+.locality-proof__cta .cta-action {
   min-height: 48px;
-  padding: .55rem 0;
-  border-bottom: 1px solid currentColor;
-  color: inherit;
-  font-weight: 800;
-  text-decoration: none;
-  text-wrap: pretty;
-  transition: color var(--duration-fast) var(--ease-out-craft), border-color var(--duration-fast) var(--ease-out-craft), transform var(--duration-fast) var(--ease-out-craft);
 }
-.narrative-contact-cta__link .cta-arrow {
-  color: var(--brand-blue);
-  font-family: var(--font-mono);
-  font-size: 1.15em;
-}
-.narrative-contact-cta__link:hover {
-  border-color: var(--brand-blue);
-  color: var(--brand-blue);
-}
-.narrative-contact-cta__link:focus-visible {
-  outline: 2px solid var(--brand-blue);
-  outline-offset: 5px;
-}
+
 @media (max-width: 1080px) {
   .locality-proof__grid {
     grid-template-columns: 1fr;
   }
   .locality-proof__header {
     max-width: 760px;
+    transform: none;
   }
 }
 
@@ -3725,6 +3638,41 @@ kbd,
   color: var(--text-invert);
 }
 
+.contact-chapter__subtitle {
+  margin-top: clamp(1.35rem, 2.5vw, 2rem);
+  color: var(--text-invert-secondary);
+  font-size: clamp(calc(1rem + 2px), calc(1.25vw + 2px), calc(1.15rem + 2px));
+  line-height: 1.55;
+}
+
+.contact-chapter__subtitle p {
+  margin: 0 0 .75rem;
+}
+
+.contact-chapter__subtitle ul {
+  display: grid;
+  gap: .55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.contact-chapter__subtitle li {
+  position: relative;
+  padding-inline-start: 1.15rem;
+}
+
+.contact-chapter__subtitle li::before {
+  content: "";
+  position: absolute;
+  top: .72em;
+  inset-inline-start: 0;
+  width: .42rem;
+  height: .42rem;
+  border-radius: 50%;
+  background: var(--brand-blue-soft);
+}
+
 .contact-chapter .contact-form {
   grid-column: 7 / span 6;
   width: 100%;
@@ -4009,16 +3957,6 @@ body,
     margin-top: .85rem;
     font-size: 1rem;
     line-height: 1.55;
-  }
-
-  .narrative-contact-cta__inner {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 1.25rem;
-  }
-
-  .narrative-contact-cta__link {
-    min-height: 48px;
   }
 
   img,
@@ -6166,31 +6104,6 @@ body,
 }
 
 @media (max-width: 767px) {
-  .narrative-contact-cta {
-    padding-block: 32px;
-  }
-  .implementation-cta {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: "copy" "action";
-    align-items: start;
-  }
-  .implementation-cta__copy h2 {
-    font-size: 1.75rem;
-  }
-  .implementation-cta__action .cta-action {
-    width: 100%;
-  }
-  .implementation-cta__action {
-    justify-self: start;
-  }
-  .narrative-contact-cta__inner {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-  .narrative-contact-cta__link {
-    flex-shrink: 1;
-  }
 }
 @media (max-width: 620px) {
   .how-created__action {
@@ -6211,12 +6124,11 @@ body,
 }
 @media (prefers-reduced-motion: reduce) {
   .cta-action,
-  .cta-arrow,
-  .narrative-contact-cta__link {
+  .cta-arrow {
     transition: none;
   }
   .cta-action:hover .cta-arrow,
-  .narrative-contact-cta__link:hover .cta-arrow {
+  .cta-action:hover .cta-arrow {
     transform: none;
   }
 }

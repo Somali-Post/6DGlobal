@@ -8,6 +8,8 @@
     "lint": "tsc -b --pretty false",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
+    "dev:pages": "wrangler pages dev dist",
+    "verify:contact": "node --experimental-strip-types scripts/verifyContactFunction.ts",
     "verify:locality": "node --experimental-strip-types scripts/verifyLocalityMapPoints.ts",
     "verify:landmarks": "node --experimental-strip-types scripts/verifyLandmarkExamples.ts",
     "optimize:assets": "node scripts/optimize-assets.mjs",
@@ -25,7 +27,8 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@types/three": "^0.185.1",
-    "sharp": "^0.35.3"
+    "sharp": "^0.35.3",
+    "wrangler": "^4.136.1"
   },
   "description": "Clean React/Vite rebuild for 6D Address / 6D Global. The site positions 6D as an open addressing method: a six-digit reference plus locality information.",
   "main": "index.js",

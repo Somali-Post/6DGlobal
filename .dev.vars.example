@@ -1,0 +1,4 @@
+CLOUDFLARE_ACCOUNT_ID=your_cloudflare_account_id
+CLOUDFLARE_EMAIL_API_TOKEN=your_email_sending_api_token
+CONTACT_EMAIL_FROM=contact@6daddress.com
+CONTACT_EMAIL_TO=first@example.com,second@example.com,third@example.com

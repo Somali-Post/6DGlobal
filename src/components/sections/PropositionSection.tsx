@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { renderNoWrap6D } from "../NoWrap6D";
 import "./PropositionSection.css";
 
@@ -51,23 +51,56 @@ function PropositionColumn({ title, items, side }: { title: string; items: { cop
   );
 }
 
+function PropositionGlobe() {
+  const globeRef = useRef<HTMLDivElement>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const container = globeRef.current;
+    if (!container) return;
+    let cancelled = false;
+    let destroyGlobe: (() => void) | undefined;
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      observer.disconnect();
+      void import("../../globe/createGlobe").then(({ createHeroGlobe }) => {
+        if (cancelled) return;
+        const globe = createHeroGlobe({
+          container,
+          layout: "centered",
+          rotationDuration: 160,
+          pointerTiltDegrees: 0,
+          onReady: () => { if (!cancelled) setReady(true); },
+        });
+        destroyGlobe = globe.destroy;
+      }).catch(() => {
+        // Keep the CSS globe visible if WebGL or the visual module is unavailable.
+      });
+    }, { rootMargin: "250px" });
+    observer.observe(container);
+
+    return () => {
+      cancelled = true;
+      observer.disconnect();
+      destroyGlobe?.();
+    };
+  }, []);
+
+  return (
+    <div className={`proposition-section__artwork ${ready ? "is-ready" : ""}`} aria-hidden="true">
+      <div className="proposition-section__globe-fallback" />
+      <div className="proposition-section__globe" ref={globeRef} />
+    </div>
+  );
+}
+
 export function PropositionSection() {
   return (
-    <section id="proposition" className="craft-section proposition-section" tabIndex={-1}>
+    <section id="proposition" className="craft-section craft-grid-bg craft-grid-bg--dark proposition-section" tabIndex={-1}>
       <div className="craft-container proposition-section__inner">
         <div className="proposition-section__composition">
           <PropositionColumn title="Our Dreams" items={dreams} side="left" />
-          <div className="proposition-section__artwork" aria-label="Global 6D addressing and partnership network">
-            <span className="proposition-orbit-icon proposition-orbit-icon--location"><TechnicalIcon name="location" /></span>
-            <span className="proposition-orbit-icon proposition-orbit-icon--tools"><TechnicalIcon name="tools" /></span>
-            <span className="proposition-orbit-icon proposition-orbit-icon--growth"><TechnicalIcon name="growth" /></span>
-            <span className="proposition-orbit-icon proposition-orbit-icon--partner"><TechnicalIcon name="partner" /></span>
-            <span className="proposition-section__badge" aria-hidden="true">
-              <span className="proposition-section__badge-logo-crop">
-                <img src="/logo-256.webp" alt="" />
-              </span>
-            </span>
-          </div>
+          <PropositionGlobe />
           <PropositionColumn title="Our Proposition" items={propositions} side="right" />
         </div>
         <a className="proposition-section__cta" href="#contact">

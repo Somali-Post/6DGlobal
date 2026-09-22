@@ -39,6 +39,7 @@ export type HeroGlobeOptions = Partial<GlobeConfig> & {
   container: HTMLElement;
   autoRotate?: boolean;
   reducedMotion?: boolean;
+  layout?: 'hero' | 'centered';
   onProgress?: (loaded: number, total: number) => void;
   onReady?: () => void;
 };
@@ -287,9 +288,16 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
     const shortest = Math.min(width, height);
     const stackedLayout = width <= 860;
     const responsiveScale = stackedLayout ? 0.43 : width < 1024 ? 1.18 : 1.45;
-    globeGroup.scale.setScalar(config.globeScale * responsiveScale);
-    globeGroup.position.x = stackedLayout ? 0.22 : config.horizontalOffset * (width / shortest);
-    globeGroup.position.y = stackedLayout ? 1 : -0.02;
+    if (options.layout === 'centered') {
+      const fitScale = camera.position.z * Math.sin(degreesToRadians(camera.fov / 2))
+        * Math.min(1, camera.aspect) * 0.86;
+      globeGroup.scale.setScalar(config.globeScale * fitScale);
+      globeGroup.position.set(0, 0, 0);
+    } else {
+      globeGroup.scale.setScalar(config.globeScale * responsiveScale);
+      globeGroup.position.x = stackedLayout ? 0.22 : config.horizontalOffset * (width / shortest);
+      globeGroup.position.y = stackedLayout ? 1 : -0.02;
+    }
     const viewDirection = camera.position.clone().sub(globeGroup.position).normalize();
     const right = new Vector3().crossVectors(new Vector3(0, 1, 0), viewDirection).normalize();
     const up = new Vector3().crossVectors(viewDirection, right).normalize();
@@ -321,7 +329,7 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
         const viewDirection = camera.position.clone().sub(globeGroup.position)
           .addScaledVector(visibleAnchor, -globeGroup.scale.x).normalize();
         const targetOpacity = smoothstep(LABEL_FADE_START, LABEL_FADE_END, visibleAnchor.dot(viewDirection)) * LABEL_MAX_OPACITY;
-        label.opacity += (targetOpacity - label.opacity) * 0.08;
+        label.opacity = reducedMotion ? targetOpacity : label.opacity + (targetOpacity - label.opacity) * 0.08;
         label.mesh.material.opacity = label.opacity;
         label.mesh.visible = targetOpacity > LABEL_VISIBLE_THRESHOLD && label.opacity > 0.04;
       });

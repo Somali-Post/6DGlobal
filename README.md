@@ -25,9 +25,9 @@ VITE_GOOGLE_MAPS_API_KEY=your_google_maps_key_here
 
 The Google Maps key is read by Vite at build/dev time. Do not commit `.env` or `.env.local`.
 
-## Netlify Deployment
+## Cloudflare Pages Deployment
 
-Netlify builds the site with `npm run build` and publishes `dist`. Keep the Google Maps key in the Netlify environment settings. The tracked `public/_redirects` rule serves the single-page app for routes such as `/find`, while `public/_headers` retains long-lived caching for static assets. Netlify detects the contact form at build time; submissions are posted to the site root by the form handler.
+The Cloudflare Pages project builds from the repository root with `npm run build` and publishes `dist`. Keep the Google Maps key in the Pages build environment. The tracked `public/_redirects` rule continues to serve the single-page app for routes such as `/find`, while `public/_headers` retains long-lived caching for static assets. The root-level `functions` directory is discovered automatically by Pages and does not need a separate build command.
 
 ## Clean Sharing
 
@@ -98,14 +98,26 @@ A six-digit reference alone is not globally unique.
 
 ## Contact Form
 
-The contact section uses Netlify Forms attributes:
+The contact form sends same-origin JSON requests to the Cloudflare Pages Function at `POST /api/contact`. Email delivery uses the Cloudflare Email Service REST API because Pages Functions do not list the Workers `send_email` binding among their supported bindings.
 
-```html
-<form name="contact" method="POST" data-netlify="true">
-```
-
-On non-Netlify hosting, configure an equivalent form handler or use the visible email fallback:
+Configure these values for both preview and production under **Workers & Pages > 6dglobal > Settings > Variables and Secrets**:
 
 ```text
-contact@6daddress.com
+CLOUDFLARE_ACCOUNT_ID=<Cloudflare account ID>
+CLOUDFLARE_EMAIL_API_TOKEN=<encrypted secret>
+CONTACT_EMAIL_FROM=<authorized sender on the sending domain>
+CONTACT_EMAIL_TO=<three verified recipients, comma-separated>
 ```
+
+Create the API token with the account-level **Email Sending: Edit** permission and store it as an encrypted secret. The other three values are non-secret environment variables. In **Compute > Email Service > Email Sending**, onboard the sender domain and wait until its Cloudflare-managed SPF, DKIM, bounce MX, and DMARC records are ready. The configured sender must belong to that onboarded domain. Before a sending domain is onboarded, Cloudflare limits delivery to account-verified destination addresses.
+
+For local Function testing, copy `.dev.vars.example` to `.dev.vars`, use non-production credentials only when a real send is intended, then run:
+
+```bash
+npm run build
+npm run dev:pages
+```
+
+The handler validates origin, content type, body size, required values, email format, and field lengths. It retains a honeypot and performs best-effort ten-minute idempotency within a warm Function isolate. Turnstile is intentionally deferred to keep the form unobtrusive; the public endpoint still has distributed spam and rate-abuse risk, so enable a Cloudflare WAF rate-limiting rule for `/api/contact` and add server-validated Turnstile if abuse appears.
+
+Historical Netlify submissions are not migrated by this change.

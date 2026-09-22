@@ -356,13 +356,9 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
 
       <LocalityMattersSection />
 
-      <NarrativeContactCta tone="dark" />
-
       <SomaliaUseCaseSection />
 
       <ApplicationsCarouselSection />
-
-      <NarrativeContactCta tone="light" />
 
       <PropositionSection />
 
@@ -375,6 +371,14 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
           <div className="contact-chapter__grid">
             <header className="contact-chapter__header craft-reveal">
               <h2 className="display-section">Start a <NoWrap6D /> conversation</h2>
+              <div className="contact-chapter__subtitle">
+                <p>To see how <NoWrap6D /> can assist in:</p>
+                <ul>
+                  <li>Addressing the unaddressed</li>
+                  <li>Connecting the disconnected</li>
+                  <li>Facilitating social and economic development</li>
+                </ul>
+              </div>
             </header>
 
             <ContactForm />
@@ -629,44 +633,16 @@ function LocalityMattersSection() {
               <p>The same 6D code appears multiple times</p>
               <p>Locality makes the <NoWrap6D /> unique</p>
             </div>
+            <div className="locality-proof__cta">
+              <p>Find out how <NoWrap6D /> can support your work.</p>
+              <a className="cta-action cta-action--blue" href="#contact">
+                <span>Get in touch</span><span className="cta-arrow" aria-hidden="true">→</span>
+              </a>
+            </div>
           </header>
 
           <LocalityLondonMap />
 
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function NarrativeContactCta({ tone }: { tone: "dark" | "light" }) {
-  const isDark = tone === "dark";
-  const headingId = `${tone}-contact-cta-heading`;
-  const helperId = `${tone}-contact-cta-helper`;
-
-  return (
-    <section
-      className={`narrative-contact-cta narrative-contact-cta--${tone} craft-grid-bg${isDark ? " craft-grid-bg--dark" : ""}`}
-      aria-labelledby={headingId}
-    >
-      <div className="craft-container">
-        <div className="implementation-cta">
-          <header className="implementation-cta__copy">
-            <h2 id={headingId}>
-              {isDark ? <>Explore <NoWrap6D /> for your country or organisation</> : <>Could <NoWrap6D /> work for your use case?</>}
-            </h2>
-            <p>
-              {isDark
-                ? "See what implementation could look like for your addressing, delivery or service needs."
-                : <>Explore how <NoWrap6D /> could support your country, organisation or project.</>}
-            </p>
-          </header>
-          <div className="implementation-cta__action">
-            <a className={`cta-action ${isDark ? "cta-action--white" : "cta-action--blue"}`} href="#contact" aria-describedby={helperId}>
-              <span>Start a conversation</span><span className="cta-arrow" aria-hidden="true">→</span>
-            </a>
-            <p id={helperId}>Tell us what you’re working on.</p>
-          </div>
         </div>
       </div>
     </section>
@@ -860,33 +836,47 @@ function FAQSection() {
 
 function ContactForm() {
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
+  const submissionId = useRef<string | null>(null);
+  const isSubmitting = useRef(false);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (status === "submitting") return;
+    if (isSubmitting.current) return;
 
     const form = event.currentTarget;
     const formData = new FormData(form);
-    const encoded = new URLSearchParams();
-
-    formData.forEach((value, key) => {
-      encoded.append(key, typeof value === "string" ? value : value.name);
-    });
-
+    submissionId.current ??= crypto.randomUUID();
+    isSubmitting.current = true;
     setStatus("submitting");
+    setErrorMessage("");
 
     try {
-      const response = await fetch("/", {
+      const response = await fetch("/api/contact", {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: encoded.toString(),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.get("name"),
+          email: formData.get("email"),
+          message: formData.get("message"),
+          website: formData.get("website"),
+          submissionId: submissionId.current,
+        }),
       });
 
-      if (!response.ok) throw new Error("Contact form submission failed");
+      const result = await response.json().catch(() => null) as { success?: boolean; message?: string } | null;
+      if (!response.ok || result?.success !== true) {
+        throw new Error(result?.message || "We couldn't send your message. Please try again.");
+      }
+
       form.reset();
+      submissionId.current = null;
       setStatus("success");
-    } catch {
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "We couldn't send your message. Please try again.");
       setStatus("error");
+    } finally {
+      isSubmitting.current = false;
     }
   };
 
@@ -895,22 +885,19 @@ function ContactForm() {
       className="contact-form craft-reveal"
       name="contact"
       method="POST"
-      data-netlify="true"
-      data-netlify-honeypot="bot-field"
+      action="/api/contact"
       onSubmit={handleSubmit}
       aria-describedby={status !== "idle" ? "contact-form-status" : undefined}
     >
-      <input type="hidden" name="form-name" value="contact" />
-      <input type="hidden" name="subject" value="New 6D Address enquiry" />
       <p className="contact-form__hidden">
         <label>
           Do not fill this out if you are human:
-          <input name="bot-field" autoComplete="off" tabIndex={-1} />
+          <input name="website" autoComplete="off" tabIndex={-1} />
         </label>
       </p>
-      <label><span>Name</span><input name="name" type="text" autoComplete="name" required /></label>
-      <label><span>Email</span><input name="email" type="email" autoComplete="email" required /></label>
-      <label><span>Message</span><textarea name="message" rows={5} required /></label>
+      <label><span>Name</span><input name="name" type="text" autoComplete="name" maxLength={120} required /></label>
+      <label><span>Email</span><input name="email" type="email" autoComplete="email" maxLength={254} required /></label>
+      <label><span>Message</span><textarea name="message" rows={5} maxLength={5000} required /></label>
       <LiteButton className="craft-button craft-button--primary" type="submit" disabled={status === "submitting"}>
         {status === "submitting" ? "Sending…" : "Send enquiry"}
       </LiteButton>
@@ -922,7 +909,7 @@ function ContactForm() {
         aria-atomic="true"
       >
         {status === "success" && "Thank you. Your message has been sent to the 6D Address team."}
-        {status === "error" && "We couldn't send your message. Please try again."}
+        {status === "error" && errorMessage}
       </p>
     </form>
   );
