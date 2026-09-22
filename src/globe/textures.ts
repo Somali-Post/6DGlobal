@@ -24,7 +24,7 @@ type GeoJsonFeatureCollection = {
     geometry: GeoJsonGeometry | null;
   }>;
 };
-type TextureReadyCallback = () => void;
+type TextureReadyCallback = (success: boolean) => void;
 
 function createCanvas(width: number, height: number): HTMLCanvasElement | OffscreenCanvas {
   if ('OffscreenCanvas' in window) {
@@ -165,12 +165,11 @@ export function createSurfaceTexture(isMobile: boolean, onReady?: TextureReadyCa
   void drawRealEarthSurface(ctx, width, height)
     .then(() => {
       texture.needsUpdate = true;
+      onReady?.(true);
     })
     .catch((error: unknown) => {
       console.warn(error);
-    })
-    .finally(() => {
-      onReady?.();
+      onReady?.(false);
     });
 
   return texture;
@@ -193,12 +192,11 @@ export function createCityLightsTexture(isMobile: boolean, onReady?: TextureRead
     .then((night) => {
       drawCityLightGlow(ctx, night, width, height);
       texture.needsUpdate = true;
+      onReady?.(true);
     })
     .catch((error: unknown) => {
       console.warn(error);
-    })
-    .finally(() => {
-      onReady?.();
+      onReady?.(false);
     });
 
   return texture;
@@ -509,12 +507,11 @@ export function createCountryBordersTexture(isMobile: boolean, onReady?: Texture
       ctx.clearRect(0, 0, width, height);
       drawCountryBorders(ctx, countries, width, height);
       texture.needsUpdate = true;
+      onReady?.(true);
     })
     .catch((error: unknown) => {
       console.warn(error);
-    })
-    .finally(() => {
-      onReady?.();
+      onReady?.(false);
     });
 
   return texture;

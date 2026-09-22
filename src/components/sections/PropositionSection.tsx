@@ -1,5 +1,6 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { renderNoWrap6D } from "../NoWrap6D";
+import { GlobeLoader } from "../GlobeLoader";
 import "./PropositionSection.css";
 
 type IconName = "world" | "location" | "access" | "connect" | "growth" | "tools" | "partner" | "network" | "license";
@@ -54,11 +55,14 @@ function PropositionColumn({ title, items, side }: { title: string; items: { cop
 function PropositionGlobe() {
   const globeRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     const container = globeRef.current;
     if (!container) return;
     let cancelled = false;
+    const markFailed = () => { if (!cancelled) setFailed(true); };
     let destroyGlobe: (() => void) | undefined;
     const observer = new IntersectionObserver((entries) => {
       if (!entries.some((entry) => entry.isIntersecting)) return;
@@ -70,12 +74,14 @@ function PropositionGlobe() {
           layout: "centered",
           rotationDuration: 160,
           pointerTiltDegrees: 0,
+          onProgress: (loaded, total) => {
+            if (!cancelled) setProgress(Math.round((loaded / total) * 95));
+          },
           onReady: () => { if (!cancelled) setReady(true); },
+          onError: markFailed,
         });
         destroyGlobe = globe.destroy;
-      }).catch(() => {
-        // Keep the CSS globe visible if WebGL or the visual module is unavailable.
-      });
+      }).catch(markFailed);
     }, { rootMargin: "250px" });
     observer.observe(container);
 
@@ -87,9 +93,9 @@ function PropositionGlobe() {
   }, []);
 
   return (
-    <div className={`proposition-section__artwork ${ready ? "is-ready" : ""}`} aria-hidden="true">
-      <div className="proposition-section__globe-fallback" />
-      <div className="proposition-section__globe" ref={globeRef} />
+    <div className={`proposition-section__artwork ${ready ? "is-ready" : ""}`}>
+      {!ready && <GlobeLoader progress={progress} failed={failed} />}
+      <div className="proposition-section__globe" ref={globeRef} aria-hidden="true" />
     </div>
   );
 }

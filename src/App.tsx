@@ -1,6 +1,7 @@
 import { FormEvent, lazy, MouseEvent, ReactNode, Suspense, useEffect, useRef, useState } from "react";
 import CursorGrid from "./components/CursorGrid";
 import { MapLoadingScreen } from "./components/MapLoadingScreen";
+import { GlobeLoader } from "./components/GlobeLoader";
 import { NoWrap6D, renderNoWrap6D } from "./components/NoWrap6D";
 import { AddressingProblemSection } from "./components/sections/AddressingProblemSection";
 import { ApplicationsCarouselSection } from "./components/sections/ApplicationsCarouselSection";
@@ -466,21 +467,22 @@ function GlobeHeroVisual() {
   const heavyVisualState = useHeavyVisualState();
   const [globeReady, setGlobeReady] = useState(false);
   const [globeProgress, setGlobeProgress] = useState(0);
+  const [globeFailed, setGlobeFailed] = useState(false);
 
   useEffect(() => {
     setGlobeReady(false);
     setGlobeProgress(0);
+    setGlobeFailed(false);
     if (heavyVisualState !== "enabled") return;
     if (!globeRef.current) return;
-    let readyTimer = 0;
     let cancelled = false;
     let destroyGlobe: (() => void) | undefined;
     const markReady = () => {
       if (cancelled) return;
       setGlobeProgress(100);
-      window.clearTimeout(readyTimer);
-      readyTimer = window.setTimeout(() => setGlobeReady(true), 180);
+      setGlobeReady(true);
     };
+    const markFailed = () => { if (!cancelled) setGlobeFailed(true); };
 
     void import("./globe/createGlobe").then(({ createHeroGlobe }) => {
       if (cancelled || !globeRef.current) return;
@@ -493,35 +495,27 @@ function GlobeHeroVisual() {
         horizontalOffset: 0.62,
         pointerTiltDegrees: 0,
         onProgress: (loaded, total) => {
-          setGlobeProgress(Math.round((loaded / total) * 92));
+          if (!cancelled) setGlobeProgress(Math.round((loaded / total) * 95));
         },
         onReady: markReady,
+        onError: markFailed,
       });
 
       destroyGlobe = globe.destroy;
-    });
+    }).catch(markFailed);
 
     return () => {
       cancelled = true;
-      window.clearTimeout(readyTimer);
       destroyGlobe?.();
     };
   }, [heavyVisualState]);
 
   return (
-    <div className="hero-visual hero-content" aria-hidden="true">
-      {!globeReady && <div className="hero-globe-placeholder" />}
-      <div className={`hero-globe-root ${globeReady ? "is-ready" : ""}`} ref={globeRef} />
-      {!globeReady && heavyVisualState === "enabled" && (
-        <div className="hero-globe-loading">
-          <div className="hero-globe-loading__label">
-            <span>Loading globe</span>
-            <span>{globeProgress}%</span>
-          </div>
-          <div className="hero-globe-loading__track">
-            <span style={{ width: `${globeProgress}%` }} />
-          </div>
-        </div>
+    <div className="hero-visual hero-content">
+      {heavyVisualState === "disabled" && <div className="hero-globe-placeholder" aria-hidden="true" />}
+      <div className={`hero-globe-root ${globeReady ? "is-ready" : ""}`} ref={globeRef} aria-hidden="true" />
+      {!globeReady && heavyVisualState !== "disabled" && (
+        <GlobeLoader className="hero-globe-loading" progress={globeProgress} failed={globeFailed} />
       )}
     </div>
   );

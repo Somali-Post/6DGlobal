@@ -1,0 +1,58 @@
+.globe-loader {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: .85rem;
+  color: #d5e2f3;
+  font-size: .9rem;
+  letter-spacing: .035em;
+}
+
+.globe-loader__orbit {
+  position: relative;
+  display: grid;
+  width: 5.5rem;
+  aspect-ratio: 1;
+  margin-bottom: .5rem;
+  place-items: center;
+  border: 1px solid rgba(131, 199, 255, .16);
+  border-radius: 50%;
+  color: #83c7ff;
+  background: radial-gradient(circle, rgba(56, 125, 200, .12), transparent 70%);
+}
+
+.globe-loader__orbit::before {
+  position: absolute;
+  inset: -1px;
+  border: 2px solid transparent;
+  border-top-color: #83c7ff;
+  border-right-color: rgba(131, 199, 255, .3);
+  border-radius: 50%;
+  content: "";
+  animation: globe-loader-spin 1.4s linear infinite;
+}
+
+.globe-loader__orbit svg {
+  width: 2.25rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+}
+
+.globe-loader__progress {
+  color: #83c7ff;
+  font-family: var(--font-mono);
+  font-size: .75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.globe-loader.is-failed .globe-loader__orbit::before { display: none; }
+@keyframes globe-loader-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .globe-loader__orbit::before { animation: none; }
+}

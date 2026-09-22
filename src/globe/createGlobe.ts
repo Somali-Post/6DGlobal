@@ -42,6 +42,7 @@ export type HeroGlobeOptions = Partial<GlobeConfig> & {
   layout?: 'hero' | 'centered';
   onProgress?: (loaded: number, total: number) => void;
   onReady?: () => void;
+  onError?: () => void;
 };
 
 export type HeroGlobeHandle = {
@@ -174,6 +175,7 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
   let currentTiltY = 0;
 
   if (!canUseWebGL()) {
+    options.onError?.();
     return {
       updateConfig: () => undefined,
       destroy: () => undefined,
@@ -200,7 +202,13 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
   let loadedTextureCount = 0;
   let texturesReady = false;
   let readyReported = false;
-  const markTextureReady = () => {
+  const markTextureReady = (success: boolean) => {
+    if (destroyed) return;
+    // Callers with an error state require every texture; the hero retains its fallback.
+    if (!success && options.onError) {
+      options.onError();
+      return;
+    }
     loadedTextureCount += 1;
     options.onProgress?.(loadedTextureCount, textureLoadTotal);
     texturesReady = loadedTextureCount === textureLoadTotal;
