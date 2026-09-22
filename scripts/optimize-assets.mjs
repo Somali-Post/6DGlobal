@@ -112,8 +112,7 @@ async function optimizeApplicationImages() {
 await optimizeTeamImage(
   "source-assets/team/GL.jpeg",
   "public/images/team/gl-360.webp",
-  "center",
-  0.9,
+  "top",
 );
 await optimizeTeamImage(
   "source-assets/team/AG.jpeg",
