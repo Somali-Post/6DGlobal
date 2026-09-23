@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { AreaSearchResult } from "../map/googleMapsAdapter";
 
-export function CitySearch({ search, onSelect }: { search: (query: string) => Promise<AreaSearchResult[]>; onSelect: (area: AreaSearchResult) => Promise<void> | undefined }) {
+export function CitySearch({ search, onSelect, onLocate, locating }: { search: (query: string) => Promise<AreaSearchResult[]>; onSelect: (area: AreaSearchResult) => Promise<void> | undefined; onLocate: () => void; locating: boolean }) {
   const [selecting, setSelecting] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<AreaSearchResult[]>([]);
@@ -54,7 +54,7 @@ export function CitySearch({ search, onSelect }: { search: (query: string) => Pr
     <label htmlFor="finder-city">Search a location</label>
     <div className="finder-city-input">
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 5 5" /></svg>
-      <input ref={input} id="finder-city" type="text" role="combobox" autoComplete="off" placeholder="Country, city or area" value={query} readOnly={selecting} aria-busy={selecting}
+      <input ref={input} id="finder-city" type="text" role="combobox" autoComplete="off" placeholder="Country, city, locality or postcode" value={query} readOnly={selecting} aria-busy={selecting}
         aria-autocomplete="list" aria-expanded={open && results.length > 0} aria-controls="finder-city-results" aria-describedby="finder-city-status"
         aria-activedescendant={open && active >= 0 ? `finder-city-option-${active}` : undefined}
         onChange={event => { setQuery(event.target.value); setOpen(true); setResults([]); setActive(-1); }}
@@ -73,7 +73,12 @@ export function CitySearch({ search, onSelect }: { search: (query: string) => Pr
     <ul id="finder-city-results" role="listbox" aria-label="Locations" hidden={!open || !results.length}>
       {results.map((area, index) => <li key={area.id} id={`finder-city-option-${index}`} role="option" aria-selected={active === index} onMouseDown={event => event.preventDefault()} onMouseMove={() => setActive(index)} onClick={() => select(area)}>{area.label}</li>)}
     </ul>
-    <p id="finder-city-status" role="status">{open && status ? status : "Find a country, city or area."}</p>
+    <p id="finder-city-status" role="status" hidden={!open || !status}>{open ? status : ""}</p>
     {open && status.startsWith("Search unavailable") && <button className="finder-city-retry" type="button" onClick={() => setRetry(value => value + 1)}>Retry search</button>}
+    <div className="finder-city-location">
+      <button className="cta-action cta-action--blue finder-locate" type="button" onClick={() => { setOpen(false); onLocate(); }} disabled={locating} aria-busy={locating}>
+        <span>{locating ? "Locating..." : "Find my location"}</span>
+      </button>
+    </div>
   </div>;
 }

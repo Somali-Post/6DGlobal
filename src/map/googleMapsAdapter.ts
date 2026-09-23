@@ -33,6 +33,7 @@ async function withSearchTimeout<T>(request: Promise<T>): Promise<T> {
 }
 
 export type MapAdapter = {
+  setSatellite: (enabled: boolean) => void;
   searchAreas: (query: string) => Promise<AreaSearchResult[]>;
   selectArea: (area: AreaSearchResult) => Promise<void>;
   setPin: (coordinate: Coordinate, zoom?: number, source?: MapPickSource) => void;
@@ -121,6 +122,7 @@ export async function createGoogleMapsAdapter(args: {
   };
 
   return {
+    setSatellite(enabled) { map.setMapTypeId(enabled ? "hybrid" : "roadmap"); map.setTilt(0); },
     async searchAreas(query) {
       const { AutocompleteSuggestion, AutocompleteSessionToken } = await withSearchTimeout<any>(google.maps.importLibrary("places"));
       if (destroyed) return [];
