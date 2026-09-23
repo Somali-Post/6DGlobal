@@ -1,6 +1,6 @@
 import "./GlobeLoader.css";
 
-export function GlobeLoader({ progress, failed = false, className = "" }: { progress: number; failed?: boolean; className?: string }) {
+export function GlobeLoader({ progress, failed = false, className = "", onRetry }: { progress: number; failed?: boolean; className?: string; onRetry?: () => void }) {
   return (
     <div className={`globe-loader ${failed ? "is-failed" : ""} ${className}`} role="status">
       <span className="globe-loader__orbit" aria-hidden="true">
@@ -10,6 +10,7 @@ export function GlobeLoader({ progress, failed = false, className = "" }: { prog
         </svg>
       </span>
       <span>{failed ? "Globe unavailable" : "Loading globe"}</span>
+      {failed && onRetry && <button type="button" className="globe-loader__retry" onClick={onRetry}>Retry globe</button>}
       {!failed && <span className="globe-loader__progress" aria-hidden="true">{progress}%</span>}
     </div>
   );

@@ -1,3 +1,4 @@
+import { isGlobePaused, subscribeGlobeMotion } from "../components/GlobeMotionControl";
 import {
   AmbientLight,
   BufferGeometry,
@@ -202,16 +203,19 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
   let loadedTextureCount = 0;
   let texturesReady = false;
   let readyReported = false;
+  let loadFailed = false;
   const markTextureReady = (success: boolean) => {
-    if (destroyed) return;
-    // Callers with an error state require every texture; the hero retains its fallback.
+    if (destroyed || loadFailed) return;
+    // The scene remains hidden until all textures and the first frame are ready.
     if (!success && options.onError) {
+      loadFailed = true;
       options.onError();
       return;
     }
     loadedTextureCount += 1;
     options.onProgress?.(loadedTextureCount, textureLoadTotal);
     texturesReady = loadedTextureCount === textureLoadTotal;
+    requestRender();
   };
   const reportReadyAfterRender = () => {
     if (!texturesReady || readyReported) return;
@@ -279,9 +283,8 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
   keyLight.position.set(3.5, 4, 1.8);
   scene.add(keyLight);
 
-  const startTime = performance.now();
-  let hiddenAt = 0;
-  let hiddenDuration = 0;
+  let lastFrame = performance.now();
+  let rotationElapsed = 0;
   const pointerEnabled = !isMobile && !reducedMotion && matchMedia('(pointer: fine)').matches;
 
   function applyResponsiveLayout() {
@@ -310,24 +313,35 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
     const right = new Vector3().crossVectors(new Vector3(0, 1, 0), viewDirection).normalize();
     const up = new Vector3().crossVectors(viewDirection, right).normalize();
     limbGlow.position.copy(right.multiplyScalar(0.64)).add(up.multiplyScalar(0.74)).addScaledVector(viewDirection, 0.25);
+    requestRender();
   }
 
   function applyOrientation(elapsedSeconds: number) {
     const rotationSpeed = (Math.PI * 2) / Math.max(1, config.rotationDuration);
-    const autoRotation = options.autoRotate === false || reducedMotion ? 0 : elapsedSeconds * rotationSpeed;
+    const autoRotation = elapsedSeconds * rotationSpeed;
     spinningGroup.rotation.y = degreesToRadians(config.initialLongitude) + autoRotation;
   }
 
-  function render() {
-    if (destroyed) return;
+  function requestRender() {
+    if (destroyed || loadFailed || !texturesReady || !isVisible || !isIntersecting || animationId) return;
+    lastFrame = performance.now();
+    animationId = window.requestAnimationFrame(render);
+  }
 
+  function render() {
+    animationId = 0;
+    if (destroyed || loadFailed || !texturesReady || !isVisible || !isIntersecting) return;
+    const moving = !isGlobePaused() && !reducedMotion && options.autoRotate !== false;
+
+    const now = performance.now();
+    if (moving) rotationElapsed += Math.min(now - lastFrame, 100) / 1000;
+    lastFrame = now;
     if (isVisible && isIntersecting) {
-      const elapsed = (performance.now() - startTime - hiddenDuration) / 1000;
-      applyOrientation(elapsed);
+      applyOrientation(rotationElapsed);
 
       const maxTilt = degreesToRadians(config.pointerTiltDegrees);
-      currentTiltX += (pointerY * maxTilt - currentTiltX) * 0.07;
-      currentTiltY += (pointerX * maxTilt - currentTiltY) * 0.07;
+      currentTiltX += (pointerY * maxTilt - currentTiltX) * (moving ? 0.07 : 1);
+      currentTiltY += (pointerX * maxTilt - currentTiltY) * (moving ? 0.07 : 1);
       globeGroup.rotation.x = currentTiltX;
       globeGroup.rotation.y = currentTiltY;
       locationLabels.forEach((label) => {
@@ -337,7 +351,7 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
         const viewDirection = camera.position.clone().sub(globeGroup.position)
           .addScaledVector(visibleAnchor, -globeGroup.scale.x).normalize();
         const targetOpacity = smoothstep(LABEL_FADE_START, LABEL_FADE_END, visibleAnchor.dot(viewDirection)) * LABEL_MAX_OPACITY;
-        label.opacity = reducedMotion ? targetOpacity : label.opacity + (targetOpacity - label.opacity) * 0.08;
+        label.opacity = !moving ? targetOpacity : label.opacity + (targetOpacity - label.opacity) * 0.08;
         label.mesh.material.opacity = label.opacity;
         label.mesh.visible = targetOpacity > LABEL_VISIBLE_THRESHOLD && label.opacity > 0.04;
       });
@@ -346,28 +360,23 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
       reportReadyAfterRender();
     }
 
-    animationId = window.requestAnimationFrame(render);
+    if (moving) animationId = window.requestAnimationFrame(render);
   }
 
   const resizeObserver = new ResizeObserver(applyResponsiveLayout);
   resizeObserver.observe(container);
   applyResponsiveLayout();
   applyOrientation(0);
-  renderer.render(scene, camera);
 
   const intersectionObserver = new IntersectionObserver((entries) => {
     isIntersecting = entries.some((entry) => entry.isIntersecting);
+    requestRender();
   });
   intersectionObserver.observe(container);
 
   function handleVisibilityChange() {
     isVisible = document.visibilityState === 'visible';
-    if (isVisible && hiddenAt > 0) {
-      hiddenDuration += performance.now() - hiddenAt;
-      hiddenAt = 0;
-    } else if (!isVisible) {
-      hiddenAt = performance.now();
-    }
+    requestRender();
   }
 
   function handleMotionChange(event: MediaQueryListEvent) {
@@ -375,27 +384,29 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
     if (reducedMotion) {
       pointerX = 0;
       pointerY = 0;
-      applyOrientation(0);
-      renderer.render(scene, camera);
     }
+    requestRender();
   }
 
   function handlePointerMove(event: PointerEvent) {
-    if (!pointerEnabled) return;
+    if (!pointerEnabled || reducedMotion || isGlobePaused()) return;
     pointerX = (event.clientX / width - 0.5) * 2;
     pointerY = -(event.clientY / height - 0.5) * 2;
+    requestRender();
   }
 
   function handlePointerLeave() {
     pointerX = 0;
     pointerY = 0;
+    requestRender();
   }
 
   document.addEventListener('visibilitychange', handleVisibilityChange);
   reducedMotionQuery.addEventListener('change', handleMotionChange);
   container.addEventListener('pointermove', handlePointerMove);
   container.addEventListener('pointerleave', handlePointerLeave);
-  animationId = window.requestAnimationFrame(render);
+  const unsubscribeMotion = subscribeGlobeMotion(requestRender);
+  requestRender();
 
   return {
     updateConfig(nextOptions) {
@@ -405,11 +416,12 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
       atmosphereRimMaterial.uniforms.opacity.value = Math.max(0, config.atmosphereIntensity);
       atmosphereHaloMaterial.uniforms.opacity.value = Math.max(0, config.atmosphereIntensity);
       applyResponsiveLayout();
-      applyOrientation(reducedMotion ? 0 : (performance.now() - startTime - hiddenDuration) / 1000);
-      renderer.render(scene, camera);
+      requestRender();
     },
     destroy() {
+      if (destroyed) return;
       destroyed = true;
+      unsubscribeMotion();
       window.cancelAnimationFrame(animationId);
       resizeObserver.disconnect();
       intersectionObserver.disconnect();

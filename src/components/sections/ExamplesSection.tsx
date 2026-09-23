@@ -342,7 +342,7 @@ export function ExamplesSection() {
                   example={example}
                   isActive={index === trackIndex}
                   isEdge={index === trackIndex - 1 || index === trackIndex + slideMetrics.rightEdgeOffset}
-                  isDuplicate={index < trackIndex - 1 || index > trackIndex + slideMetrics.rightEdgeOffset}
+                  isDuplicate={index < trackIndex || index >= trackIndex + slideMetrics.rightEdgeOffset}
                   onCardClick={handleCardClick}
                   key={`${example.id}-${index}`}
                 />

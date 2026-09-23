@@ -1,3 +1,4 @@
+import { GlobeMotionControl } from "../GlobeMotionControl";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { renderNoWrap6D } from "../NoWrap6D";
 import { GlobeLoader } from "../GlobeLoader";
@@ -54,19 +55,33 @@ function PropositionColumn({ title, items, side }: { title: string; items: { cop
 
 function PropositionGlobe() {
   const globeRef = useRef<HTMLDivElement>(null);
+  const saveData = Boolean((navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData);
+  const [loadRequested, setLoadRequested] = useState(!saveData);
   const [ready, setReady] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [attempt, setAttempt] = useState(0);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     const container = globeRef.current;
-    if (!container) return;
+    if (!container || !loadRequested) return;
+    setReady(false);
+    setProgress(0);
+    setFailed(false);
     let cancelled = false;
-    const markFailed = () => { if (!cancelled) setFailed(true); };
     let destroyGlobe: (() => void) | undefined;
+    let loadTimer = 0;
+    const markFailed = () => {
+      if (cancelled) return;
+      window.clearTimeout(loadTimer);
+      setFailed(true);
+      cancelled = true;
+      destroyGlobe?.();
+    };
     const observer = new IntersectionObserver((entries) => {
       if (!entries.some((entry) => entry.isIntersecting)) return;
       observer.disconnect();
+      loadTimer = window.setTimeout(markFailed, 20000);
       void import("../../globe/createGlobe").then(({ createHeroGlobe }) => {
         if (cancelled) return;
         const globe = createHeroGlobe({
@@ -75,12 +90,16 @@ function PropositionGlobe() {
           rotationDuration: 160,
           pointerTiltDegrees: 0,
           onProgress: (loaded, total) => {
-            if (!cancelled) setProgress(Math.round((loaded / total) * 95));
+            if (!cancelled) {
+              if (loaded === total) window.clearTimeout(loadTimer);
+              setProgress(Math.round((loaded / total) * 95));
+            }
           },
-          onReady: () => { if (!cancelled) setReady(true); },
+          onReady: () => { if (!cancelled) { window.clearTimeout(loadTimer); setReady(true); } },
           onError: markFailed,
         });
         destroyGlobe = globe.destroy;
+        if (cancelled) destroyGlobe();
       }).catch(markFailed);
     }, { rootMargin: "250px" });
     observer.observe(container);
@@ -88,13 +107,16 @@ function PropositionGlobe() {
     return () => {
       cancelled = true;
       observer.disconnect();
+      window.clearTimeout(loadTimer);
       destroyGlobe?.();
     };
-  }, []);
+  }, [loadRequested, attempt]);
 
   return (
     <div className={`proposition-section__artwork ${ready ? "is-ready" : ""}`}>
-      {!ready && <GlobeLoader progress={progress} failed={failed} />}
+      {!loadRequested && <button className="globe-motion-control" onClick={() => setLoadRequested(true)}>Load globe</button>}
+      {ready && <GlobeMotionControl />}
+      {!ready && loadRequested && <GlobeLoader progress={progress} failed={failed} onRetry={() => setAttempt(value => value + 1)} />}
       <div className="proposition-section__globe" ref={globeRef} aria-hidden="true" />
     </div>
   );

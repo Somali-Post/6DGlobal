@@ -56,3 +56,5 @@
 @media (prefers-reduced-motion: reduce) {
   .globe-loader__orbit::before { animation: none; }
 }
+
+.globe-loader__retry { pointer-events: auto; cursor: pointer; min-height: 44px; padding: 10px 18px; border: 1px solid #83c7ff; border-radius: var(--radius-control); color: #eaf5ff; background: #071b30; font: inherit; }

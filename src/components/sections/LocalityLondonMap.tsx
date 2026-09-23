@@ -382,15 +382,15 @@ export function LocalityLondonMap({
         }
 
         .llm-code__red {
-          color: var(--sixd-red, #ff5f57);
+          color: #bd3025;
         }
 
         .llm-code__green {
-          color: var(--sixd-green, #35c46d);
+          color: #19783b;
         }
 
         .llm-code__blue {
-          color: var(--sixd-blue, #2493ed);
+          color: #086bb5;
         }
 
         .llm-code__dash {
@@ -419,7 +419,7 @@ export function LocalityLondonMap({
         }
 
         .llm-leader-line {
-          stroke: var(--sixd-blue, #2493ed);
+          stroke: #086bb5;
           stroke-width: 1.25;
           stroke-linecap: round;
           stroke-dasharray: 3 5;
@@ -436,9 +436,9 @@ export function LocalityLondonMap({
           justify-content: center;
           border: 2px solid #ffffff;
           border-radius: 999px;
-          background: var(--sixd-blue, #2493ed);
+          background: #086bb5;
           box-shadow:
-            0 0 0 3px color-mix(in oklch, var(--sixd-blue, #2493ed) 20%, transparent),
+            0 0 0 3px color-mix(in oklch, #086bb5 20%, transparent),
             0 9px 20px rgba(0, 67, 143, 0.32);
           transform: translate(-50%, -50%);
         }
@@ -541,6 +541,11 @@ export function LocalityLondonMap({
 
         @media (max-width: 480px) {
           .llm-header {
+            display: block;
+            background: #fff;
+            border-radius: 8px;
+            padding: 8px 10px;
+            width: fit-content;
             inset: 0.8rem 0.85rem auto 0.85rem;
           }
 

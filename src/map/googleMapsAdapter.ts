@@ -123,16 +123,23 @@ function loadGoogleMaps(apiKey: string): Promise<any> {
   if (googleMapsPromise) return googleMapsPromise;
 
   googleMapsPromise = new Promise((resolve, reject) => {
-    w.__init6DMap = () => resolve(w.google);
+    let settled = false;
+    const timeout = window.setTimeout(() => fail(), 15000);
+    w.__init6DMap = () => { if (settled) return; settled = true; window.clearTimeout(timeout); resolve(w.google); };
     const script = document.createElement("script");
     script.id = "google-maps-js";
     script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&callback=__init6DMap&v=weekly&libraries=geometry`;
     script.async = true;
     script.defer = true;
-    script.onerror = () => {
+    function fail() {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timeout);
+      script.remove();
       googleMapsPromise = null;
       reject(new Error("Google Maps failed to load"));
-    };
+    }
+    script.onerror = fail;
     document.head.appendChild(script);
   });
 

@@ -1,3 +1,4 @@
+import { GlobeMotionControl } from "./components/GlobeMotionControl";
 import { FormEvent, lazy, MouseEvent, ReactNode, Suspense, useEffect, useRef, useState } from "react";
 import CursorGrid from "./components/CursorGrid";
 import { MapLoadingScreen } from "./components/MapLoadingScreen";
@@ -295,6 +296,7 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
 
   return (
     <main>
+      <a className="skip-link" href="#how-it-works">Skip to content</a>
       <Navigation active={active} menuOpen={menuOpen} setMenuOpen={setMenuOpen} onFind={() => onFind(true)} onNavigate={closeMenu} />
 
       <section id="top" className="hero section-dark" ref={heroRef} tabIndex={-1}>
@@ -338,6 +340,7 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
               </span>
             </div>
             <div className="actions hero-actions">
+              <a className="button secondary" href="/find">Try the map</a>
               <LiteButton className="button hero-cta hero-cta--primary" href="#how-it-works">How it works</LiteButton>
             </div>
           </div>
@@ -408,6 +411,17 @@ function Navigation({
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
+    if (!menuOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setMenuOpen(false);
+      document.querySelector<HTMLButtonElement>(".menu-button")?.focus();
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [menuOpen, setMenuOpen]);
+
+  useEffect(() => {
     const updateScrolled = () => setScrolled(window.scrollY > 12);
     updateScrolled();
     window.addEventListener("scroll", updateScrolled, { passive: true });
@@ -464,9 +478,12 @@ function Navigation({
 
 function GlobeHeroVisual() {
   const globeRef = useRef<HTMLDivElement>(null);
-  const heavyVisualState = useHeavyVisualState();
+  const automaticVisualState = useHeavyVisualState();
+  const [loadRequested, setLoadRequested] = useState(false);
+  const heavyVisualState = loadRequested ? "enabled" : automaticVisualState;
   const [globeReady, setGlobeReady] = useState(false);
   const [globeProgress, setGlobeProgress] = useState(0);
+  const [attempt, setAttempt] = useState(0);
   const [globeFailed, setGlobeFailed] = useState(false);
 
   useEffect(() => {
@@ -477,45 +494,61 @@ function GlobeHeroVisual() {
     if (!globeRef.current) return;
     let cancelled = false;
     let destroyGlobe: (() => void) | undefined;
+    let loadTimer = 0;
     const markReady = () => {
       if (cancelled) return;
+      window.clearTimeout(loadTimer);
       setGlobeProgress(100);
       setGlobeReady(true);
     };
-    const markFailed = () => { if (!cancelled) setGlobeFailed(true); };
+    const markFailed = () => {
+      if (cancelled) return;
+      window.clearTimeout(loadTimer);
+      setGlobeFailed(true);
+      cancelled = true;
+      destroyGlobe?.();
+    };
+    loadTimer = window.setTimeout(markFailed, 20000);
 
     void import("./globe/createGlobe").then(({ createHeroGlobe }) => {
       if (cancelled || !globeRef.current) return;
 
       const globe = createHeroGlobe({
         container: globeRef.current,
+        layout: "centered",
         rotationDuration: 160,
         initialLongitude: -150,
         globeScale: 1,
         horizontalOffset: 0.62,
         pointerTiltDegrees: 0,
         onProgress: (loaded, total) => {
-          if (!cancelled) setGlobeProgress(Math.round((loaded / total) * 95));
+          if (!cancelled) {
+            if (loaded === total) window.clearTimeout(loadTimer);
+            setGlobeProgress(Math.round((loaded / total) * 95));
+          }
         },
         onReady: markReady,
         onError: markFailed,
       });
 
       destroyGlobe = globe.destroy;
+      if (cancelled) destroyGlobe();
     }).catch(markFailed);
 
     return () => {
       cancelled = true;
+      window.clearTimeout(loadTimer);
       destroyGlobe?.();
     };
-  }, [heavyVisualState]);
+  }, [heavyVisualState, attempt]);
 
   return (
     <div className="hero-visual hero-content">
-      {heavyVisualState === "disabled" && <div className="hero-globe-placeholder" aria-hidden="true" />}
+      {globeReady && <GlobeMotionControl />}
+      {heavyVisualState === "disabled" && <><div className="hero-globe-placeholder" aria-hidden="true" /><button className="globe-motion-control" onClick={() => setLoadRequested(true)}>Load globe</button></>}
       <div className={`hero-globe-root ${globeReady ? "is-ready" : ""}`} ref={globeRef} aria-hidden="true" />
       {!globeReady && heavyVisualState !== "disabled" && (
-        <GlobeLoader className="hero-globe-loading" progress={globeProgress} failed={globeFailed} />
+        <GlobeLoader className="hero-globe-loading" progress={globeProgress} failed={globeFailed} onRetry={() => setAttempt(value => value + 1)} />
       )}
     </div>
   );

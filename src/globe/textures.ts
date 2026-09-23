@@ -56,24 +56,36 @@ function clampChannel(value: number): number {
   return Math.max(0, Math.min(255, value));
 }
 
+const TEXTURE_TIMEOUT_MS = 15000;
+
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
+    const finish = (success: boolean) => {
+      window.clearTimeout(timeout);
+      image.onload = null;
+      image.onerror = null;
+      if (success) resolve(image);
+      else { image.src = ''; reject(new Error('Unable to load globe texture')); }
+    };
+    const timeout = window.setTimeout(() => finish(false), TEXTURE_TIMEOUT_MS);
     image.decoding = 'async';
-    image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error(`Unable to load texture image: ${src}`));
+    image.onload = () => finish(true);
+    image.onerror = () => finish(false);
     image.src = src;
   });
 }
 
 async function loadCountryBorders(): Promise<GeoJsonFeatureCollection> {
-  const response = await fetch(COUNTRY_BORDERS_SRC);
-
-  if (!response.ok) {
-    throw new Error(`Unable to load country borders: ${COUNTRY_BORDERS_SRC}`);
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), TEXTURE_TIMEOUT_MS);
+  try {
+    const response = await fetch(COUNTRY_BORDERS_SRC, { signal: controller.signal });
+    if (!response.ok) throw new Error('Unable to load country borders');
+    return await response.json() as GeoJsonFeatureCollection;
+  } finally {
+    window.clearTimeout(timeout);
   }
-
-  return response.json() as Promise<GeoJsonFeatureCollection>;
 }
 
 function drawInitialSurface(ctx: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D, width: number, height: number) {

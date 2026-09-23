@@ -1,4 +1,4 @@
-import { CSSProperties, PointerEvent, useRef, useState } from "react";
+import { CSSProperties, PointerEvent, useEffect, useRef, useState } from "react";
 import { NoWrap6D } from "../NoWrap6D";
 
 type Application = {
@@ -76,6 +76,8 @@ export function ApplicationsCarouselSection() {
   const viewportRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef({ active: false, x: 0, scrollLeft: 0 });
   const [activeIndex, setActiveIndex] = useState(0);
+  const [lastVisible, setLastVisible] = useState(0);
+  const [atEnd, setAtEnd] = useState(false);
   const [dragging, setDragging] = useState(false);
 
   const scrollToIndex = (index: number) => {
@@ -85,7 +87,7 @@ export function ApplicationsCarouselSection() {
     const nextIndex = Math.max(0, Math.min(index, cards.length - 1));
     const card = cards[nextIndex];
     if (!card) return;
-    viewport.scrollTo({ left: card.offsetLeft, behavior: "smooth" });
+    viewport.scrollTo({ left: card.offsetLeft, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
   };
 
   const updateActiveIndex = () => {
@@ -102,7 +104,20 @@ export function ApplicationsCarouselSection() {
       }
     });
     setActiveIndex(closestIndex);
+    const lastCard = cards[cards.length - 1];
+    setAtEnd(viewport.scrollLeft >= viewport.scrollWidth - viewport.clientWidth - 2 || Boolean(lastCard && lastCard.offsetLeft + lastCard.offsetWidth <= viewport.scrollLeft + viewport.clientWidth + 2));
+    setLastVisible(cards.reduce((last, card, index) => card.offsetLeft + card.offsetWidth <= viewport.scrollLeft + viewport.clientWidth + 2 ? index : last, closestIndex));
   };
+
+  useEffect(() => {
+    const observer = new ResizeObserver(updateActiveIndex);
+    if (viewportRef.current) {
+      observer.observe(viewportRef.current);
+      const track = viewportRef.current.firstElementChild;
+      if (track) observer.observe(track);
+    }
+    return () => observer.disconnect();
+  }, []);
 
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (event.pointerType !== "mouse" || event.button !== 0) return;
@@ -145,6 +160,9 @@ export function ApplicationsCarouselSection() {
             onPointerUp={handlePointerEnd}
             onPointerCancel={handlePointerEnd}
             onKeyDown={(event) => {
+              if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) event.preventDefault();
+              if (event.key === "Home") scrollToIndex(0);
+              if (event.key === "End") scrollToIndex(applications.length - 1);
               if (event.key === "ArrowLeft") scrollToIndex(activeIndex - 1);
               if (event.key === "ArrowRight") scrollToIndex(activeIndex + 1);
             }}
@@ -165,7 +183,7 @@ export function ApplicationsCarouselSection() {
                     <img
                       src={application.image}
                       alt=""
-                      loading={index < 4 ? "eager" : "lazy"}
+                      loading="lazy"
                       decoding="async"
                     />
                   </div>
@@ -192,7 +210,7 @@ export function ApplicationsCarouselSection() {
             className="applications-carousel__arrow applications-carousel__arrow--next"
             type="button"
             onClick={() => scrollToIndex(activeIndex + 1)}
-            disabled={activeIndex === applications.length - 1}
+            disabled={atEnd}
             aria-label="Next application"
           >
             <ArrowIcon direction="next" />
@@ -201,13 +219,14 @@ export function ApplicationsCarouselSection() {
 
         <div className="applications-carousel__footer craft-reveal">
           <div className="applications-carousel__progress" aria-hidden="true">
-            <span style={{ transform: `scaleX(${(activeIndex + 1) / applications.length})` }} />
+            <span style={{ transform: `scaleX(${(lastVisible + 1) / applications.length})` }} />
           </div>
           <div className="applications-carousel__dots" aria-label="Choose an application">
             {applications.map((application, index) => (
               <button
                 type="button"
-                className={index === activeIndex ? "is-active" : ""}
+                className={index >= activeIndex && index <= lastVisible ? "is-active" : ""}
+                disabled={index >= activeIndex && index <= lastVisible}
                 onClick={() => scrollToIndex(index)}
                 aria-label={`Show ${application.title}`}
                 aria-current={index === activeIndex ? "true" : undefined}
@@ -216,7 +235,7 @@ export function ApplicationsCarouselSection() {
             ))}
           </div>
           <p className="applications-carousel__count" aria-live="polite">
-            <strong>{String(activeIndex + 1).padStart(2, "0")}</strong>
+            <strong>{String(activeIndex + 1).padStart(2, "0")}{lastVisible > activeIndex ? `\u2013${String(lastVisible + 1).padStart(2, "0")}` : ""}</strong>
             <span>/ {String(applications.length).padStart(2, "0")}</span>
           </p>
         </div>

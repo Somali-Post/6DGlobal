@@ -34,9 +34,8 @@ export default function FindPage() {
   const mapRef = useRef<HTMLDivElement>(null);
   const adapter = useRef<MapAdapter | null>(null);
   const requestedInitialActionRef = useRef(false);
-  const selectedCoordinate = useRef<Coordinate | null>(null);
-  const landmarkMode = useRef<LandmarkExample | null>(null);
   const loaderStartedAt = useRef(performance.now());
+  const [attempt, setAttempt] = useState(0);
   const [mapLoadState, setMapLoadState] = useState<MapLoadState>("loading");
   const [showMapLoader, setShowMapLoader] = useState(true);
   const [mapLoaderExiting, setMapLoaderExiting] = useState(false);
@@ -53,11 +52,6 @@ export default function FindPage() {
 
   const handleLocate = useCallback((mapAdapter = adapter.current) => {
     if (mapLoadState !== "ready" || !mapAdapter) return;
-    if (landmarkMode.current) {
-      landmarkMode.current = null;
-      if (selectedCoordinate.current) mapAdapter.setPin(selectedCoordinate.current, 18);
-      else { setResult(null); setPendingCode(null); replaceFindUrl(); }
-    }
     setLocationState("locating");
     if (!navigator.geolocation) { setLocationState("unavailable"); return; }
     navigator.geolocation.getCurrentPosition(
@@ -70,6 +64,10 @@ export default function FindPage() {
   useEffect(() => {
     let cancelled = false;
     if (!mapRef.current) return;
+    loaderStartedAt.current = performance.now();
+    setShowMapLoader(true);
+    setMapLoaderExiting(false);
+    requestedInitialActionRef.current = false;
     setMapLoadState("loading");
     createGoogleMapsAdapter({
       element: mapRef.current,
@@ -77,9 +75,7 @@ export default function FindPage() {
       onPick: (coordinate, source) => {
         const sixd = generate6DCode(coordinate);
         const code = formatCode(sixd.code);
-        selectedCoordinate.current = coordinate;
         const landmark = source === "landmark" ? initialLandmark : null;
-        landmarkMode.current = landmark;
         setResult(landmark ? { code: formatCode(landmark.code), landmark } : { code });
         setPendingCode(null);
         setLocationState("idle");
@@ -94,7 +90,7 @@ export default function FindPage() {
       if (!created) setMapLoadState("missing-key");
     }).catch((error) => { console.warn("[find] Google Maps failed to initialise:", error); if (!cancelled) setMapLoadState("error"); });
     return () => { cancelled = true; adapter.current?.destroy(); adapter.current = null; };
-  }, [initialLandmark]);
+  }, [initialLandmark, attempt]);
 
   useEffect(() => {
     if (mapLoadState === "loading") return;
@@ -126,28 +122,49 @@ export default function FindPage() {
     {showMapLoader && <MapLoadingScreen isExiting={mapLoaderExiting} />}
     <a className="find-map-page__logo" href="/" aria-label="6D Address home"><img src="/images/logo-compact.png" alt="" /></a>
     <button className="find-map-page__locate" type="button" onClick={() => handleLocate()} disabled={locationState === "locating" || mapLoadState !== "ready"} aria-label={locationState === "locating" ? "Finding your location" : "Use my location"}><img src="/assets/geolocate.svg" alt="" aria-hidden="true" /></button>
+    <div className="finder-tools">
+    {mapLoadState === "ready" && <CoordinatePicker onPick={(coordinate) => adapter.current?.setPin(coordinate, 18)} />}
+    {panelState && result && <div className="finder-notice" role="status"><strong>{panelState.title}</strong><p>{panelState.body} Your previous selection is still shown.</p></div>}
+    {(mapLoadState === "error" || mapLoadState === "missing-key") && <button className="finder-retry" onClick={() => setAttempt(value => value + 1)}>Retry map</button>}
+    </div>
     <FindInfoPanel panelState={panelState} pendingCode={pendingCode} result={result} />
   </main>;
 }
 
 function getFinderPanelState({ mapLoadState, locationState, hasResult }: { mapLoadState: MapLoadState; locationState: LocationState; hasResult: boolean }): PanelState | null {
-  if (hasResult) return null;
-  if (mapLoadState === "missing-key") return { title: "Map key not configured", body: "Add a Google Maps API key to enable the live finder." };
-  if (mapLoadState === "error") return { title: "Map unavailable", body: "The live map could not load. Check the connection, browser settings or map configuration." };
+
+  if (mapLoadState === "missing-key") return { title: "Map unavailable", body: "The live finder is temporarily unavailable. Please try again later." };
+  if (mapLoadState === "error") return { title: "Map unavailable", body: "The map could not load. Check your connection and try again." };
   if (mapLoadState === "loading") return { title: "Loading map", body: "Preparing the 6D Address finder." };
-  if (locationState === "locating") return { title: "Locating...", body: "Allow location access to calculate your 6D Address." };
+  if (locationState === "locating") return { title: "Locating...", body: "Allow location access to calculate your six-digit reference." };
   if (locationState === "denied") return { title: "Location permission denied", body: mapLoadState === "ready" ? "You can still click on the map to choose a location." : "The live map is not available yet." };
   if (locationState === "unavailable" || locationState === "error") return { title: "Location unavailable", body: mapLoadState === "ready" ? "Your browser could not provide a location. You can choose a point on the map manually." : "Your browser could not provide a location and the live map is not available yet." };
-  return { title: "Click on the map to generate", body: "Choose a location to calculate a 6D Address." };
+  if (hasResult) return null;
+  return { title: "Choose a point on the map", body: "Calculate a six-digit reference. A locality is needed to make it a usable address." };
 }
 
 function FindInfoPanel({ panelState, pendingCode, result }: { panelState: PanelState | null; pendingCode: FormattedCode | null; result: FinderResult | null }) {
   const street = result?.landmark ? getLandmarkStreetLine(result.landmark) : undefined;
   if (result?.landmark) return <section className="find-map-page__panel has-result" aria-live="polite" aria-label="6D Address result"><h2 className="find-map-page__landmark-name">{result.landmark.name}</h2><address className="find-map-page__address-lines find-map-page__address-lines--landmark">{street && <span>{street}</span>}<div className="find-map-page__landmark-code-line"><FindCode code={result.code} /><span>{result.landmark.locality}</span></div>{result.landmark.cityLine && <span>{result.landmark.cityLine}</span>}<span>{result.landmark.country}</span></address></section>;
   return <section className={`find-map-page__panel ${result ? "has-result find-map-page__panel--locality" : ""}`} aria-live="polite" aria-label="6D Address result">
-    {result ? <><p className="find-map-page__panel-label"><NoWrap6D /></p><FindCode code={result.code} /><div className="find-map-page__locality-prompt"><a className="cta-action cta-action--blue" href="/#contact"><span>Contact us about adding locality information</span><span className="cta-arrow" aria-hidden="true">→</span></a></div></> : pendingCode ? <><p className="find-map-page__panel-label"><NoWrap6D /></p><FindCode code={pendingCode} /><p className="find-map-page__panel-body">Resolving locality information for the selected point.</p></> : <><p className="find-map-page__panel-title">{panelState?.title}</p><p className="find-map-page__panel-body">{panelState?.body ? renderNoWrap6D(panelState.body) : null}</p></>}
+    {result ? <><p className="find-map-page__panel-label">Six-digit reference</p><FindCode code={result.code} /><p className="find-map-page__panel-body">Locality not verified. These digits repeat in different places and are not a complete address.</p><div className="find-map-page__locality-prompt"><a className="cta-action cta-action--blue" href="/#contact"><span>Contact us about adding locality information</span><span className="cta-arrow" aria-hidden="true">→</span></a></div></> : pendingCode ? <><p className="find-map-page__panel-label"><NoWrap6D /></p><FindCode code={pendingCode} /><p className="find-map-page__panel-body">Resolving locality information for the selected point.</p></> : <><p className="find-map-page__panel-title">{panelState?.title}</p><p className="find-map-page__panel-body">{panelState?.body ? renderNoWrap6D(panelState.body) : null}</p></>}
   </section>;
 }
 
 function FindCode({ code }: { code: FormattedCode }) { return <div className="find-map-page__code" aria-label={`${code.c2d}-${code.c4d}-${code.c6d}`}><span className="code-2d">{code.c2d}</span><span className="code-sep">-</span><span className="code-4d">{code.c4d}</span><span className="code-sep">-</span><span className="code-6d">{code.c6d}</span></div>; }
 function formatCode(code: string): FormattedCode { const [c2d, c4d, c6d] = code.split("-"); return { c2d, c4d, c6d }; }
+
+function CoordinatePicker({ onPick }: { onPick: (coordinate: Coordinate) => void }) {
+  return <details className="finder-coordinate-picker"><summary>Choose coordinates</summary>
+    <form onSubmit={(event) => {
+      event.preventDefault();
+      const data = new FormData(event.currentTarget);
+      onPick({ lat: Number(data.get("latitude")), lng: Number(data.get("longitude")) });
+      event.currentTarget.closest("details")?.removeAttribute("open");
+    }}>
+      <label>Latitude<input name="latitude" type="number" step="any" min="-90" max="90" required placeholder="51.5007" /></label>
+      <label>Longitude<input name="longitude" type="number" step="any" min="-180" max="180" required placeholder="-0.1246" /></label>
+      <button type="submit">Select point</button>
+    </form>
+  </details>;
+}
