@@ -16,7 +16,6 @@ The carousel uses local WebP images. Each image should have a documented source 
 | machu-picchu.webp | Machu Picchu | TODO | TODO | TODO | Needs verification |
 | petra-treasury.webp | Al-Khazneh, Petra | TODO | TODO | TODO | Needs verification |
 | sagrada-familia.webp | Sagrada Familia | TODO | TODO | TODO | Needs verification |
-| st-basils-cathedral.webp | Saint Basil's Cathedral | TODO | TODO | TODO | Needs verification |
 | statue-liberty.webp | Statue of Liberty | TODO | TODO | TODO | Needs verification |
 | sydney-opera-house.webp | Sydney Opera House | TODO | TODO | TODO | Needs verification |
 | taj-mahal.webp | Taj Mahal | TODO | TODO | TODO | Needs verification |
