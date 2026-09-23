@@ -5352,8 +5352,6 @@ body,
 .craft-section:not(.craft-section--dark):not(.proposition-section) {
   --sixd-red: #bd3025; --sixd-green: #19783b; --sixd-blue: #086bb5;
 }
-.skip-link { position: fixed; top: 8px; left: 16px; z-index: 1000; padding: 12px 20px; background: white; color: #073255; transform: translateY(-150%); }
-.skip-link:focus { transform: none; }
 .globe-motion-control { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 5; pointer-events: auto; border: 1px solid #6496bd; border-radius: 24px; background: #071b30; color: #dceeff; padding: 10px 16px; min-height: 44px; white-space: nowrap; font: inherit; font-size: 12px; cursor: pointer; }
 @media (max-width: 860px) {
   .craft-container { width: calc(100% - 40px); }
@@ -5362,4 +5360,3 @@ body,
   .globe-motion-control[aria-pressed] { display: none; }
 }
 
-.skip-link:not(:focus) { clip-path: inset(50%); width: 1px; height: 1px; padding: 0; overflow: hidden; white-space: nowrap; }

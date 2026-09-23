@@ -296,7 +296,6 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
 
   return (
     <main>
-      <a className="skip-link" href="#how-it-works">Skip to content</a>
       <Navigation active={active} menuOpen={menuOpen} setMenuOpen={setMenuOpen} onFind={() => onFind(true)} onNavigate={closeMenu} />
 
       <section id="top" className="hero section-dark" ref={heroRef} tabIndex={-1}>

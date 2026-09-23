@@ -20,7 +20,21 @@ export type MapAddress = {
 
 export type MapPickSource = "initial" | "landmark" | "map" | "marker-drag" | "programmatic";
 
+type AreaLocation = { coordinate: Coordinate; viewport?: { north: number; south: number; east: number; west: number } };
+export type AreaSearchResult = { id: string; label: string; resolve: () => Promise<AreaLocation> };
+
+async function withSearchTimeout<T>(request: Promise<T>): Promise<T> {
+  let timer = 0;
+  try {
+    return await Promise.race([request, new Promise<never>((_, reject) => {
+      timer = window.setTimeout(() => reject(new Error("Location search timed out")), 8000);
+    })]);
+  } finally { window.clearTimeout(timer); }
+}
+
 export type MapAdapter = {
+  searchAreas: (query: string) => Promise<AreaSearchResult[]>;
+  selectArea: (area: AreaSearchResult) => Promise<void>;
   setPin: (coordinate: Coordinate, zoom?: number, source?: MapPickSource) => void;
   destroy: () => void;
 };
@@ -60,6 +74,8 @@ export async function createGoogleMapsAdapter(args: {
   });
 
   const geocoder = new google.maps.Geocoder();
+  let searchSession: any = null;
+  let destroyed = false;
   const overlay = createGridOverlay(google, map);
   let marker: any = null;
   const pick = (latLng: any, source: MapPickSource = "map") => {
@@ -105,8 +121,42 @@ export async function createGoogleMapsAdapter(args: {
   };
 
   return {
+    async searchAreas(query) {
+      const { AutocompleteSuggestion, AutocompleteSessionToken } = await withSearchTimeout<any>(google.maps.importLibrary("places"));
+      if (destroyed) return [];
+      searchSession ??= new AutocompleteSessionToken();
+      const session = searchSession;
+      const { suggestions } = await withSearchTimeout<any>(AutocompleteSuggestion.fetchAutocompleteSuggestions({
+        input: query,
+        includedPrimaryTypes: ["(regions)"],
+        sessionToken: session,
+      }));
+      return suggestions.filter((item: any) => item.placePrediction).map((item: any) => {
+        const prediction = item.placePrediction;
+        return {
+          id: prediction.placeId,
+          label: prediction.text.toString(),
+          resolve: async () => {
+            const place = prediction.toPlace();
+            try {
+              await withSearchTimeout(place.fetchFields({ fields: ["location", "viewport"] }));
+              if (!place.location) throw new Error("Location unavailable");
+              return { coordinate: { lat: place.location.lat(), lng: place.location.lng() }, viewport: place.viewport?.toJSON() };
+            } finally { if (searchSession === session) searchSession = null; }
+          },
+        };
+      });
+    },
+    async selectArea(area) {
+      const location = await area.resolve();
+      if (destroyed) return;
+      setPin(location.coordinate, 12);
+      if (location.viewport) map.fitBounds(location.viewport, 60);
+    },
     setPin,
     destroy() {
+      destroyed = true;
+      searchSession = null;
       window.clearTimeout(readyFallback);
       google.maps.event.removeListener(mapClick);
       google.maps.event.removeListener(idleListener);
