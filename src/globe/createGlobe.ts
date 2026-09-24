@@ -1,4 +1,3 @@
-import { isGlobePaused, subscribeGlobeMotion } from "../components/GlobeMotionControl";
 import {
   AmbientLight,
   BufferGeometry,
@@ -331,7 +330,7 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
   function render() {
     animationId = 0;
     if (destroyed || loadFailed || !texturesReady || !isVisible || !isIntersecting) return;
-    const moving = !isGlobePaused() && !reducedMotion && options.autoRotate !== false;
+    const moving = !reducedMotion && options.autoRotate !== false;
 
     const now = performance.now();
     if (moving) rotationElapsed += Math.min(now - lastFrame, 100) / 1000;
@@ -389,7 +388,7 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
   }
 
   function handlePointerMove(event: PointerEvent) {
-    if (!pointerEnabled || reducedMotion || isGlobePaused()) return;
+    if (!pointerEnabled || reducedMotion) return;
     pointerX = (event.clientX / width - 0.5) * 2;
     pointerY = -(event.clientY / height - 0.5) * 2;
     requestRender();
@@ -405,7 +404,6 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
   reducedMotionQuery.addEventListener('change', handleMotionChange);
   container.addEventListener('pointermove', handlePointerMove);
   container.addEventListener('pointerleave', handlePointerLeave);
-  const unsubscribeMotion = subscribeGlobeMotion(requestRender);
   requestRender();
 
   return {
@@ -421,7 +419,6 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
     destroy() {
       if (destroyed) return;
       destroyed = true;
-      unsubscribeMotion();
       window.cancelAnimationFrame(animationId);
       resizeObserver.disconnect();
       intersectionObserver.disconnect();

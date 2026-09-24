@@ -1,4 +1,3 @@
-import { GlobeMotionControl } from "../GlobeMotionControl";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { renderNoWrap6D } from "../NoWrap6D";
 import { GlobeLoader } from "../GlobeLoader";
@@ -115,7 +114,6 @@ function PropositionGlobe() {
   return (
     <div className={`proposition-section__artwork ${ready ? "is-ready" : ""}`}>
       {!loadRequested && <button className="globe-motion-control" onClick={() => setLoadRequested(true)}>Load globe</button>}
-      {ready && <GlobeMotionControl />}
       {!ready && loadRequested && <GlobeLoader progress={progress} failed={failed} onRetry={() => setAttempt(value => value + 1)} />}
       <div className="proposition-section__globe" ref={globeRef} aria-hidden="true" />
     </div>

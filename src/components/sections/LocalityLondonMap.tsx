@@ -207,14 +207,6 @@ export function LocalityLondonMap({
 
           <div className="llm-overlay" aria-hidden="true" />
 
-          <div className="llm-header">
-            <div>
-              <p className="llm-kicker">One shared reference · London</p>
-              <Code className="llm-code--header" />
-            </div>
-            <p className="llm-note">Locality completes the address</p>
-          </div>
-
           <svg
             aria-hidden="true"
             className="llm-leaders"
@@ -332,42 +324,11 @@ export function LocalityLondonMap({
           box-shadow: inset 0 0 clamp(2.75rem, 7cqi, 5.5rem) rgba(248, 252, 255, 0.5);
         }
 
-        .llm-header {
-          display: none;
-          position: absolute;
-          inset: 1.35rem 1.45rem auto 1.45rem;
-          z-index: 8;
-          justify-content: space-between;
-          gap: 1.5rem;
-          align-items: flex-start;
-          pointer-events: none;
-        }
-
-        .llm-kicker,
-        .llm-note,
         .llm-caption,
         .llm-attribution {
           font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
           letter-spacing: 0.12em;
           text-transform: uppercase;
-        }
-
-        .llm-kicker {
-          margin: 0 0 0.42rem;
-          color: color-mix(in oklch, var(--brand-blue, #2493ed) 65%, #062047);
-          font-size: clamp(0.64rem, 0.7vw, 0.78rem);
-          font-weight: 800;
-        }
-
-        .llm-note {
-          max-width: none;
-          margin: 0;
-          color: color-mix(in oklch, var(--brand-blue, #2493ed) 56%, #062047);
-          font-size: clamp(0.58rem, 0.62vw, 0.68rem);
-          font-weight: 800;
-          line-height: 1.45;
-          text-align: right;
-          white-space: nowrap;
         }
 
         .llm-code {
@@ -401,12 +362,6 @@ export function LocalityLondonMap({
         .llm-code--small {
           margin-top: 0.28rem;
           font-size: clamp(0.72rem, 0.9vw, 1rem);
-        }
-
-        .llm-code--header {
-          display: none;
-          margin-top: 0.35rem;
-          font-size: 0.9rem;
         }
 
         .llm-leaders {
@@ -502,23 +457,16 @@ export function LocalityLondonMap({
         .llm-caption {
           margin: 0.75rem 0 0;
           color: rgba(210, 223, 238, 0.72);
-          font-size: clamp(0.78rem, 0.8vw, 0.9rem);
+          font-size: clamp(calc(0.78rem + 1pt), calc(0.8vw + 1pt), calc(0.9rem + 1pt));
           line-height: 1.45;
           letter-spacing: 0.02em;
+          text-align: center;
           text-transform: none;
         }
 
         @media (max-width: 760px) {
           .llm-map {
             aspect-ratio: 1 / 1;
-          }
-
-          .llm-header {
-            inset: 1rem 1rem auto 1rem;
-          }
-
-          .llm-note {
-            display: none;
           }
 
           .llm-label {
@@ -540,24 +488,6 @@ export function LocalityLondonMap({
         }
 
         @media (max-width: 480px) {
-          .llm-header {
-            display: block;
-            background: #fff;
-            border-radius: 8px;
-            padding: 8px 10px;
-            width: fit-content;
-            inset: 0.8rem 0.85rem auto 0.85rem;
-          }
-
-          .llm-kicker {
-            margin-bottom: 0.2rem;
-            font-size: 0.58rem;
-          }
-
-          .llm-code--header {
-            display: inline-flex;
-          }
-
           .llm-label {
             width: 24%;
             padding: 0.42rem 0.34rem;
@@ -565,10 +495,6 @@ export function LocalityLondonMap({
 
           .llm-label strong {
             font-size: clamp(0.58rem, 3.5cqi, 0.76rem);
-          }
-
-          .llm-label .llm-code--small {
-            display: none;
           }
 
           .llm-caption {

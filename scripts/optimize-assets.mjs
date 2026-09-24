@@ -17,7 +17,7 @@ const exists = async (file) => {
   }
 };
 
-async function optimizeTeamImage(input, output, position = "center", zoom = 1) {
+async function optimizeTeamImage(input, output, position = "center", zoom = 1, fit = "cover") {
   if (!(await exists(input))) {
     console.warn(`Skipping missing team source: ${input}`);
     return;
@@ -29,7 +29,7 @@ async function optimizeTeamImage(input, output, position = "center", zoom = 1) {
   const margin = Math.floor((360 - size) / 2);
 
   await sharp(path.join(root, input))
-    .resize({ width: size, height: size, fit: "cover", position })
+    .resize({ width: size, height: size, fit, position, background: { r: 242, g: 239, b: 232, alpha: 1 } })
     .extend({
       top: margin,
       bottom: 360 - size - margin,
@@ -112,7 +112,9 @@ async function optimizeApplicationImages() {
 await optimizeTeamImage(
   "source-assets/team/GL.jpeg",
   "public/images/team/gl-360.webp",
-  "top",
+  "center",
+  1,
+  "contain",
 );
 await optimizeTeamImage(
   "source-assets/team/AG.jpeg",

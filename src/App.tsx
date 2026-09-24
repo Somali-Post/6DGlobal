@@ -1,4 +1,3 @@
-import { GlobeMotionControl } from "./components/GlobeMotionControl";
 import { FormEvent, lazy, MouseEvent, ReactNode, Suspense, useEffect, useRef, useState } from "react";
 import CursorGrid from "./components/CursorGrid";
 import { MapLoadingScreen } from "./components/MapLoadingScreen";
@@ -543,7 +542,6 @@ function GlobeHeroVisual() {
 
   return (
     <div className="hero-visual hero-content">
-      {globeReady && <GlobeMotionControl />}
       {heavyVisualState === "disabled" && <><div className="hero-globe-placeholder" aria-hidden="true" /><button className="globe-motion-control" onClick={() => setLoadRequested(true)}>Load globe</button></>}
       <div className={`hero-globe-root ${globeReady ? "is-ready" : ""}`} ref={globeRef} aria-hidden="true" />
       {!globeReady && heavyVisualState !== "disabled" && (
@@ -662,7 +660,7 @@ function LocalityMattersSection() {
             <div className="locality-proof__cta">
               <p>Find out how <NoWrap6D /> can support your work.</p>
               <a className="cta-action cta-action--blue" href="#contact">
-                <span>Get in touch</span><span className="cta-arrow" aria-hidden="true">→</span>
+                <span>Contact us</span><span className="cta-arrow" aria-hidden="true">→</span>
               </a>
             </div>
           </header>

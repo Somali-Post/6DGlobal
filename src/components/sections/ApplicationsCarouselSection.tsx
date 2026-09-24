@@ -218,9 +218,6 @@ export function ApplicationsCarouselSection() {
         </div>
 
         <div className="applications-carousel__footer craft-reveal">
-          <div className="applications-carousel__progress" aria-hidden="true">
-            <span style={{ transform: `scaleX(${(lastVisible + 1) / applications.length})` }} />
-          </div>
           <div className="applications-carousel__dots" aria-label="Choose an application">
             {applications.map((application, index) => (
               <button
@@ -234,10 +231,6 @@ export function ApplicationsCarouselSection() {
               />
             ))}
           </div>
-          <p className="applications-carousel__count" aria-live="polite">
-            <strong>{String(activeIndex + 1).padStart(2, "0")}{lastVisible > activeIndex ? `\u2013${String(lastVisible + 1).padStart(2, "0")}` : ""}</strong>
-            <span>/ {String(applications.length).padStart(2, "0")}</span>
-          </p>
         </div>
       </div>
     </section>
