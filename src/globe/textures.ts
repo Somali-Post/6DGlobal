@@ -262,6 +262,7 @@ export function createLimbGlowTexture(): Texture {
 type LocationLabelContent = {
   code: string;
   details: string[];
+  mobileDetails?: string[];
 };
 
 export type LocationLabelPlacement = 'east' | 'west' | 'northEast' | 'northWest' | 'southEast' | 'southWest';
@@ -336,7 +337,7 @@ function drawColourCodedCode(
   });
 }
 
-export function createLocationLabelTexture(label: LocationLabelContent, placement: LocationLabelPlacement): Texture {
+export function createLocationLabelTexture(label: LocationLabelContent, placement: LocationLabelPlacement, isMobile = false): Texture {
   const width = LOCATION_LABEL_TEXTURE_SIZE.width * LOCATION_LABEL_PIXEL_RATIO;
   const height = LOCATION_LABEL_TEXTURE_SIZE.height * LOCATION_LABEL_PIXEL_RATIO;
   const canvas = createCanvas(width, height);
@@ -412,21 +413,22 @@ export function createLocationLabelTexture(label: LocationLabelContent, placemen
 
   ctx.shadowBlur = 0;
   const textX = cardX + 23;
-  ctx.font = '700 46px Inter, Arial, sans-serif';
-  drawColourCodedCode(ctx, label.code, textX, cardY + 58);
+  ctx.font = `700 ${isMobile ? 52 : 46}px Inter, Arial, sans-serif`;
+  drawColourCodedCode(ctx, label.code, textX, cardY + (isMobile ? 62 : 58));
 
-  label.details.slice(0, 3).forEach((detail, index) => {
-    const fontSize = index === 0 ? 35 : index === 1 && label.details.length > 2 ? 27 : 24;
-    const fontWeight = index === 0 ? '660' : index === 1 && label.details.length > 2 ? '560' : '530';
+  const details = isMobile ? (label.mobileDetails ?? label.details.slice(0, 2)) : label.details.slice(0, 3);
+  details.forEach((detail, index) => {
+    const fontSize = isMobile ? (index === 0 ? 43 : 29) : index === 0 ? 38 : index === 1 && details.length > 2 ? 27 : 24;
+    const fontWeight = index === 0 ? '660' : index === 1 && details.length > 2 ? '560' : '530';
     const fillStyle = index === 0
       ? 'rgba(248, 251, 255, 0.98)'
-      : index === label.details.length - 1
+      : index === details.length - 1
         ? 'rgba(222, 232, 243, 0.78)'
         : 'rgba(232, 240, 248, 0.86)';
 
     ctx.font = `${fontWeight} ${fontSize}px Inter, Arial, sans-serif`;
     ctx.fillStyle = fillStyle;
-    ctx.fillText(detail, textX, cardY + 110 + index * 38);
+    ctx.fillText(detail, textX, cardY + (isMobile ? 117 : 110) + index * (isMobile ? 43 : 38), cardWidth - 46);
   });
 
   ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';

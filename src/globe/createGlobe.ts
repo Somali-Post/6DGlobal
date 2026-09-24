@@ -18,6 +18,7 @@ import {
   WebGLRenderer,
 } from 'three';
 import { GLOBE_CONFIG, type GlobeConfig } from './config';
+import { calculateSixDCode } from '../lib/sixd';
 import {
   createAtmosphereRimMaterial,
   createCityLightsMaterial,
@@ -37,6 +38,7 @@ import {
 
 export type HeroGlobeOptions = Partial<GlobeConfig> & {
   container: HTMLElement;
+  desktopGlobeScale?: number;
   autoRotate?: boolean;
   reducedMotion?: boolean;
   layout?: 'hero' | 'centered';
@@ -51,34 +53,41 @@ export type HeroGlobeHandle = {
 };
 
 const degreesToRadians = (degrees: number) => (degrees * Math.PI) / 180;
-const LABEL_FADE_START = 0.66;
-const LABEL_FADE_END = 0.86;
 const LABEL_MAX_OPACITY = 0.98;
-const LABEL_VISIBLE_THRESHOLD = 0.08;
+const LABEL_MIN_SPACING_DOT = Math.cos(degreesToRadians(26));
+const LABEL_FADE_SECONDS = 0.5;
+const LABEL_SELECTION_HYSTERESIS = 0.08;
 
 type GlobeLocationLabel = {
   latitude: number;
   longitude: number;
   code: string;
   details: string[];
+  mobileDetails?: string[];
   placement: LocationLabelPlacement;
+  selectionBias?: number;
 };
 
-const LOCATION_LABELS: GlobeLocationLabel[] = [
-  { latitude: 2.032189, longitude: 45.312983, code: '31-22-19', details: ['Hodan, Mogadishu', 'Somalia'], placement: 'southEast' },
-  { latitude: -17.863955, longitude: -63.230619, code: '63-30-96', details: ['Urbanizacion La Mar', 'Municipio La Guardia', 'Bolivia'], placement: 'west' },
-  { latitude: 5.442089, longitude: -55.210824, code: '41-20-08', details: ['Hollandse Kamp', 'Zanderij', 'Suriname'], placement: 'southEast' },
-  { latitude: 10.083832, longitude: -83.3448, code: '84-34-88', details: ['La Zonita', 'Batan', 'Costa Rica'], placement: 'west' },
-  { latitude: -19.253986, longitude: 140.348779, code: '54-38-97', details: ['Four Ways', 'Queensland', 'Australia'], placement: 'east' },
-  { latitude: -5.933265, longitude: 144.889876, code: '38-39-28', details: ['Burba', 'Sim', 'Papua New Guinea'], placement: 'east' },
-  { latitude: 12.277211, longitude: 76.637814, code: '73-77-28', details: ['JP Nagar', 'Mysuru', 'India'], placement: 'northEast' },
-  { latitude: 26.932701, longitude: 64.078386, code: '37-28-73', details: ['Panjgur District', 'Balochistan', 'Pakistan'], placement: 'northWest' },
-  { latitude: -14.84562, longitude: 24.814683, code: '41-54-66', details: ['Kaoma District', 'Western Province', 'Zambia'], placement: 'southWest' },
-  { latitude: 7.879227, longitude: -11.343555, code: '74-93-25', details: ['Blama', 'Kenema District', 'Sierra Leone'], placement: 'northWest' },
-  { latitude: 40.724661, longitude: -74.000804, code: '20-40-68', details: ['University Village', 'New York', 'United States'], placement: 'east' },
-  { latitude: 62.521117, longitude: -42.241282, code: '24-11-12', details: ['Kujalleq', 'Greenland'], placement: 'southEast' },
-  { latitude: 20.563046, longitude: -156.599767, code: '69-39-07', details: ['Maui County', 'Hawaii', 'United States'], placement: 'east' },
+const LABEL_LOCATIONS: Omit<GlobeLocationLabel, 'code'>[] = [
+  { latitude: -0.7471674, longitude: -90.3134198, details: ['Puerto Ayora', 'Galápagos, Ecuador'], mobileDetails: ['Puerto Ayora', 'Ecuador'], placement: 'southEast' },
+  { latitude: 5.442089, longitude: -55.210824, details: ['Hollandse Kamp', 'Zanderij', 'Suriname'], mobileDetails: ['Zanderij', 'Suriname'], placement: 'northWest' },
+  { latitude: -3.8537498, longitude: -32.4198018, details: ['Fernando de Noronha', 'Brazil'], mobileDetails: ['Noronha', 'Brazil'], placement: 'southEast' },
+  { latitude: 14.9162811, longitude: -23.5095095, details: ['Praia', 'Cabo Verde'], placement: 'northWest' },
+  { latitude: 19.5696707, longitude: 5.7725744, details: ['In Guezzam', 'Algeria'], placement: 'northWest', selectionBias: 0.11 },
+  { latitude: 6.4300279, longitude: 3.4259904, details: ['Victoria Island', 'Lagos, Nigeria'], mobileDetails: ['Victoria Island', 'Nigeria'], placement: 'southEast' },
+  { latitude: 13.6238244, longitude: 25.3555559, details: ['El Fasher', 'North Darfur, Sudan'], mobileDetails: ['El Fasher', 'Sudan'], placement: 'northEast' },
+  { latitude: 2.032189, longitude: 45.312983, details: ['Hodan', 'Mogadishu, Somalia'], mobileDetails: ['Hodan', 'Mogadishu, Somalia'], placement: 'southEast' },
+  { latitude: 12.277211, longitude: 76.637814, details: ['JP Nagar', 'Mysuru', 'India'], mobileDetails: ['Mysuru', 'India'], placement: 'northWest' },
+  { latitude: 10.7703806, longitude: 106.6951066, details: ['Bến Thành', 'Ho Chi Minh City', 'Vietnam'], mobileDetails: ['Bến Thành', 'Vietnam'], placement: 'southEast' },
+  { latitude: -5.933265, longitude: 144.889876, details: ['Burba', 'Sim', 'Papua New Guinea'], mobileDetails: ['Burba', 'Papua New Guinea'], placement: 'southWest' },
+  { latitude: 1.3490778, longitude: 173.0386512, details: ['South Tarawa', 'Kiribati'], placement: 'northEast' },
+  { latitude: 1.872, longitude: -157.3842085, details: ['Kiritimati', 'Kiribati'], placement: 'southWest' },
 ];
+
+const LOCATION_LABELS: GlobeLocationLabel[] = LABEL_LOCATIONS.map((label) => ({
+  ...label,
+  code: calculateSixDCode(label.latitude, label.longitude),
+}));
 
 function lonLatToSpherePosition(latitude: number, longitude: number, radius: number) {
   const lat = degreesToRadians(latitude);
@@ -102,7 +111,7 @@ function smoothstep(edge0: number, edge1: number, value: number) {
   return t * t * (3 - 2 * t);
 }
 
-function createCurvedLocationLabel(label: GlobeLocationLabel, texture: Texture): Mesh<BufferGeometry, MeshBasicMaterial> {
+function createCurvedLocationLabel(label: GlobeLocationLabel, texture: Texture, isMobile: boolean): Mesh<BufferGeometry, MeshBasicMaterial> {
   const columns = 28;
   const rows = 8;
   const positions: number[] = [];
@@ -110,8 +119,8 @@ function createCurvedLocationLabel(label: GlobeLocationLabel, texture: Texture):
   const indices: number[] = [];
   const radius = 1.022;
   const { u: markerU, v: markerV } = getLocationLabelMarkerUv(label.placement);
-  const longitudeSpan = 33.2;
-  const latitudeSpan = 15.2;
+  const longitudeSpan = isMobile ? 42 : 33.2;
+  const latitudeSpan = isMobile ? 19 : 15.2;
   const startLongitude = label.longitude - markerU * longitudeSpan;
   const startLatitude = label.latitude + markerV * latitudeSpan;
 
@@ -226,7 +235,7 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
   const cityLightsTexture = createCityLightsTexture(isMobile, markTextureReady);
   const countryBordersTexture = createCountryBordersTexture(isMobile, markTextureReady);
   const limbGlowTexture = createLimbGlowTexture();
-  const locationLabelTextures = LOCATION_LABELS.map((label) => createLocationLabelTexture(label, label.placement));
+  const locationLabelTextures = LOCATION_LABELS.map((label) => createLocationLabelTexture(label, label.placement, isMobile));
   const globeGeometry = new SphereGeometry(1, segments, Math.floor(segments / 2));
   const cityLightsGeometry = new SphereGeometry(1.004, segments, Math.floor(segments / 2));
   const countryBordersGeometry = new SphereGeometry(1.006, segments, Math.floor(segments / 2));
@@ -250,9 +259,11 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
   const atmosphereRim = new Mesh(atmosphereRimGeometry, atmosphereRimMaterial);
   const atmosphereHalo = new Mesh(atmosphereHaloGeometry, atmosphereHaloMaterial);
   const locationLabels = LOCATION_LABELS.map((label, index) => ({
-    mesh: createCurvedLocationLabel(label, locationLabelTextures[index]),
+    mesh: createCurvedLocationLabel(label, locationLabelTextures[index], isMobile),
     anchor: new Vector3(...Object.values(lonLatToSpherePosition(label.latitude, label.longitude, 1))),
     opacity: 0,
+    selected: false,
+    selectionBias: label.selectionBias,
   }));
   const limbGlow = new Sprite(limbGlowMaterial);
   // Keep the sun in the camera-facing tangent plane at the upper-right limb.
@@ -301,7 +312,8 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
     if (options.layout === 'centered') {
       const fitScale = camera.position.z * Math.sin(degreesToRadians(camera.fov / 2))
         * Math.min(1, camera.aspect) * 0.86;
-      globeGroup.scale.setScalar(config.globeScale * fitScale);
+      const desktopScale = window.matchMedia('(min-width: 721px)').matches ? options.desktopGlobeScale ?? 1 : 1;
+      globeGroup.scale.setScalar(config.globeScale * fitScale * desktopScale);
       globeGroup.position.set(0, 0, 0);
     } else {
       globeGroup.scale.setScalar(config.globeScale * responsiveScale);
@@ -333,7 +345,8 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
     const moving = !reducedMotion && options.autoRotate !== false;
 
     const now = performance.now();
-    if (moving) rotationElapsed += Math.min(now - lastFrame, 100) / 1000;
+    const elapsedSeconds = Math.min(now - lastFrame, 100) / 1000;
+    if (moving) rotationElapsed += elapsedSeconds;
     lastFrame = now;
     if (isVisible && isIntersecting) {
       applyOrientation(rotationElapsed);
@@ -343,16 +356,34 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
       currentTiltY += (pointerX * maxTilt - currentTiltY) * (moving ? 0.07 : 1);
       globeGroup.rotation.x = currentTiltX;
       globeGroup.rotation.y = currentTiltY;
-      locationLabels.forEach((label) => {
+      const facingLabels = locationLabels.map((label) => {
         const visibleAnchor = label.anchor.clone().applyEuler(spinningGroup.rotation).applyEuler(globeGroup.rotation);
-        // Perspective matters on an offset globe: fade against the actual
-        // anchor-to-camera direction before cards become edge-on or occluded.
         const viewDirection = camera.position.clone().sub(globeGroup.position)
           .addScaledVector(visibleAnchor, -globeGroup.scale.x).normalize();
-        const targetOpacity = smoothstep(LABEL_FADE_START, LABEL_FADE_END, visibleAnchor.dot(viewDirection)) * LABEL_MAX_OPACITY;
-        label.opacity = !moving ? targetOpacity : label.opacity + (targetOpacity - label.opacity) * 0.08;
+        return { label, frontness: visibleAnchor.dot(viewDirection) };
+      });
+      const candidates = facingLabels.filter(({ frontness }) => frontness > 0)
+        .sort((a, b) => (b.frontness + (b.label.selected ? LABEL_SELECTION_HYSTERESIS : 0) + (b.label.selectionBias ?? 0))
+          - (a.frontness + (a.label.selected ? LABEL_SELECTION_HYSTERESIS : 0) + (a.label.selectionBias ?? 0)));
+      const selected: typeof candidates = [];
+      // Prefer three well-separated labels on the visible side of the globe.
+      for (const candidate of candidates) {
+        if (selected.every(({ label }) => candidate.label.anchor.dot(label.anchor) < LABEL_MIN_SPACING_DOT)) selected.push(candidate);
+        if (selected.length === 3) break;
+      }
+      for (const candidate of candidates) {
+        if (selected.length === 3) break;
+        if (!selected.includes(candidate)) selected.push(candidate);
+      }
+      const fadeFactor = 1 - Math.exp(-elapsedSeconds / LABEL_FADE_SECONDS);
+      facingLabels.forEach(({ label, frontness }) => {
+        label.selected = selected.some(({ label: chosen }) => chosen === label);
+        const targetOpacity = label.selected
+          ? LABEL_MAX_OPACITY * smoothstep(0.08, 0.55, frontness)
+          : 0;
+        label.opacity = !moving || !readyReported ? targetOpacity : label.opacity + (targetOpacity - label.opacity) * fadeFactor;
         label.mesh.material.opacity = label.opacity;
-        label.mesh.visible = targetOpacity > LABEL_VISIBLE_THRESHOLD && label.opacity > 0.04;
+        label.mesh.visible = label.opacity > 0.02;
       });
 
       renderer.render(scene, camera);

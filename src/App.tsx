@@ -338,7 +338,7 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
               </span>
             </div>
             <div className="actions hero-actions">
-              <a className="button secondary" href="/find">Try the map</a>
+              <a className="button secondary hero-cta--map" href="/find">Try the map <span aria-hidden="true">↗</span></a>
               <LiteButton className="button hero-cta hero-cta--primary" href="#how-it-works">How it works</LiteButton>
             </div>
           </div>
@@ -517,6 +517,7 @@ function GlobeHeroVisual() {
         rotationDuration: 160,
         initialLongitude: -150,
         globeScale: 1,
+        desktopGlobeScale: 1.08,
         horizontalOffset: 0.62,
         pointerTiltDegrees: 0,
         onProgress: (loaded, total) => {
