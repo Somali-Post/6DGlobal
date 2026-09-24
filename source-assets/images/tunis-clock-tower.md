@@ -1,0 +1,10 @@
+# Tunis Clock Tower artwork
+
+- Generated with the built-in image generation tool on 2026-09-24.
+- Style references: `public/images/landmarks/sagrada-familia.webp` and `public/images/landmarks/taj-mahal.webp`.
+- Final asset: `public/images/landmarks/tunis-clock-tower.webp`, 1122 × 1402 pixels, opaque sRGB WebP, quality 84.
+- Address source: the user-supplied Tunis Clock Tower listing, `R52P+4F7, Ave Habib Bourguiba, Tunis, Tunisia`. Recovered full Plus Code: `8F8GR52P+4F7`; cell centre: latitude `36.8002875`, longitude `10.186171875`. The project calculator produces `08-06-21`.
+
+## Generation prompt
+
+Use case: stylized-concept. Asset type: landmark carousel illustration. Create ONE new image of the real Tunis Clock Tower on Avenue Habib Bourguiba in Tunis, Tunisia. The attached two local images are STYLE REFERENCES ONLY: match their fine monochrome medium-blue architectural pen linework, delicate hatching, near-white paper, faint light-blue square drafting grid and subtle circular compass construction lines. Subject: the recognizable modern Tunis clock tower, a very tall slender square-section open metal lattice obelisk, slightly tapering, with long vertical structural ribs and repeated horizontal lattice crossbars, large round clock faces high up on its square head, a small pointed pyramidal cap and slender finial. It stands in a low broad circular fountain basin with fine water jets; include faint low trees/palms and minimal plaza ground perspective near the base. Three-quarter architectural elevation showing front and one side, entire tower and fountain visible, centered and filling the same vertical proportion as reference landmarks. Portrait 4:5 composition, ideally 1122 x 1402 pixels. Restrained precise blue drafting illustration, not photographic, no heavy filled areas, no colors besides blue and off-white. Do not depict a stone bell tower, Big Ben, a minaret, cathedral or Taj Mahal. No title, caption, labels, address, watermark, border, UI, or map pin. Match reference line weight, whitespace, grid subtlety and architectural detail.

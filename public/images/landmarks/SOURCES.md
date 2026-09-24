@@ -19,4 +19,5 @@ The carousel uses local WebP images. Each image should have a documented source 
 | statue-liberty.webp | Statue of Liberty | TODO | TODO | TODO | Needs verification |
 | sydney-opera-house.webp | Sydney Opera House | TODO | TODO | TODO | Needs verification |
 | taj-mahal.webp | Taj Mahal | TODO | TODO | TODO | Needs verification |
+| tunis-clock-tower.webp | Tunis Clock Tower | Generated with the built-in image generation tool; see [generation notes](../../../source-assets/images/tunis-clock-tower.md) | AI-generated asset | No external photograph used | Generated for this project |
 | white-house.webp | White House | TODO | TODO | TODO | Needs verification |

@@ -55,6 +55,20 @@ export const landmarkExamples: LandmarkExample[] = [
     imageAlt: "Taj Mahal",
   },
   {
+    id: "tunis-clock-tower",
+    name: "Tunis Clock Tower",
+    streetLine: "Ave Habib Bourguiba",
+    code: "08-06-21",
+    locality: "Tunis",
+    country: "Tunisia",
+    // Centre of 8F8GR52P+4F7, the Plus Code supplied in the location reference.
+    lat: 36.8002875,
+    lng: 10.186171875,
+    imageSrc: "/images/landmarks/tunis-clock-tower.webp",
+    imageAlt: "Tunis Clock Tower",
+    imagePosition: "center top",
+  },
+  {
     id: "angkor-wat",
     name: "Angkor Wat",
     streetLine: "Angkor Wat",
