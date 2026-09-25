@@ -93,12 +93,13 @@ export function AddressingProblemSection() {
           </p>
 
           <div className="problem-s42-block problem-s42-block--closing">
-            <img
-              src="/images/s42badge.png"
-              alt="S42 compatible badge"
-              loading="lazy"
-              decoding="async"
-            />
+            <div className="problem-s42-block__badge">
+              <p className="problem-s42-block__label">
+                <span>UPU S42</span>
+                <strong>Compatible</strong>
+              </p>
+              <span className="problem-s42-block__logo" role="img" aria-label="6D Address" />
+            </div>
           </div>
         </div>
       </div>
