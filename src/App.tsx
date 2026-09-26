@@ -677,7 +677,7 @@ function LocalityMattersSection() {
 
 function SomaliaUseCaseSection() {
   return (
-    <section id="somalia-use-case" className="craft-section craft-section--warm somalia-case" tabIndex={-1}>
+    <section id="somalia-use-case" className="craft-section craft-section--warm craft-grid-bg somalia-case" tabIndex={-1}>
       <div className="craft-container">
         <div className="somalia-case__layout">
           <header className="somalia-case__copy craft-reveal">

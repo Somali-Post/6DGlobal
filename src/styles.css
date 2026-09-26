@@ -2249,18 +2249,6 @@ kbd,
   isolation: isolate;
   background: #f8fbfd;
 }
-.somalia-case::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image: url("/images/somalia-grid-sketch.webp");
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-  mix-blend-mode: multiply;
-  opacity: .34;
-}
 .somalia-case .craft-container,
 .applications-index .craft-container {
   position: relative;
@@ -2430,12 +2418,6 @@ kbd,
 }
 
 @media (max-width: 1080px) {
-  .somalia-case::before {
-    background-position: center top;
-    background-size: 100% auto;
-    opacity: .34;
-  }
-
   .somalia-case .somalia-case__layout {
     grid-template-columns: 1fr;
     grid-template-areas:
@@ -2455,12 +2437,6 @@ kbd,
 }
 
 @media (max-width: 680px) {
-  .somalia-case::before {
-    background-position: center top;
-    background-size: 100% auto;
-    opacity: .3;
-  }
-
   .somalia-case .somalia-case__example-grid {
     grid-template-columns: 1fr;
   }
@@ -3353,6 +3329,10 @@ kbd,
   border-radius: 50%;
   background: var(--brand-blue-soft);
 }
+
+.contact-chapter__subtitle li:nth-child(1)::before { background: var(--sixd-red); }
+.contact-chapter__subtitle li:nth-child(2)::before { background: var(--sixd-green); }
+.contact-chapter__subtitle li:nth-child(3)::before { background: var(--sixd-blue); }
 
 .contact-chapter .contact-form {
   grid-column: 7 / span 6;
