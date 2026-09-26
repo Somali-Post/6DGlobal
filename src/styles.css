@@ -3480,7 +3480,7 @@ kbd,
   background: var(--navy-980);
   color: var(--text-invert-secondary);
   border-top: 1px solid var(--border-dark);
-  padding-block: clamp(2rem, 4vw, 3.5rem);
+  padding: clamp(3rem, 5vw, 4.5rem) 0 1.15rem;
 }
 
 .site-footer::before {
@@ -3499,14 +3499,14 @@ kbd,
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(260px, 1.1fr) minmax(260px, .9fr);
-  gap: clamp(2rem, 5vw, 5rem);
+  grid-template-columns: minmax(280px, 1.35fr) minmax(250px, 1fr) auto;
+  gap: 2.5rem clamp(2rem, 4vw, 3.5rem);
   align-items: start;
 }
 
 .site-footer__brand {
   display: grid;
-  gap: .85rem;
+  gap: 1.1rem;
 }
 
 .site-footer__logo {
@@ -3518,27 +3518,80 @@ kbd,
   color: var(--text-invert);
 }
 
+.site-footer__logo img {
+  display: block;
+  width: clamp(210px, 18vw, 260px);
+  height: auto;
+}
+
 .site-footer__brand p {
   margin: 0;
   max-width: 440px;
-  color: var(--text-invert-muted);
+  color: #becbdb;
   line-height: 1.55;
+}
+
+.site-footer__brand .site-footer__tagline {
+  color: #f3f7ff;
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 1.5vw, 1.5rem);
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -.025em;
+}
+
+.site-footer__brand .site-footer__description {
+  max-width: 37ch;
+  color: #becbdb;
+  font-size: .95rem;
+  line-height: 1.65;
 }
 
 .site-footer__nav {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: .6rem 1.2rem;
+  gap: 2rem;
+}
+
+.site-footer__column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.site-footer__column h2 {
+  margin: .7rem 0 .7rem;
+  color: #f3f7ff;
+  font-family: var(--font-body);
+  font-size: .8rem;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
 }
 
 .site-footer__nav a {
-  color: var(--text-invert-secondary);
+  color: #c7d3e2;
   font-size: .94rem;
   transition: color var(--duration-fast) var(--ease-out-craft);
 }
 
 .site-footer__nav a:hover {
   color: var(--text-invert);
+  text-decoration: underline;
+  text-underline-offset: .25em;
+}
+
+.site-footer a:focus-visible {
+  outline: 2px solid #7cc9ff;
+  outline-offset: 5px;
+  border-radius: 3px;
+}
+
+.site-footer__cta {
+  align-self: start;
+  margin-top: .5rem;
+  min-height: 48px;
+  white-space: nowrap;
 }
 
 .site-footer__meta {
@@ -3546,16 +3599,22 @@ kbd,
   display: flex;
   flex-wrap: wrap;
   gap: .75rem 1.5rem;
-  padding-top: clamp(1.5rem, 3vw, 2.5rem);
+  padding-top: 1rem;
   border-top: 1px solid var(--border-dark);
-  font-family: var(--font-mono);
-  font-size: .72rem;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: var(--text-invert-muted);
+  font-family: var(--font-body);
+  font-size: .82rem;
+  letter-spacing: 0;
+  color: #aebed1;
 }
 
 @media (max-width: 1080px) {
+  .site-footer__inner {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  }
+
+  .site-footer__brand { grid-row: 1 / span 2; }
+  .site-footer__cta { grid-column: 2; justify-self: start; margin-top: 0; }
+
   .faq-chapter__grid,
   .contact-chapter__grid {
     grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -3592,8 +3651,11 @@ kbd,
   }
 
   .site-footer__nav {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .site-footer__brand { grid-row: auto; }
+  .site-footer__cta { grid-column: 1; justify-self: stretch; }
 }
 
 @media (max-width: 620px) {
@@ -3824,7 +3886,7 @@ body,
   }
 
   .site-footer {
-    padding-block: 2rem;
+    padding: 2.5rem 0 1rem;
   }
 
   .site-footer__inner {
@@ -3832,7 +3894,7 @@ body,
   }
 
   .site-footer__nav {
-    gap: .45rem;
+    gap: 2rem;
   }
 
   .site-footer__meta {
@@ -4664,7 +4726,7 @@ body,
 
 .address-examples__header {
   grid-template-columns: minmax(0, 1fr) minmax(320px, .75fr);
-  align-items: end;
+  align-items: start;
   gap: clamp(1.5rem, 5vw, 5rem);
   margin-bottom: clamp(1.75rem, 3.4vw, 3.25rem);
 }
@@ -4677,6 +4739,42 @@ body,
 .address-examples__lead {
   margin: 0;
   max-width: 36rem;
+}
+
+.address-examples__invitation {
+  margin-top: 1.25rem;
+  max-width: 36rem;
+}
+
+.address-examples__invitation p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+}
+
+.address-examples__contact {
+  display: inline-flex;
+  align-items: center;
+  gap: .65rem;
+  min-height: 44px;
+  margin-top: .35rem;
+  color: var(--brand-blue-deep);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: .3em;
+  text-decoration-thickness: 1px;
+}
+
+.address-examples__contact:hover {
+  color: var(--ink-950);
+}
+
+.address-examples__contact:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+  border-radius: 2px;
 }
 
 .address-examples__carousel {
@@ -4844,21 +4942,22 @@ body,
   min-height: 100%;
   overflow: hidden;
   border-left: 1px solid var(--border-light);
-  background: #eef4fb;
+  background: #f8f9fb;
 }
 
 .address-example-card__media img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  min-height: 350px;
-  object-fit: cover;
-  transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+  /* Keep the entire landmark visible in both portrait and wide card layouts. */
+  object-fit: contain;
+  transition: filter 180ms var(--ease-out-craft);
 }
 
 .address-example-card:hover .address-example-card__media img,
 .address-example-card:focus-visible .address-example-card__media img {
   filter: brightness(1.04);
-  transform: scale(1.035);
 }
 
 .address-example-card.is-edge .address-example-card__media::after {
@@ -4870,7 +4969,7 @@ body,
 
 .address-example-card__photo-pin {
   position: absolute;
-  left: 50%;
+  left: calc(100% - 2.5rem);
   bottom: 1.08rem;
   z-index: 3;
   width: 3rem;
@@ -4916,7 +5015,7 @@ body,
 
 .address-example-card__photo-ring {
   position: absolute;
-  left: 50%;
+  left: calc(100% - 2.5rem);
   bottom: .76rem;
   z-index: 2;
   width: 4.15rem;
@@ -5110,13 +5209,15 @@ body,
   }
 
   .address-examples__viewport {
-    --example-card-width: min(74vw, 304px);
+    container-type: inline-size;
+    --example-card-width: min(74vw, 304px, 100cqw);
     mask-image: none;
   }
 
   .address-example-card {
     display: grid;
     grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
     min-height: auto;
   }
 
@@ -5135,14 +5236,10 @@ body,
   }
 
   .address-example-card__media {
-    min-height: 220px;
+    aspect-ratio: 4 / 5;
+    min-height: 0;
     border-left: 0;
     border-top: 1px solid var(--border-light);
-  }
-
-  .address-example-card__media img {
-    min-height: 220px;
-    height: 220px;
   }
 
   .address-example-card.is-edge {

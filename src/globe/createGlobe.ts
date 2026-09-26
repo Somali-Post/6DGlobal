@@ -39,6 +39,8 @@ import {
 export type HeroGlobeOptions = Partial<GlobeConfig> & {
   container: HTMLElement;
   desktopGlobeScale?: number;
+  /** Extra canvas space on each side, as a fraction of the shorter layout dimension. */
+  renderPaddingRatio?: number;
   autoRotate?: boolean;
   reducedMotion?: boolean;
   layout?: 'hero' | 'centered';
@@ -301,10 +303,23 @@ export function createHeroGlobe(options: HeroGlobeOptions): HeroGlobeHandle {
     const rect = container.getBoundingClientRect();
     width = Math.max(1, rect.width);
     height = Math.max(1, rect.height);
+    // Render beyond the layout box so the limb glow can fade out before it
+    // reaches a canvas edge. A view offset preserves the original globe framing.
+    const padding = Math.ceil(Math.min(width, height) * Math.max(0, options.renderPaddingRatio ?? 0));
+    const renderWidth = width + padding * 2;
+    const renderHeight = height + padding * 2;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, config.maxPixelRatio));
-    renderer.setSize(width, height, false);
+    renderer.setSize(renderWidth, renderHeight, false);
+    Object.assign(renderer.domElement.style, {
+      width: `${renderWidth}px`,
+      height: `${renderHeight}px`,
+      position: 'absolute',
+      left: `${-padding}px`,
+      top: `${-padding}px`,
+    });
+    renderer.domElement.style.setProperty('--globe-edge-fade', `${padding / 2}px`);
     camera.aspect = width / height;
-    camera.updateProjectionMatrix();
+    camera.setViewOffset(width, height, -padding, -padding, renderWidth, renderHeight);
 
     const shortest = Math.min(width, height);
     const stackedLayout = width <= 860;

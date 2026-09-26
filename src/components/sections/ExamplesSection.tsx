@@ -293,8 +293,14 @@ export function ExamplesSection() {
           </div>
           <div className="examples-chapter__intro craft-reveal">
             <p className="craft-lead address-examples__lead">
-              <NoWrap6D /> can address existing landmarks using existing locality information people already recognise
+              We have incorporated <NoWrap6D /> into the existing address of some well known landmarks
             </p>
+            <div className="address-examples__invitation">
+              <p>If you would like a well known landmark to feature in our carousel please let us know</p>
+              <a className="address-examples__contact" href="#contact">
+                Suggest a landmark <span aria-hidden="true">↗</span>
+              </a>
+            </div>
           </div>
         </div>
 

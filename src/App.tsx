@@ -518,6 +518,7 @@ function GlobeHeroVisual() {
         initialLongitude: -150,
         globeScale: 1,
         desktopGlobeScale: 1.08,
+        renderPaddingRatio: 0.2,
         horizontalOffset: 0.62,
         pointerTiltDegrees: 0,
         onProgress: (loaded, total) => {
@@ -945,22 +946,36 @@ function Footer() {
     <footer className="site-footer">
       <div className="craft-container site-footer__inner">
         <div className="site-footer__brand">
-          <a href="#top" className="site-footer__logo" aria-label="6D Address home"><NoWrap6D /></a>
-          <p><NoWrap6D /> is being documented as an open addressing method.</p>
+          <a href="#top" className="site-footer__logo" aria-label="6D Address home">
+            <img src="/navlogo-320.webp" alt="6D Address" width="320" height="100" loading="lazy" />
+          </a>
+          <p className="site-footer__tagline">Six digits. One locality.<br />A clearer way to reach people.</p>
+          <p className="site-footer__description">A simple digital addressing method designed for delivery, services and the last mile.</p>
         </div>
 
         <nav className="site-footer__nav" aria-label="Footer navigation">
-          <a href="#how-it-works">How it works</a>
-          <a href="#examples">Examples</a>
-          <a href="#locality">Locality</a>
-          <a href="#proposition">Proposition</a>
-          <a href="#faq">FAQ</a>
-          <a href="#contact">Contact</a>
+          <div className="site-footer__column">
+            <h2>Explore</h2>
+            <a href="#how-it-works">How it works</a>
+            <a href="#examples">Examples</a>
+            <a href="#locality">Locality</a>
+            <a href="#somalia-use-case">Somalia</a>
+          </div>
+          <div className="site-footer__column">
+            <h2>About</h2>
+            <a href="#proposition">Proposition</a>
+            <a href="#team">Team</a>
+            <a href="#faq">FAQ</a>
+            <a href="#contact">Contact</a>
+          </div>
         </nav>
+
+        <a className="craft-button craft-button--primary site-footer__cta" href="/find">
+          Try the map <span aria-hidden="true">→</span>
+        </a>
 
         <div className="site-footer__meta">
           <span>© {new Date().getFullYear()} <NoWrap6D /></span>
-          <span>Open method under documentation</span>
         </div>
       </div>
     </footer>
