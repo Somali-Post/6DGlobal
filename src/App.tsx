@@ -147,16 +147,9 @@ const teamMembers = [
   {
     initials: "AG",
     image: "/images/team/ag-360.webp",
-    name: "Abdiaziz Ga'al",
+    name: "Abdiasis Ga'al",
     role: "SOFTWARE DEVELOPMENT",
     bio: "Abdiaziz brought the 6D Address concept to life through software development, map-based demonstrations and practical testing of the user experience.",
-  },
-  {
-    initials: "SH",
-    image: "/images/team/sh-360.webp",
-    name: "Said Hassan",
-    role: "SOMALIA USE CASE",
-    bio: "Said is responsible for implementing a national address system for the Government of Somalia and has incorporated 6D Address as a core component of the address format",
   },
 ];
 

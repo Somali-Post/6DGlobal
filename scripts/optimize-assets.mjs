@@ -120,12 +120,6 @@ await optimizeTeamImage(
   "source-assets/team/AG.jpeg",
   "public/images/team/ag-360.webp",
 );
-await optimizeTeamImage(
-  "source-assets/team/SH.jpeg",
-  "public/images/team/sh-360.webp",
-  "top",
-);
-
 await optimizeLogo();
 await optimizeApplicationImages();
 
