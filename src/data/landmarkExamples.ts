@@ -44,10 +44,9 @@ export const landmarkExamples: LandmarkExample[] = [
   {
     id: "taj-mahal",
     name: "Taj Mahal",
-    streetLine: "Dharmapuri",
     code: "74-51-09",
-    locality: "Agra",
-    cityLine: "Uttar Pradesh 282001",
+    locality: "Dharmapuri",
+    cityLine: "Agra, Uttar Pradesh 282001",
     country: "India",
     lat: 27.175,
     lng: 78.041944,
