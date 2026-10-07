@@ -78,7 +78,7 @@ const LABEL_LOCATIONS: Omit<GlobeLocationLabel, 'code'>[] = [
   { latitude: 19.5696707, longitude: 5.7725744, details: ['In Guezzam', 'Algeria'], placement: 'northWest', selectionBias: 0.11 },
   { latitude: 6.4300279, longitude: 3.4259904, details: ['Victoria Island', 'Lagos, Nigeria'], mobileDetails: ['Victoria Island', 'Nigeria'], placement: 'southEast' },
   { latitude: 13.6238244, longitude: 25.3555559, details: ['El Fasher', 'North Darfur, Sudan'], mobileDetails: ['El Fasher', 'Sudan'], placement: 'northEast' },
-  { latitude: 2.032189, longitude: 45.312983, details: ['Hodan', 'Mogadishu, Somalia'], mobileDetails: ['Hodan', 'Mogadishu, Somalia'], placement: 'southEast' },
+  { latitude: -4.0505, longitude: 39.6672, details: ['Mombasa', 'Mombasa County, Kenya'], mobileDetails: ['Mombasa', 'Kenya'], placement: 'southEast' },
   { latitude: 12.277211, longitude: 76.637814, details: ['JP Nagar', 'Mysuru', 'India'], mobileDetails: ['Mysuru', 'India'], placement: 'northWest' },
   { latitude: 10.7703806, longitude: 106.6951066, details: ['Bến Thành', 'Ho Chi Minh City', 'Vietnam'], mobileDetails: ['Bến Thành', 'Vietnam'], placement: 'southEast' },
   { latitude: -5.933265, longitude: 144.889876, details: ['Burba', 'Sim', 'Papua New Guinea'], mobileDetails: ['Burba', 'Papua New Guinea'], placement: 'southWest' },

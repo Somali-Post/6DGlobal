@@ -2245,11 +2245,11 @@ kbd,
   text-wrap: balance;
 }
 
-.somalia-case {
+.example-case {
   isolation: isolate;
   background: #f8fbfd;
 }
-.somalia-case .craft-container,
+.example-case .craft-container,
 .applications-index .craft-container {
   position: relative;
   z-index: 1;
@@ -2261,7 +2261,7 @@ kbd,
   row-gap: clamp(2rem, 5vw, 5rem);
   align-items: start;
 }
-.somalia-case .somalia-case__layout {
+.example-case .example-case__layout {
   display: grid;
   grid-template-columns: minmax(300px, .78fr) minmax(620px, 1.22fr);
   grid-template-areas:
@@ -2271,44 +2271,44 @@ kbd,
   row-gap: clamp(.9rem, 1.4vw, 1.2rem);
   align-items: start;
 }
-.somalia-case__copy {
+.example-case__copy {
   grid-area: copy;
   display: grid;
   align-content: start;
   gap: clamp(1.4rem, 2.3vw, 2rem);
   max-width: 590px;
 }
-.somalia-case__copy .display-section {
+.example-case__copy .display-section {
   margin: 0;
 }
-.somalia-case__copy p,
-.somalia-case__support p {
+.example-case__copy p,
+.example-case__support p {
   margin: 0;
   color: var(--text-secondary);
   font-size: clamp(1.05rem, 1.3vw, 1.35rem);
   line-height: 1.55;
 }
-.somalia-case__support {
+.example-case__support {
   grid-area: support;
   max-width: 590px;
   padding-top: clamp(1rem, 1.5vw, 1.3rem);
   border-top: 1px solid var(--border-light-strong);
 }
-.somalia-case__support p {
+.example-case__support p {
   color: var(--text-primary);
 }
-.somalia-case__format-panel,
-.somalia-case__example-card {
+.example-case__format-panel,
+.example-case__example-card {
   min-width: 0;
   border: 1px solid var(--border-light-strong);
   background: oklch(0.995 0.006 88 / .9);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .74), 0 16px 38px rgba(22, 53, 92, .055);
 }
-.somalia-case__format-panel {
+.example-case__format-panel {
   grid-area: format;
   padding: clamp(1.15rem, 1.7vw, 1.5rem);
 }
-.somalia-case__format-panel h3 {
+.example-case__format-panel h3 {
   margin: 0 0 clamp(.8rem, 1.2vw, 1rem);
   max-width: 680px;
   color: var(--text-primary);
@@ -2317,14 +2317,14 @@ kbd,
   line-height: 1.08;
   letter-spacing: -.035em;
 }
-.somalia-case__format-list {
+.example-case__format-list {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
   gap: .1rem;
 }
-.somalia-case__format-list li {
+.example-case__format-list li {
   display: flex;
   align-items: center;
   min-width: 0;
@@ -2333,27 +2333,27 @@ kbd,
   color: var(--text-secondary);
   line-height: 1.22;
 }
-.somalia-case__format-list li > span {
+.example-case__format-list li > span {
   min-width: 0;
   font-size: clamp(1.12rem, 1.3vw, 1.32rem);
 }
-.somalia-case__format-list li:nth-child(2) {
+.example-case__format-list li:nth-child(2) {
   border-left: 3px solid var(--brand-blue);
   background: rgba(0, 114, 229, .07);
   color: var(--brand-blue-deep);
   font-weight: 800;
 }
-.somalia-case__format-list li:nth-child(2) > span {
+.example-case__format-list li:nth-child(2) > span {
   white-space: nowrap;
 }
-.somalia-case .somalia-case__example-grid {
+.example-case .example-case__example-grid {
   grid-area: examples;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: clamp(.75rem, 1.15vw, 1rem);
   min-width: 0;
 }
-.somalia-case__example-card {
+.example-case__example-card {
   position: relative;
   overflow: hidden;
   display: grid;
@@ -2362,7 +2362,7 @@ kbd,
   min-height: 14rem;
   padding: clamp(1rem, 1.4vw, 1.2rem);
 }
-.somalia-case__example-card::before {
+.example-case__example-card::before {
   content: "";
   position: absolute;
   inset-inline: 0;
@@ -2371,7 +2371,7 @@ kbd,
   background: linear-gradient(90deg, var(--sixd-red) 0 33.333%, var(--sixd-green) 33.333% 66.666%, var(--sixd-blue) 66.666% 100%);
   opacity: .82;
 }
-.somalia-case__example-card h3 {
+.example-case__example-card h3 {
   margin: 0 0 .65rem;
   min-height: 2.5em;
   color: var(--text-primary);
@@ -2381,7 +2381,7 @@ kbd,
   letter-spacing: 0;
   line-height: 1.2;
 }
-.somalia-case__address {
+.example-case__address {
   display: grid;
   align-content: start;
   min-width: 0;
@@ -2392,7 +2392,7 @@ kbd,
   font-size: 1rem;
   line-height: 1.38;
 }
-.somalia-case__code-line {
+.example-case__code-line {
   display: flex;
   align-items: baseline;
   gap: 0.45rem;
@@ -2404,21 +2404,21 @@ kbd,
   line-height: 1.1;
   letter-spacing: -0.035em;
 }
-.somalia-case__code-line .coloured-code {
+.example-case__code-line .coloured-code {
   flex: 0 0 auto;
 }
-.somalia-case__code-line strong {
+.example-case__code-line strong {
   min-width: 0;
   color: var(--text-primary);
   font-weight: 700;
 }
-.somalia-case__example-card .coloured-code {
+.example-case__example-card .coloured-code {
   font-family: var(--font-mono);
   font-size: 1em;
 }
 
 @media (max-width: 1080px) {
-  .somalia-case .somalia-case__layout {
+  .example-case .example-case__layout {
     grid-template-columns: 1fr;
     grid-template-areas:
       "copy"
@@ -2427,24 +2427,24 @@ kbd,
       "examples";
     gap: clamp(1rem, 3vw, 1.5rem);
   }
-  .somalia-case__copy,
-  .somalia-case__support {
+  .example-case__copy,
+  .example-case__support {
     max-width: 760px;
   }
-  .somalia-case__support {
+  .example-case__support {
     margin-top: clamp(.25rem, 1vw, .6rem);
   }
 }
 
 @media (max-width: 680px) {
-  .somalia-case .somalia-case__example-grid {
+  .example-case .example-case__example-grid {
     grid-template-columns: 1fr;
   }
-  .somalia-case__format-panel,
-  .somalia-case__example-card {
+  .example-case__format-panel,
+  .example-case__example-card {
     padding: 1rem;
   }
-  .somalia-case__code-line {
+  .example-case__code-line {
     font-size: clamp(1.16rem, 5.6vw, 1.48rem);
   }
 }
@@ -3737,7 +3737,7 @@ body,
   }
 
 
-  .somalia-case__format-list li {
+  .example-case__format-list li {
     min-height: 44px;
   }
 
@@ -4148,7 +4148,7 @@ body,
 }
 
 .application-row__content p,
-.somalia-case__format-list li,
+.example-case__format-list li,
 .contact-chapter .contact-form label,
 .site-footer__brand p,
 .site-footer__nav a {

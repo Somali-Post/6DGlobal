@@ -1,6 +1,6 @@
 import { NoWrap6D } from "../NoWrap6D";
 
-const solutionLocalityItems = ["Halane", "Wadajir", "Mogadishu", "Somalia"];
+const solutionLocalityItems = ["Al Amarat", "Khartoum", "Khartoum State", "Sudan"];
 
 function ColouredCode({ code }: { code: string }) {
   const [red, green, blue] = code.split("-");
@@ -67,7 +67,7 @@ export function AddressingProblemSection() {
                 <li className="problem-bridge__item problem-bridge__item--available problem-bridge__item--code">
                   <span aria-hidden="true">✓</span>
                   <span className="problem-bridge__code-value">
-                    <ColouredCode code="35-12-12" />
+                    <ColouredCode code="74-56-10" />
                   </span>
                 </li>
                 {solutionLocalityItems.map((item) => (
@@ -85,7 +85,7 @@ export function AddressingProblemSection() {
 
           <p className="problem-bridge__closing">
             <span className="problem-bridge__closing-line">
-              In developing countries like Somalia, it will take many years to adopt property numbers and street names
+              In many developing countries, it will take years to adopt property numbers and street names
             </span>
             <span className="problem-bridge__closing-line">
               <NoWrap6D /> immediately fills the gap and is compatible with future address solutions

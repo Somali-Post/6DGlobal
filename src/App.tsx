@@ -33,8 +33,8 @@ const navItems = [
   {
     id: "use-cases",
     label: "Use cases",
-    href: "#somalia-use-case",
-    activeFor: ["somalia-use-case", "applications", "proposition", "team"],
+    href: "#example-use-case",
+    activeFor: ["example-use-case", "applications", "proposition", "team"],
   },
   {
     id: "faq",
@@ -50,7 +50,7 @@ const observedSectionIds = [
   "how-it-works",
   "examples",
   "locality",
-  "somalia-use-case",
+  "example-use-case",
   "applications",
   "proposition",
   "team",
@@ -351,7 +351,7 @@ function HomePage({ onFind }: { onFind: (autoLocate?: boolean) => void }) {
 
       <LocalityMattersSection />
 
-      <SomaliaUseCaseSection />
+      <ExampleUseCaseSection />
 
       <ApplicationsCarouselSection />
 
@@ -572,35 +572,34 @@ function HowItWorksSection() {
         <div className="how-created__coordinate-box" aria-label="Latitude and longitude selected decimal places">
           <div className="how-created__coordinate-row">
             <span className="how-created__coordinate-label">Latitude:</span>
-            <span className="how-created__coordinate-value" aria-label="11.275278 N">
-              <span>11.2</span>
-              <span className="digit-red">7</span>
-              <span className="digit-green">5</span>
-              <span className="digit-blue">2</span>
-              <span>78 N</span>
+            <span className="how-created__coordinate-value" aria-label="1.936860 S">
+              <span>1.9</span>
+              <span className="digit-red">3</span>
+              <span className="digit-green">6</span>
+              <span className="digit-blue">8</span>
+              <span>60 S</span>
             </span>
           </div>
 
           <div className="how-created__coordinate-row">
             <span className="how-created__coordinate-label">Longitude:</span>
-            <span className="how-created__coordinate-value" aria-label="49.141389 E">
-              <span>49.1</span>
-              <span className="digit-red">4</span>
-              <span className="digit-green">1</span>
-              <span className="digit-blue">3</span>
-              <span>89 E</span>
+            <span className="how-created__coordinate-value" aria-label="30.078770 E">
+              <span>30.0</span>
+              <span className="digit-red">7</span>
+              <span className="digit-green">8</span>
+              <span className="digit-blue">7</span>
+              <span>70 E</span>
             </span>
           </div>
         </div>
 
         <article className="how-created__address-box" aria-label="Completed 6D Address">
-          <ColouredCode code="74-51-23" />
+          <ColouredCode code="37-68-87" />
           <address>
-            <span>Bender Qassim International Airport</span>
-            <span>Bosaso</span>
-            <span>Bari</span>
-            <span>Puntland</span>
-            <span>Somalia</span>
+            <span>Kacyiru</span>
+            <span>Gasabo District</span>
+            <span>Kigali</span>
+            <span>Rwanda</span>
           </address>
         </article>
         <aside className="how-created__action" aria-labelledby="try-sixd-heading">
@@ -668,22 +667,21 @@ function LocalityMattersSection() {
   );
 }
 
-function SomaliaUseCaseSection() {
+function ExampleUseCaseSection() {
   return (
-    <section id="somalia-use-case" className="craft-section craft-section--warm craft-grid-bg somalia-case" tabIndex={-1}>
+    <section id="example-use-case" className="craft-section craft-section--warm craft-grid-bg example-case" tabIndex={-1}>
       <div className="craft-container">
-        <div className="somalia-case__layout">
-          <header className="somalia-case__copy craft-reveal">
-            <h2 className="display-section">Somalia Use Case</h2>
+        <div className="example-case__layout">
+          <header className="example-case__copy craft-reveal">
+            <h2 className="display-section">Example Use Case</h2>
             <p>
-              Somalia provides a practical example of how <NoWrap6D /> can be incorporated into an address format as the
-              second line of the address.
+              The two examples show how <NoWrap6D /> can be incorporated into an existing address as the second line.
             </p>
           </header>
 
-          <article className="somalia-case__format-panel craft-reveal" aria-labelledby="somalia-format-title">
-            <h3 id="somalia-format-title">The <NoWrap6D /> code is incorporated into existing address details</h3>
-            <ul className="somalia-case__format-list">
+          <article className="example-case__format-panel craft-reveal" aria-labelledby="example-format-title">
+            <h3 id="example-format-title">The <NoWrap6D /> code is incorporated into existing address details</h3>
+            <ul className="example-case__format-list">
               <li><span>Property number and street name</span></li>
               <li><span><NoWrap6D /> and locality</span></li>
               <li><span>District / town / city</span></li>
@@ -692,25 +690,26 @@ function SomaliaUseCaseSection() {
             </ul>
           </article>
 
-          <div className="somalia-case__support craft-reveal">
+          <div className="example-case__support craft-reveal">
             <p>
               With or without a property number and street name, <NoWrap6D /> can provide a precise last-mile location
-              reference when combined with existing locality information.
+              reference when combined with existing locality information. In both examples, the <NoWrap6D /> works
+              alongside the existing postcode and does not replace it.
             </p>
           </div>
 
-          <div className="somalia-case__example-grid craft-reveal" aria-label="Somalia address format examples">
-            <article className="somalia-case__example-card">
+          <div className="example-case__example-grid craft-reveal" aria-label="Example address format examples">
+            <article className="example-case__example-card">
               <h3>Example with street context</h3>
-              <SomaliaAddressLines
-                lines={["24 Isbarbardhig Road", "35-12-12 Halane", "Mogadishu", "Banaadir", "Somalia"]}
+              <ExampleAddressLines
+                lines={["50 bis Grande rue de la Croix-Rousse", "73-82-94 La Croix-Rousse", "69004 Lyon", "France"]}
               />
             </article>
 
-            <article className="somalia-case__example-card">
+            <article className="example-case__example-card">
               <h3>Example without street context</h3>
-              <SomaliaAddressLines
-                lines={["Un-named local road", "36-46-98 Gendershe", "Lower Shabeelle", "Somalia"]}
+              <ExampleAddressLines
+                lines={["60-68-80 Westlands", "Nairobi 00800", "Kenya"]}
               />
             </article>
           </div>
@@ -720,13 +719,13 @@ function SomaliaUseCaseSection() {
   );
 }
 
-function SomaliaAddressLines({ lines }: { lines: string[] }) {
+function ExampleAddressLines({ lines }: { lines: string[] }) {
   return (
-    <address className="somalia-case__address">
+    <address className="example-case__address">
       {lines.map((line) => {
         const match = line.match(/^(\d{2}-\d{2}-\d{2})\s+(.+)$/);
         return (
-          <span className={match ? "somalia-case__code-line" : undefined} key={line}>
+          <span className={match ? "example-case__code-line" : undefined} key={line}>
             {match ? (
               <>
                 <ColouredCode code={match[1]} className="coloured-code--compact" />
@@ -952,7 +951,7 @@ function Footer() {
             <a href="#how-it-works">How it works</a>
             <a href="#examples">Examples</a>
             <a href="#locality">Locality</a>
-            <a href="#somalia-use-case">Somalia</a>
+            <a href="#example-use-case">Example use case</a>
           </div>
           <div className="site-footer__column">
             <h2>About</h2>
